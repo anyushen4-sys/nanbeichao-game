@@ -1,0 +1,46 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>卡牌水墨风预览</title>
+<style>
+body{background:#1A1410;margin:0;padding:20px;font-family:sans-serif}
+h1{color:#D4A84B;text-align:center;font-weight:400;letter-spacing:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:20px}
+.card{background:#2A2018;border-radius:8px;padding:8px;text-align:center;border:1px solid #3A2E22}
+.card img{width:100%;aspect-ratio:3/4;object-fit:contain;background:rgba(255,255,255,.06);border-radius:4px}
+.card .name{color:#C0B090;font-size:.7em;margin-top:5px}
+.card .id{color:#6B5B47;font-size:.6em}
+h2{color:#A08060;font-size:1em;margin:20px 0 10px;border-bottom:1px solid #3A2E22;padding-bottom:4px}
+</style></head><body>
+<h1>南 北 朝 · 水 墨 卡 牌</h1>
+<div id="app"></div>
+<script>
+const data=[
+  {t:"宋",ids:[1,2,3,4,5,46],n:{1:"刘裕",2:"檀道济",3:"沈庆之",4:"到彦之",5:"谢晦",46:"宋军旗"}},
+  {t:"齐",ids:[6,7,8,9,10],n:{6:"萧道成",7:"王俭",8:"褚渊",9:"崔祖思",10:"王僧虔"}},
+  {t:"梁",ids:[11,12,13,14,15,48],n:{11:"萧衍",12:"韦睿",13:"陈庆之",14:"羊侃",15:"侯景",48:"舍利"}},
+  {t:"陈",ids:[16,17,18,19,20],n:{16:"陈霸先",17:"吴明彻",18:"侯瑱",19:"章昭达",20:"黄法氍"}},
+  {t:"北魏",ids:[21,22,23,24,25,47],n:{21:"拓跋焘",22:"崔浩",23:"尔朱荣",24:"贺拔岳",25:"奚康生",47:"铁鹞子"}},
+  {t:"东魏",ids:[26,27,28,29,30,49],n:{26:"高欢",27:"高澄",28:"慕容绍宗",29:"高岳",30:"刘丰",49:"铁甲"}},
+  {t:"西魏",ids:[31,32,33,34,35],n:{31:"宇文泰",32:"李虎",33:"侯莫陈崇",34:"赵贵",35:"独孤信"}},
+  {t:"北齐",ids:[36,37,38,39,40,50],n:{36:"高洋",37:"斛律光",38:"兰陵王",39:"段韶",40:"傅伏",50:"细作"}},
+  {t:"北周",ids:[41,42,43,44,45],n:{41:"宇文邕",42:"韦孝宽",43:"于翼",44:"辛威",45:"梁士彦"}},
+  {t:"公用",ids:[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126],
+    n:{100:"斥候",101:"民兵",102:"弓箭手",103:"辎重",104:"谋士",105:"刺客",106:"弩手",107:"盾兵",108:"轻骑",109:"传令",110:"过牌",111:"连环计",112:"暗度陈仓",113:"离间",114:"屯垦",115:"奇袭",116:"密探",117:"毒箭",118:"鸩酒",119:"铁壁",120:"伏兵",121:"吞并",122:"招魂",123:"单挑",124:"招降",125:"法阵",126:"悬赏"}}
+];
+const app=document.getElementById("app");
+function p(i){return i<100?String(i).padStart(3,"0"):i}
+data.forEach(g=>{
+  let html=`<h2>${g.t}（${g.ids.length}张）</h2><div class="grid">`;
+  g.ids.forEach(id=>{
+    html+=`<div class="card"><img src="assets/cards/card_${p(id)}.png" onerror="this.style.display='none'"><div class="name">${g.n[id]||"?"}</div><div class="id">#${p(id)}</div></div>`;
+  });
+  app.innerHTML+=html+"</div>";
+});
+// Leaders
+let lh=`<h2>👑 君主头像（9张）</h2><div class="grid">`;
+const l=["宋武帝刘裕","齐高帝萧道成","梁武帝萧衍","陈武帝陈霸先","北魏太武帝拓跋焘","东魏孝静帝元善见","西魏文帝元宝炬","北齐文宣帝高洋","北周武帝宇文邕"];
+l.forEach((n,i)=>{
+  lh+=`<div class="card"><img src="assets/cards/leader_L${i+1}.png" onerror="this.style.display='none'"><div class="name">${n}</div><div class="id">L${i+1}</div></div>`;
+});
+app.innerHTML+=lh+"</div>";
+</script>
+</body></html>

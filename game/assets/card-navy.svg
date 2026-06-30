@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5f0e8;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#e8dcc8;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="inkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1410"/>
+      <stop offset="100%" style="stop-color:#4a3e32"/>
+    </linearGradient>
+    <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a5568;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#2d3748;stop-opacity:0.1"/>
+    </linearGradient>
+    <filter id="inkEffect">
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+    <filter id="waterBlur">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+  
+  <rect width="400" height="600" fill="url(#cardBg)" rx="12"/>
+  <rect x="8" y="8" width="384" height="584" fill="none" stroke="#8B6914" stroke-width="2" rx="8"/>
+  <rect x="12" y="12" width="376" height="576" fill="none" stroke="#B8A070" stroke-width="0.5" rx="6"/>
+  <line x1="40" y1="80" x2="360" y2="80" stroke="#B8A070" stroke-width="1"/>
+  
+  <!-- 武将名称 -->
+  <rect x="60" y="20" width="280" height="50" fill="rgba(184,160,112,0.1)" rx="6"/>
+  <text x="200" y="55" text-anchor="middle" fill="#8B1A2B" 
+        font-family="'Noto Serif SC','STKaiti',serif" font-size="28" font-weight="bold" 
+        letter-spacing="6">水 军 都 督</text>
+  
+  <!-- 兵种标识 -->
+  <circle cx="350" cy="45" r="12" fill="#4a5568"/>
+  <text x="350" y="50" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">水</text>
+  
+  <!-- 水墨武将插画 - 水军驾船 -->
+  <g transform="translate(200, 260)">
+    <!-- 水墨晕染背景 -->
+    <ellipse cx="0" cy="20" rx="140" ry="160" fill="#1a1410" opacity="0.06" filter="url(#inkEffect)"/>
+    
+    <!-- 水面波纹 -->
+    <path d="M-120,120 Q-90,115 -60,120 T0,120 T60,120 T120,120" fill="none" stroke="#4a5568" 
+          stroke-width="1.5" opacity="0.3" filter="url(#waterBlur)">
+      <animateTransform attributeName="transform" type="translate" values="0;5;0" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M-110,135 Q-80,130 -50,135 T10,135 T70,135 T130,135" fill="none" stroke="#4a5568" 
+          stroke-width="1" opacity="0.2" filter="url(#waterBlur)">
+      <animateTransform attributeName="transform" type="translate" values="0;-3;0" dur="4s" repeatCount="indefinite"/>
+    </path>
+    <path d="M-100,150 Q-70,145 -40,150 T20,150 T80,150 T140,150" fill="none" stroke="#4a5568" 
+          stroke-width="0.8" opacity="0.15" filter="url(#waterBlur)">
+      <animateTransform attributeName="transform" type="translate" values="0;4;0" dur="5s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- 战船 -->
+    <!-- 船身 -->
+    <path d="M-90,60 Q-80,80 -60,90 L-40,95 L40,95 L60,90 Q80,80 90,60 Q95,75 85,85 Q70,95 40,100 L-40,100 Q-70,95 -85,85 Q-95,75 -90,60 Z" 
+          fill="url(#inkGrad)" opacity="0.85"/>
+    <!-- 船底 -->
+    <path d="M-60,95 L60,95 L70,110 Q0,115 -70,110 Z" fill="#1a1410" opacity="0.7"/>
+    
+    <!-- 船桅 -->
+    <rect x="-8" y="-60" width="6" height="120" fill="#4a3e32" rx="2"/>
+    <!-- 桅顶装饰 -->
+    <circle cx="-5" cy="-65" r="6" fill="#8b1a2b"/>
+    
+    <!-- 船帆 -->
+    <path d="M0,-55 Q50,-40 65,0 Q50,40 0,50 Q-50,40 -65,0 Q-50,-40 0,-55 Z" 
+          fill="#e8dcc8" stroke="#4a3e32" stroke-width="1" opacity="0.85">
+      <animateTransform attributeName="transform" type="scale" values="1;1.02;1" dur="4s" repeatCount="indefinite" transform-origin="0 0"/>
+    </path>
+    <!-- 帆骨 -->
+    <path d="M0,-50 L50,-35 M0,-50 L-50,-35 M0,50 L50,35 M0,50 L-50,35" 
+          stroke="#4a3e32" stroke-width="0.5" opacity="0.4"/>
+    
+    <!-- 船头装饰 -->
+    <path d="M90,60 Q100,50 95,40 Q90,30 80,35" fill="none" stroke="#4a3e32" stroke-width="2"/>
+    <!-- 船头旗 -->
+    <path d="M80,35 Q110,25 120,35 Q110,45 80,40" fill="#c41e3a" stroke="#8b1a2b" stroke-width="1">
+      <animateTransform attributeName="transform" type="skewX" values="-5;5;-5" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- 水军将领 -->
+    <!-- 身体 -->
+    <path d="M-20,-30 L-25,40 L25,40 L20,-30 Z" fill="url(#inkGrad)" opacity="0.85"/>
+    <!-- 甲片 -->
+    <path d="M-20,-15 L20,-15 M-20,5 L20,5 M-20,25 L20,25" 
+          stroke="#e8dcc8" stroke-width="0.5" opacity="0.3"/>
+    
+    <!-- 头部 -->
+    <ellipse cx="0" cy="-55" rx="22" ry="28" fill="url(#inkGrad)" opacity="0.9"/>
+    <!-- 头盔 -->
+    <path d="M-18,-60 Q0,-80 18,-60" fill="none" stroke="#1a1410" stroke-width="3"/>
+    <circle cx="0" cy="-85" r="8" fill="#1a1410"/>
+    <!-- 面 -->
+    <ellipse cx="0" cy="-52" rx="16" ry="20" fill="#e8dcc8" opacity="0.9"/>
+    <ellipse cx="-6" cy="-57" rx="3" ry="2.5" fill="#1a1410"/>
+    <ellipse cx="6" cy="-57" rx="3" ry="2.5" fill="#1a1410"/>
+    <path d="M-10,-64 Q-5,-67 0,-63" fill="none" stroke="#1a1410" stroke-width="2"/>
+    <path d="M0,-63 Q5,-67 10,-64" fill="none" stroke="#1a1410" stroke-width="2"/>
+    <!-- 胡须 -->
+    <path d="M-12,-40 Q-18,-32 -10,-28" fill="none" stroke="#1a1410" stroke-width="1.5"/>
+    <path d="M12,-40 Q18,-32 10,-28" fill="none" stroke="#1a1410" stroke-width="1.5"/>
+    
+    <!-- 手臂 -->
+    <!-- 左手握舵 -->
+    <path d="M-20,-15 Q-45,0 -55,20" fill="none" stroke="#1a1410" stroke-width="7" opacity="0.7" stroke-linecap="round"/>
+    <!-- 船舵 -->
+    <g transform="translate(-65, 25)">
+      <circle cx="0" cy="0" r="20" fill="none" stroke="#4a3e32" stroke-width="3"/>
+      <line x1="0" y1="-20" x2="0" y2="20" stroke="#4a3e32" stroke-width="2"/>
+      <line x1="-20" y1="0" x2="20" y2="0" stroke="#4a3e32" stroke-width="2"/>
+      <circle cx="0" cy="0" r="5" fill="#B8A070"/>
+    </g>
+    
+    <!-- 右手持令旗 -->
+    <path d="M20,-15 Q45,0 55,20" fill="none" stroke="#1a1410" stroke-width="7" opacity="0.7" stroke-linecap="round"/>
+    <!-- 令旗 -->
+    <g transform="translate(65, 25)">
+      <line x1="0" y1="0" x2="0" y2="-40" stroke="#4a3e32" stroke-width="2"/>
+      <path d="M0,-40 Q30,-45 35,-30 Q30,-15 0,-20" fill="#c41e3a" stroke="#8b1a2b" stroke-width="1">
+        <animateTransform attributeName="transform" type="skewX" values="-3;3;-3" dur="2.5s" repeatCount="indefinite"/>
+      </path>
+      <text x="15" y="-30" fill="#1a1410" font-size="8" font-family="'Noto Serif SC',serif" font-weight="bold">令</text>
+    </g>
+    
+    <!-- 腿部 -->
+    <path d="M-12,40 L-15,70 L-8,70 L-5,40 Z" fill="url(#inkGrad)" opacity="0.8"/>
+    <path d="M12,40 L15,70 L22,70 L25,40 Z" fill="url(#inkGrad)" opacity="0.8"/>
+    
+    <!-- 飘带 -->
+    <path d="M-25,-30 Q-50,-45 -60,-35 Q-70,-25 -50,-10" fill="none" stroke="#8b1a2b" 
+          stroke-width="4" opacity="0.5" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="translate" values="-2;2;-2" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M25,-30 Q50,-40 60,-30 Q70,-20 50,-5" fill="none" stroke="#8b1a2b" 
+          stroke-width="3" opacity="0.4" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="translate" values="1;-2;1" dur="4s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- 水花飞溅 -->
+    <circle cx="-70" cy="105" r="5" fill="#4a5568" opacity="0.2" filter="url(#waterBlur)">
+      <animate attributeName="opacity" values="0.2;0.05;0.2" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="70" cy="108" r="4" fill="#4a5568" opacity="0.15" filter="url(#waterBlur)">
+      <animate attributeName="opacity" values="0.15;0.03;0.15" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- 卡牌底部信息 -->
+  <rect x="40" y="500" width="320" height="60" fill="rgba(184,160,112,0.08)" rx="8"/>
+  <text x="60" y="525" fill="#8B7050" font-family="'Noto Sans SC',sans-serif" font-size="12" letter-spacing="2">兵种</text>
+  <text x="120" y="525" fill="#1a1410" font-family="'Noto Serif SC',serif" font-size="16" font-weight="bold">水军</text>
+  <text x="60" y="548" fill="#8B7050" font-family="'Noto Sans SC',sans-serif" font-size="12" letter-spacing="2">定位</text>
+  <text x="120" y="548" fill="#1a1410" font-family="'Noto Serif SC',serif" font-size="16" font-weight="bold">控场 / 支援</text>
+  
+  <path d="M20,20 L30,20 L30,30" fill="none" stroke="#B8A070" stroke-width="2"/>
+  <path d="M380,20 L370,20 L370,30" fill="none" stroke="#B8A070" stroke-width="2"/>
+  <path d="M20,580 L30,580 L30,570" fill="none" stroke="#B8A070" stroke-width="2"/>
+  <path d="M380,580 L370,580 L370,570" fill="none" stroke="#B8A070" stroke-width="2"/>
+</svg>

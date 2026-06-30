@@ -1,0 +1,202 @@
+/* ===== 南北朝卡牌博弈 — 卡牌样式 ===== */
+
+/* 卡牌阵营颜色 */
+.hand-card[data-faction="song"] { --faction-color: #C41E3A; }
+.hand-card[data-faction="qi"] { --faction-color: #DAA520; }
+.hand-card[data-faction="liang"] { --faction-color: #4169E1; }
+.hand-card[data-faction="chen"] { --faction-color: #228B22; }
+.hand-card[data-faction="nwei"] { --faction-color: #4B0082; }
+.hand-card[data-faction="ewu"] { --faction-color: #FF8C00; }
+.hand-card[data-faction="xwei"] { --faction-color: #C0C0C0; }
+.hand-card[data-faction="beiqi"] { --faction-color: #FF8C00; }
+
+/* 卡牌稀有度边框 */
+.hand-card.rarity-legendary {
+    border-width: 3px;
+    box-shadow: 0 0 8px rgba(255,215,0,0.4);
+}
+
+.hand-card.rarity-legendary::after {
+    content: '★★★★★';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #FFD700;
+}
+
+.hand-card.rarity-epic::after {
+    content: '★★★';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #9370DB;
+}
+
+.hand-card.rarity-rare::after {
+    content: '★★';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #4169E1;
+}
+
+.hand-card.rarity-common::after {
+    content: '★';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #808080;
+}
+
+/* 卡牌类型标签颜色 */
+.hand-card .card-type {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+.hand-card .card-type[data-type="general"] {
+    background: rgba(196,30,58,0.15);
+    color: #C41E3A;
+}
+
+.hand-card .card-type[data-type="soldier"] {
+    background: rgba(139,115,85,0.15);
+    color: #8B7355;
+}
+
+.hand-card .card-type[data-type="strategy"] {
+    background: rgba(65,105,225,0.15);
+    color: #4169E1;
+}
+
+.hand-card .card-type[data-type="weather"] {
+    background: rgba(100,149,237,0.15);
+    color: #6495ED;
+}
+
+.hand-card .card-type[data-type="special"] {
+    background: rgba(147,112,219,0.15);
+    color: #9370DB;
+}
+
+/* 卡牌入场动画 */
+.hand-card {
+    animation: card-in 0.3s ease-out;
+}
+
+@keyframes card-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 棋盘卡牌动画 */
+.board-card {
+    animation: board-card-in 0.3s ease-out;
+}
+
+@keyframes board-card-in {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 被保护的卡牌光效 */
+.board-card.protected::after {
+    content: '🛡️';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 10px;
+}
+
+/* 被隐藏的卡牌 */
+.board-card.hidden {
+    background: #666;
+    color: white;
+}
+
+.board-card.hidden::after {
+    content: '?';
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* 卡牌悬停详情（扩展用） */
+.hand-card:hover .card-ability {
+    color: var(--text-dark);
+}
+
+/* 策略牌特殊效果 */
+.hand-card.strategy-card {
+    background: linear-gradient(135deg, white 0%, #f0f4ff 100%);
+}
+
+.hand-card.weather-card {
+    background: linear-gradient(135deg, white 0%, #e8f4ff 100%);
+}
+
+.hand-card.special-card {
+    background: linear-gradient(135deg, white 0%, #f8f0ff 100%);
+}
+
+/* 出牌目标指示 */
+.board-row.targetable {
+    border-color: var(--song-red);
+    background: rgba(196,30,58,0.05);
+}
+
+.board-row.targetable:hover {
+    background: rgba(196,30,58,0.15);
+}
+
+/* 天时效果动画 */
+.weather-active {
+    animation: weather-pulse 2s infinite;
+}
+
+@keyframes weather-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* 粮草警告 */
+.food-warning {
+    color: #c00;
+    animation: food-blink 1s infinite;
+}
+
+@keyframes food-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 点数变化动画 */
+.power-change {
+    animation: power-flash 0.5s ease-out;
+}
+
+@keyframes power-flash {
+    0% { color: var(--song-red); transform: scale(1.2); }
+    100% { color: inherit; transform: scale(1); }
+}

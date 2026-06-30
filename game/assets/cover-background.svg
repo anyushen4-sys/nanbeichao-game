@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <!-- 深墨背景 -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0b08"/>
+      <stop offset="40%" style="stop-color:#1a1410"/>
+      <stop offset="100%" style="stop-color:#0a0806"/>
+    </linearGradient>
+
+    <!-- 远山 -->
+    <linearGradient id="m1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5a4a3a;stop-opacity:0.55"/>
+      <stop offset="100%" style="stop-color:#2a2018;stop-opacity:0.25"/>
+    </linearGradient>
+    <linearGradient id="m2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a3e32;stop-opacity:0.65"/>
+      <stop offset="100%" style="stop-color:#1a1410;stop-opacity:0.3"/>
+    </linearGradient>
+    <linearGradient id="m3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3a3028;stop-opacity:0.85"/>
+      <stop offset="100%" style="stop-color:#0f0b08;stop-opacity:0.5"/>
+    </linearGradient>
+
+    <!-- 烽火 -->
+    <radialGradient id="fire" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ff7b2e;stop-opacity:0.95"/>
+      <stop offset="35%" style="stop-color:#ff4500;stop-opacity:0.7"/>
+      <stop offset="70%" style="stop-color:#8b2500;stop-opacity:0.25"/>
+      <stop offset="100%" style="stop-color:#8b0000;stop-opacity:0"/>
+    </radialGradient>
+
+    <!-- 烟雾 -->
+    <radialGradient id="smoke" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#6b5b45;stop-opacity:0.35"/>
+      <stop offset="100%" style="stop-color:#1a1410;stop-opacity:0"/>
+    </radialGradient>
+
+    <!-- 旌旗 -->
+    <linearGradient id="flag" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d42a3a;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#7a1520;stop-opacity:1"/>
+    </linearGradient>
+
+    <!-- 墨晕 -->
+    <filter id="ink">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4"/>
+    </filter>
+    <filter id="inkLight">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+    </filter>
+    <filter id="inkHeavy">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <!-- 底色 -->
+  <rect width="1200" height="800" fill="url(#bg)"/>
+
+  <!-- 远景极淡山（天际线） -->
+  <path d="M0,480 Q200,380 400,440 T800,400 T1200,430 L1200,800 L0,800 Z"
+        fill="#5a4a3a" opacity="0.18" filter="url(#inkHeavy)"/>
+
+  <!-- 远山1 -->
+  <path d="M0,540 Q180,420 360,480 T720,450 T1200,470 L1200,800 L0,800 Z"
+        fill="url(#m1)" filter="url(#ink)"/>
+
+  <!-- 远山2 -->
+  <path d="M0,580 Q220,460 440,520 T860,490 T1200,510 L1200,800 L0,800 Z"
+        fill="url(#m2)" filter="url(#inkLight)"/>
+
+  <!-- 近山3（主体山） -->
+  <path d="M0,640 Q150,540 300,590 T600,560 T900,580 T1200,550 L1200,800 L0,800 Z"
+        fill="url(#m3)"/>
+
+  <!-- 城墙主体（压住山脚） -->
+  <rect x="160" y="520" width="880" height="180" fill="#12100d" opacity="0.92"/>
+
+  <!-- 城墙顶部锯齿（更明显） -->
+  <path d="M160,520 L200,490 L240,520 L280,485 L320,520 L360,488 L400,520 L440,482 L480,520 
+           L520,486 L560,520 L600,480 L640,520 L680,487 L720,520 L760,483 L800,520 
+           L840,489 L880,520 L920,485 L960,520 L1000,490 L1040,520"
+        fill="none" stroke="#6b5b45" stroke-width="3.5" opacity="0.9"/>
+
+  <!-- 垛口实体（加深） -->
+  <rect x="195" y="490" width="14" height="30" fill="#12100d" opacity="0.9"/>
+  <rect x="275" y="485" width="14" height="35" fill="#12100d" opacity="0.9"/>
+  <rect x="355" y="488" width="14" height="32" fill="#12100d" opacity="0.9"/>
+  <rect x="435" y="482" width="14" height="38" fill="#12100d" opacity="0.9"/>
+  <rect x="515" y="486" width="14" height="34" fill="#12100d" opacity="0.9"/>
+  <rect x="595" y="480" width="14" height="40" fill="#12100d" opacity="0.9"/>
+  <rect x="675" y="487" width="14" height="33" fill="#12100d" opacity="0.9"/>
+  <rect x="755" y="483" width="14" height="37" fill="#12100d" opacity="0.9"/>
+  <rect x="835" y="489" width="14" height="31" fill="#12100d" opacity="0.9"/>
+  <rect x="915" y="485" width="14" height="35" fill="#12100d" opacity="0.9"/>
+  <rect x="995" y="490" width="14" height="30" fill="#12100d" opacity="0.9"/>
+
+  <!-- 城楼 -->
+  <rect x="500" y="440" width="200" height="80" fill="#12100d" stroke="#6b5b45" stroke-width="2.5"/>
+  <polygon points="500,440 600,390 700,440" fill="#1a1410" stroke="#6b5b45" stroke-width="2.5"/>
+  <rect x="570" y="410" width="60" height="30" fill="#0a0806"/>
+  <text x="600" y="430" text-anchor="middle" fill="#D4A840" font-family="'Noto Serif SC','STKaiti',serif" 
+        font-size="18" font-weight="bold" letter-spacing="6">天 下</text>
+
+  <!-- 城门 -->
+  <path d="M560,520 L560,640 Q600,690 640,640 L640,520 Z" fill="#0a0806" stroke="#6b5b45" stroke-width="3.5"/>
+
+  <!-- 投石车（左侧） -->
+  <g opacity="0.85">
+    <circle cx="75" cy="560" r="14" fill="none" stroke="#5a4a3a" stroke-width="3.5"/>
+    <circle cx="145" cy="560" r="14" fill="none" stroke="#5a4a3a" stroke-width="3.5"/>
+    <rect x="70" y="540" width="100" height="10" fill="#5a4a3a" transform="rotate(-12 110 545)"/>
+    <rect x="100" y="525" width="7" height="35" fill="#6b5b45"/>
+    <line x1="110" y1="525" x2="155" y2="495" stroke="#6b5b45" stroke-width="5"/>
+    <path d="M155,495 L168,488 L162,500 Z" fill="#3a3028"/>
+  </g>
+
+  <!-- 冲车（右侧） -->
+  <g opacity="0.8">
+    <rect x="1060" y="540" width="90" height="55" fill="#2a2018" rx="4" stroke="#5a4a3a" stroke-width="2"/>
+    <rect x="1070" y="550" width="70" height="35" fill="#12100d"/>
+    <circle cx="1075" cy="600" r="16" fill="none" stroke="#5a4a3a" stroke-width="4"/>
+    <circle cx="1135" cy="600" r="16" fill="none" stroke="#5a4a3a" stroke-width="4"/>
+    <rect x="1098" y="515" width="24" height="30" fill="#5a4a3a"/>
+    <rect x="1105" y="510" width="10" height="10" fill="#3a3028"/>
+  </g>
+
+  <!-- 左侧烽火台 -->
+  <rect x="50" y="370" width="55" height="150" fill="#1a1410" stroke="#5a4a3a" stroke-width="2"/>
+  <rect x="44" y="364" width="67" height="14" fill="#1a1410" stroke="#5a4a3a" stroke-width="1.5"/>
+  <rect x="38" y="356" width="79" height="14" fill="#1a1410" stroke="#5a4a3a" stroke-width="1.5"/>
+
+  <!-- 左侧烽火 -->
+  <ellipse cx="78" cy="345" rx="35" ry="50" fill="url(#fire)" filter="url(#inkLight)">
+    <animate attributeName="opacity" values="0.75;0.95;0.75" dur="1.8s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="78" cy="320" rx="22" ry="32" fill="#ff7b2e" opacity="0.65" filter="url(#inkLight)">
+    <animate attributeName="opacity" values="0.5;0.8;0.5" dur="1.4s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="78" cy="290" rx="50" ry="20" fill="#6b5b45" opacity="0.25" filter="url(#inkHeavy)">
+    <animate attributeName="cy" values="290;265;240" dur="4.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.25;0.12;0" dur="4.5s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- 右侧烽火台 -->
+  <rect x="1095" y="370" width="55" height="150" fill="#1a1410" stroke="#5a4a3a" stroke-width="2"/>
+  <rect x="1089" y="364" width="67" height="14" fill="#1a1410" stroke="#5a4a3a" stroke-width="1.5"/>
+  <rect x="1083" y="356" width="79" height="14" fill="#1a1410" stroke="#5a4a3a" stroke-width="1.5"/>
+
+  <!-- 右侧烽火 -->
+  <ellipse cx="1123" cy="345" rx="35" ry="50" fill="url(#fire)" filter="url(#inkLight)">
+    <animate attributeName="opacity" values="0.8;0.6;0.8" dur="2.2s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="1123" cy="320" rx="22" ry="32" fill="#ff7b2e" opacity="0.55" filter="url(#inkLight)">
+    <animate attributeName="opacity" values="0.6;0.85;0.6" dur="1.7s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="1123" cy="290" rx="50" ry="20" fill="#6b5b45" opacity="0.22" filter="url(#inkHeavy)">
+    <animate attributeName="cy" values="290;265;240" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.22;0.1;0" dur="5s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- 左侧旌旗 -->
+  <g transform="translate(130, 300)">
+    <line x1="0" y1="0" x2="0" y2="140" stroke="#4a3e32" stroke-width="4.5"/>
+    <path d="M0,10 Q80,0 110,22 Q80,42 0,35" fill="url(#flag)" stroke="#5a1018" stroke-width="1.5">
+      <animateTransform attributeName="transform" type="skewX" values="-4;4;-4" dur="2.8s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="0" cy="0" r="7" fill="#c41e3a"/>
+  </g>
+
+  <!-- 右侧旌旗 -->
+  <g transform="translate(1070, 290)">
+    <line x1="0" y1="0" x2="0" y2="150" stroke="#4a3a32" stroke-width="4.5"/>
+    <path d="M0,10 Q-90,0 -120,24 Q-90,46 0,38" fill="url(#flag)" stroke="#5a1018" stroke-width="1.5">
+      <animateTransform attributeName="transform" type="skewX" values="4;-4;4" dur="3.2s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="0" cy="0" r="7" fill="#c41e3a"/>
+  </g>
+
+  <!-- 中间大旗 -->
+  <g transform="translate(600, 260)">
+    <line x1="0" y1="0" x2="0" y2="170" stroke="#6b5b45" stroke-width="5.5"/>
+    <path d="M0,12 Q140,-10 180,35 Q140,75 0,62" fill="#c41e3a" stroke="#5a1018" stroke-width="2" opacity="0.95">
+      <animateTransform attributeName="transform" type="skewX" values="-6;6;-6" dur="3.6s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="0" cy="0" r="9" fill="#c41e3a"/>
+    <text x="90" y="45" fill="#1a1410" font-family="'Noto Serif SC','STKaiti',serif" 
+          font-size="26" font-weight="bold" letter-spacing="4">征</text>
+  </g>
+
+  <!-- 战场烟雾（更浓） -->
+  <ellipse cx="280" cy="640" rx="200" ry="110" fill="url(#smoke)" filter="url(#inkHeavy)">
+    <animate attributeName="opacity" values="0.25;0.4;0.25" dur="6s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="920" cy="620" rx="170" ry="90" fill="#5a4a3a" opacity="0.2" filter="url(#inkHeavy)">
+    <animate attributeName="opacity" values="0.18;0.3;0.18" dur="7.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="600" cy="670" rx="240" ry="70" fill="#4a3e32" opacity="0.18" filter="url(#ink)">
+    <animate attributeName="opacity" values="0.15;0.28;0.15" dur="8.5s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- 地面墨痕 -->
+  <path d="M0,760 Q150,748 300,758 T600,752 T900,758 T1200,752" fill="none" stroke="#5a4a3a" 
+        stroke-width="2.5" opacity="0.35"/>
+  <path d="M0,780 Q250,770 500,780 T1000,774 T1200,780" fill="none" stroke="#4a3e32" 
+        stroke-width="2" opacity="0.25"/>
+
+  <!-- 前景左士兵 -->
+  <g opacity="0.75">
+    <path d="M70,730 L70,680 L95,660 L95,730 Z" fill="#0a0806"/>
+    <circle cx="82" cy="650" r="12" fill="#0a0806"/>
+    <path d="M70,720 L50,700 L58,690 L80,715" fill="none" stroke="#0a0806" stroke-width="5"/>
+    <line x1="82" y1="660" x2="110" y2="640" stroke="#3a3028" stroke-width="3.5"/>
+  </g>
+
+  <!-- 前景右士兵 -->
+  <g opacity="0.65">
+    <path d="M1100,740 L1100,690 L1125,670 L1125,740 Z" fill="#0a0806"/>
+    <circle cx="1112" cy="660" r="11" fill="#0a0806"/>
+    <path d="M1125,730 L1145,710 L1138,700 L1115,725" fill="none" stroke="#0a0806" stroke-width="5"/>
+    <line x1="1112" y1="670" x2="1085" y2="650" stroke="#3a3028" stroke-width="3.5"/>
+  </g>
+
+  <!-- 标题 -->
+  <text x="600" y="125" text-anchor="middle" fill="#E8C44A" 
+        font-family="'Noto Serif SC','STKaiti','KaiTi',serif" 
+        font-size="54" font-weight="bold" letter-spacing="14"
+        filter="drop-shadow(0 0 18px rgba(232,196,74,0.7)) drop-shadow(0 3px 6px rgba(0,0,0,0.9))">
+    南北朝·天下对弈
+  </text>
+
+  <!-- 副标题 -->
+  <text x="600" y="175" text-anchor="middle" fill="#B8A070" 
+        font-family="'Noto Sans SC','STKaiti',sans-serif" 
+        font-size="20" letter-spacing="12" opacity="0.95">
+    水墨战场 · 武将争锋
+  </text>
+</svg>

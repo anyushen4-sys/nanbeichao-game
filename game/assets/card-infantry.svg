@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5f0e8;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#e8dcc8;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="inkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1410"/>
+      <stop offset="100%" style="stop-color:#4a3e32"/>
+    </linearGradient>
+    <filter id="inkEffect">
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  
+  <!-- 卡牌底色 -->
+  <rect width="400" height="600" fill="url(#cardBg)" rx="12"/>
+  
+  <!-- 边框装饰 -->
+  <rect x="8" y="8" width="384" height="584" fill="none" stroke="#8B6914" stroke-width="2" rx="8"/>
+  <rect x="12" y="12" width="376" height="576" fill="none" stroke="#B8A070" stroke-width="0.5" rx="6"/>
+  
+  <!-- 卡牌顶部装饰线 -->
+  <line x1="40" y1="80" x2="360" y2="80" stroke="#B8A070" stroke-width="1"/>
+  
+  <!-- 武将名称区域 -->
+  <rect x="60" y="20" width="280" height="50" fill="rgba(184,160,112,0.1)" rx="6"/>
+  <text x="200" y="55" text-anchor="middle" fill="#8B1A2B" 
+        font-family="'Noto Serif SC','STKaiti',serif" font-size="28" font-weight="bold" 
+        letter-spacing="6">步 将 军</text>
+  
+  <!-- 兵种标识 -->
+  <circle cx="350" cy="45" r="12" fill="#c41e3a"/>
+  <text x="350" y="50" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">步</text>
+  
+  <!-- 水墨武将插画 - 步兵持盾 -->
+  <g transform="translate(200, 260)">
+    <!-- 水墨晕染背景 -->
+    <ellipse cx="0" cy="10" rx="120" ry="160" fill="#1a1410" opacity="0.08" filter="url(#inkEffect)"/>
+    
+    <!-- 武将身体 - 水墨笔触 -->
+    <!-- 头部 -->
+    <ellipse cx="0" cy="-80" rx="30" ry="35" fill="url(#inkGrad)" opacity="0.9"/>
+    <!-- 头盔装饰 -->
+    <path d="M-25,-85 Q0,-110 25,-85" fill="none" stroke="#1a1410" stroke-width="3"/>
+    <circle cx="0" cy="-115" r="8" fill="#1a1410"/>
+    
+    <!-- 面部轮廓 -->
+    <ellipse cx="0" cy="-75" rx="22" ry="25" fill="#e8dcc8" opacity="0.9"/>
+    <!-- 眼睛 -->
+    <ellipse cx="-8" cy="-80" rx="4" ry="3" fill="#1a1410"/>
+    <ellipse cx="8" cy="-80" rx="4" ry="3" fill="#1a1410"/>
+    <!-- 眉毛 -->
+    <path d="M-14,-88 Q-8,-92 0,-86" fill="none" stroke="#1a1410" stroke-width="2"/>
+    <path d="M0,-86 Q8,-92 14,-88" fill="none" stroke="#1a1410" stroke-width="2"/>
+    <!-- 胡须 -->
+    <path d="M-15,-55 Q-20,-45 -10,-40" fill="none" stroke="#1a1410" stroke-width="1.5"/>
+    <path d="M15,-55 Q20,-45 10,-40" fill="none" stroke="#1a1410" stroke-width="1.5"/>
+    
+    <!-- 身体 - 战甲 -->
+    <path d="M-40,-40 L-50,60 L50,60 L40,-40 Z" fill="url(#inkGrad)" opacity="0.85"/>
+    <!-- 甲片纹理 -->
+    <path d="M-35,-30 L35,-30 M-35,-10 L35,-10 M-35,10 L35,10 M-35,30 L35,30" 
+          stroke="#e8dcc8" stroke-width="0.5" opacity="0.3"/>
+    
+    <!-- 腰带 -->
+    <rect x="-40" y="55" width="80" height="8" fill="#8b1a2b" rx="2"/>
+    <circle cx="0" cy="59" r="6" fill="#B8A070"/>
+    
+    <!-- 左臂 - 持盾 -->
+    <path d="M-40,-20 Q-80,0 -90,40 Q-85,60 -60,50" fill="url(#inkGrad)" opacity="0.8"/>
+    <!-- 盾牌 -->
+    <path d="M-100,20 L-70,10 L-70,90 L-100,100 Q-115,95 -110,30 Z" 
+          fill="#3a3028" stroke="#1a1410" stroke-width="2"/>
+    <!-- 盾面纹饰 -->
+    <circle cx="-85" cy="55" r="20" fill="none" stroke="#B8A070" stroke-width="1.5" opacity="0.6"/>
+    <path d="M-95,55 L-75,55 M-85,45 L-85,65" stroke="#B8A070" stroke-width="1" opacity="0.4"/>
+    
+    <!-- 右臂 - 持剑 -->
+    <path d="M40,-20 Q80,10 90,50 Q85,70 60,60" fill="url(#inkGrad)" opacity="0.8"/>
+    <!-- 剑 -->
+    <g transform="translate(95, 30) rotate(15)">
+      <rect x="-5" y="0" width="10" height="100" fill="#4a3e32" rx="2"/>
+      <rect x="-15" y="-10" width="30" height="8" fill="#B8A070" rx="2"/>
+      <polygon points="0,-110 -8,-100 0,-95 8,-100" fill="#4a3e32"/>
+    </g>
+    
+    <!-- 腿部 -->
+    <path d="M-25,60 L-35,140 L-15,140 L-5,60 Z" fill="url(#inkGrad)" opacity="0.8"/>
+    <path d="M25,60 L35,140 L15,140 L5,60 Z" fill="url(#inkGrad)" opacity="0.8"/>
+    <!-- 战靴 -->
+    <ellipse cx="-25" cy="145" rx="18" ry="10" fill="#1a1410"/>
+    <ellipse cx="25" cy="145" rx="18" ry="10" fill="#1a1410"/>
+    
+    <!-- 飘带装饰 -->
+    <path d="M-45,-30 Q-70,-50 -80,-30 Q-90,-10 -70,10" fill="none" stroke="#8b1a2b" 
+          stroke-width="4" opacity="0.6" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="translate" values="-2;2;-2" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M45,-30 Q70,-40 80,-20 Q90,0 70,20" fill="none" stroke="#8b1a2b" 
+          stroke-width="3" opacity="0.5" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="translate" values="1;-2;1" dur="4s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- 卡牌底部信息 -->
+  <rect x="40" y="500" width="320" height="60" fill="rgba(184,160,112,0.08)" rx="8"/>
+  
+  <!-- 属性标签 -->
+  <text x="60" y="525" fill="#8B7050" font-family="'Noto Sans SC',sans-serif" font-size="12" letter-spacing="2">兵种</text>
+  <text x="120" y="525" fill="#1a1410" font-family="'Noto Serif SC',serif" font-size="16" font-weight="bold">步兵</text>
+  
+  <text x="60" y="548" fill="#8B7050" font-family="'Noto Sans SC',sans-serif" font-size="12" letter-spacing="2">定位</text>
+  <text x="120" y="548" fill="#1a1410" font-family="'Noto Serif SC',serif" font-size="16" font-weight="bold">防御 / 控场</text>
+  
+  <!-- 金色装饰角 -->
+  <path d="M20,20 L30,20 L30,30" fill="none" stroke="#B8A070" stroke-width="2"/>
+  <path d="M380,20 L370,20 L370,30" fill="none" stroke="#B8A070" stroke-width="2"/>
+  <path d="M20,580 L30,580 L30,570" fill="none" stroke="#B8A070" stroke-width="2"/>
+  <path d="M380,580 L370,580 L370,570" fill="none" stroke="#B8A070" stroke-width="2"/>
+</svg>

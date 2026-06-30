@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>南北朝·天下对弈</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{color:#2C2C2C;font-family:'Noto Sans SC','STKaiti','KaiTi','SimSun','宋体',sans-serif;min-height:100vh;overflow-x:hidden;
+  background-color:#F5F0E8;
+  background-image:
+    radial-gradient(ellipse 40% 4% at 30% 88%,rgba(139,115,85,.12) 0%,transparent 100%),
+    radial-gradient(ellipse 30% 3% at 68% 84%,rgba(139,115,85,.08) 0%,transparent 100%),
+    radial-gradient(ellipse 50% 5% at 50% 91%,rgba(139,115,85,.1) 0%,transparent 100%),
+    linear-gradient(180deg,transparent 0%,rgba(255,255,255,.15) 10%,rgba(245,240,232,.22) 20%,transparent 35%),
+    linear-gradient(180deg,transparent 48%,rgba(255,255,255,.08) 62%,rgba(245,240,232,.12) 76%,transparent 86%),
+    radial-gradient(ellipse 120% 38% at 50% 105%,#2C2C2C 0%,#3D3530 22%,#5A4F44 42%,transparent 58%),
+    radial-gradient(ellipse 85% 22% at 20% 100%,#3A3228 0%,transparent 52%),
+    radial-gradient(ellipse 95% 25% at 80% 100%,#2E2924 0%,transparent 48%),
+    radial-gradient(ellipse 65% 14% at 40% 96%,#4A4038 0%,transparent 42%),
+    radial-gradient(ellipse 50% 10% at 65% 93%,#3D3530 0%,transparent 38%),
+    linear-gradient(180deg,#F5F0E8 0%,#EDE4D4 30%,#E8DFD0 60%,#F0EBE0 100%)}
+#app{max-width:1100px;margin:0 auto;padding:10px;min-height:100vh;position:relative}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#EDE4D4}
+::-webkit-scrollbar-thumb{background:#B8A88A;border-radius:3px}
+
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes poetryFade{0%{opacity:0;transform:translateY(8px)}15%{opacity:.55;transform:translateY(0)}85%{opacity:.55;transform:translateY(0)}100%{opacity:0;transform:translateY(-8px)}}
+@keyframes sealStamp{0%{transform:rotate(-12deg) scale(1.2);opacity:0}60%{transform:rotate(-12deg) scale(.95);opacity:1}100%{transform:rotate(-12deg) scale(1);opacity:1}}
+@keyframes paperUnfurl{0%{max-height:0;opacity:0;padding:0 16px}100%{max-height:300px;opacity:1;padding:16px}}
+
+.menu-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;position:relative}
+.menu-screen::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:
+    radial-gradient(ellipse 80% 30% at 50% 15%,rgba(139,115,85,.08) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 15% at 15% 25%,rgba(44,44,44,.06) 0%,transparent 70%),
+    radial-gradient(ellipse 35% 12% at 85% 20%,rgba(44,44,44,.05) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 8% at 50% 8%,rgba(200,196,188,.3) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
+.menu-battlefield{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
+.menu-battlefield svg{width:100%;height:100%;opacity:.55}
+.menu-screen>*{position:relative;z-index:1}
+
+.menu-title{font-size:3em;
+  background:linear-gradient(180deg,#D4A840 0%,#C5941A 25%,#E8C84A 50%,#B8860B 75%,#D4A840 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 16px rgba(212,168,64,.5)) drop-shadow(0 0 4px rgba(184,134,11,.6)) drop-shadow(0 3px 6px rgba(0,0,0,.3));
+  margin-bottom:10px;letter-spacing:8px;animation:float 4s ease-in-out infinite}
+.menu-subtitle{font-size:1.2em;color:#8B7355;margin-bottom:40px;letter-spacing:6px;
+  text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.menu-seal{width:80px;height:80px;
+  background:linear-gradient(135deg,#B22222,#C41E3A,#A01830);
+  border:2px solid #8B1A2B;
+  border-radius:4px;
+  box-shadow:inset 0 0 10px rgba(0,0,0,.4),inset 0 0 20px rgba(0,0,0,.15),
+    0 2px 6px rgba(0,0,0,.25),0 0 12px rgba(178,34,34,.2),
+    2px 2px 0 #8B1A2B,-1px -1px 0 #D44050,3px 0 0 rgba(139,26,43,.3),0 3px 0 rgba(139,26,43,.3);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:20px;font-weight:bold;
+  transform:rotate(-12deg);margin-bottom:30px;letter-spacing:2px;line-height:1.2;
+  animation:sealStamp .6s ease-out;
+  text-shadow:0 1px 2px rgba(0,0,0,.3),1px 1px 0 rgba(139,26,43,.5)}
+
+.poetry-container{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;z-index:0}
+.poetry-line{position:absolute;width:100%;text-align:center;color:#C8B898;font-size:.85em;letter-spacing:8px;opacity:0}
+.poetry-line:nth-child(1){top:5%;animation:poetryFade 10s ease-in-out 0s infinite}
+.poetry-line:nth-child(2){top:14%;animation:poetryFade 10s ease-in-out 2.5s infinite}
+.poetry-line:nth-child(3){top:24%;animation:poetryFade 10s ease-in-out 5s infinite}
+.poetry-line:nth-child(4){top:34%;animation:poetryFade 10s ease-in-out 1.5s infinite}
+.poetry-line:nth-child(5){top:44%;animation:poetryFade 10s ease-in-out 4s infinite}
+.poetry-line:nth-child(6){top:54%;animation:poetryFade 10s ease-in-out 6.5s infinite}
+.poetry-line:nth-child(7){top:64%;animation:poetryFade 10s ease-in-out 3s infinite}
+.poetry-line:nth-child(8){top:74%;animation:poetryFade 10s ease-in-out 5.5s infinite}
+.poetry-line:nth-child(9){top:84%;animation:poetryFade 10s ease-in-out 1s infinite}
+.poetry-line:nth-child(10){top:92%;animation:poetryFade 10s ease-in-out 8s infinite}
+
+.btn{background:linear-gradient(180deg,#7A5C2E,#6B4E25 40%,#5C421C 100%);
+  color:#F5F0E8;border:2px solid #4A3410;padding:12px 36px;font-size:1.1em;font-family:inherit;
+  cursor:pointer;border-radius:6px;transition:all .2s ease;letter-spacing:2px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 3px 8px rgba(0,0,0,.35);
+  text-shadow:0 1px 2px rgba(0,0,0,.4);
+  background-image:
+    repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(0,0,0,.04) 6px,rgba(0,0,0,.04) 7px),
+    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.02) 3px,rgba(255,255,255,.02) 4px)}
+.btn:hover{background:linear-gradient(180deg,#8B6914,#7A5C2E 40%,#6B4E25 100%);border-color:#3A2808;
+  transform:translateY(-2px);box-shadow:0 6px 16px rgba(122,92,46,.5),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn:active{transform:translateY(0);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
+.btn-sm{padding:8px 20px;font-size:.9em}
+.btn-danger{background:linear-gradient(180deg,#8B2500,#7A2000);border-color:#5C1A00}
+.btn-danger:hover{background:linear-gradient(180deg,#A03000,#8B2500);border-color:#6B1E00}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:grayscale(.6);box-shadow:none}
+
+.tutorial-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:900;animation:tutFadeIn .4s ease}
+.tutorial-card{background:linear-gradient(180deg,#FDFAF2,#F8F2E8);border:3px solid #7A5C2E;border-radius:12px;padding:40px 48px;max-width:520px;width:90%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.4);animation:tutSlideUp .5s ease;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 24px,rgba(139,105,20,.03) 24px,rgba(139,105,20,.03) 25px),
+    repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(139,105,20,.015) 40px,rgba(139,105,20,.015) 41px)}
+.tutorial-card::before{content:'';position:absolute;top:-1px;left:20px;right:20px;height:3px;background:linear-gradient(90deg,transparent,#C41E3A 20%,#C41E3A 80%,transparent);border-radius:2px}
+.tutorial-card::after{content:'';position:absolute;bottom:-1px;left:20px;right:20px;height:3px;background:linear-gradient(90deg,transparent,#C41E3A 20%,#C41E3A 80%,transparent);border-radius:2px}
+.tutorial-card .tut-title{text-align:center;font-size:1.6em;color:#5C3A21;margin-bottom:6px;letter-spacing:4px}
+.tutorial-card .tut-subtitle{text-align:center;font-size:.85em;color:#8B7355;margin-bottom:24px;letter-spacing:2px}
+.tutorial-card .tut-deco{text-align:center;margin-bottom:20px;color:#C41E3A;font-size:1.2em;letter-spacing:8px;opacity:.6}
+.tutorial-card .tut-rules{list-style:none;padding:0;margin:0 0 28px}
+.tutorial-card .tut-rules li{padding:10px 14px;margin-bottom:8px;background:rgba(92,58,33,.04);border-left:3px solid #7A5C2E;border-radius:0 4px 4px 0;font-size:.92em;color:#3C3C3C;line-height:1.7;letter-spacing:1px}
+.tutorial-card .tut-rules li .tut-rule-icon{display:inline-block;width:22px;text-align:center;margin-right:6px;color:#7A5C2E;font-weight:bold}
+.tutorial-card .tut-btn-wrap{text-align:center}
+.tutorial-card .tut-btn{background:linear-gradient(180deg,#7A5C2E,#5C421C);color:#F5F0E8;border:2px solid #4A3410;padding:12px 40px;font-size:1.05em;font-family:inherit;cursor:pointer;border-radius:4px;transition:all .2s;letter-spacing:3px;
+  box-shadow:0 3px 8px rgba(0,0,0,.3);
+  background-image:repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(0,0,0,.04) 6px,rgba(0,0,0,.04) 7px)}
+.tutorial-card .tut-btn:hover{background:linear-gradient(180deg,#8B6914,#7A5C2E);border-color:#3A2808;transform:translateY(-1px);box-shadow:0 4px 12px rgba(122,92,46,.4)}
+@keyframes tutFadeIn{0%{opacity:0}100%{opacity:1}}
+@keyframes tutSlideUp{0%{opacity:0;transform:translateY(30px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+
+.leader-select{text-align:center;padding:20px 0}
+.leader-select h2{font-size:1.8em;color:#5C3A21;margin-bottom:8px;letter-spacing:4px}
+.leader-select .subtitle{color:#8B7355;margin-bottom:24px}
+.leader-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:30px}
+.leader-card{border:2px solid #C8B898;border-radius:8px;padding:16px;cursor:pointer;transition:all .25s;
+  background:linear-gradient(180deg,#FDFAF2 0%,#F8F2E6 100%);
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 20px,rgba(139,105,20,.02) 20px,rgba(139,105,20,.02) 21px),
+    repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(139,105,20,.015) 40px,rgba(139,105,20,.015) 41px);
+  position:relative;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.leader-card::before{content:'';position:absolute;top:0;left:0;right:0;height:8px;
+  background:linear-gradient(180deg,#8B6914 0%,#C8B898 40%,rgba(200,184,152,.3) 100%);
+  border-radius:8px 8px 0 0}
+.leader-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;
+  background:linear-gradient(0deg,#8B6914 0%,#C8B898 40%,rgba(200,184,152,.3) 100%);
+  border-radius:0 0 8px 8px}
+.leader-card .scroll-line-left{position:absolute;top:8px;bottom:8px;left:4px;width:2px;
+  background:linear-gradient(180deg,transparent,#C8B898 20%,#C8B898 80%,transparent);opacity:.4;border-radius:1px}
+.leader-card .scroll-line-right{position:absolute;top:8px;bottom:8px;right:4px;width:2px;
+  background:linear-gradient(180deg,transparent,#C8B898 20%,#C8B898 80%,transparent);opacity:.4;border-radius:1px}
+.leader-card:hover{border-color:#8B6914;transform:translateY(-4px);
+  box-shadow:0 8px 24px rgba(139,105,20,.2),0 0 20px rgba(212,168,64,.15)}
+.leader-card.selected{border-color:#C41E3A;box-shadow:0 0 0 3px rgba(196,30,58,.2),0 0 20px rgba(196,30,58,.15)}
+.leader-card .era{font-size:.8em;color:#8B7355;margin-bottom:4px}
+.leader-card .name{font-size:1.3em;color:#2C2C2C;margin-bottom:6px;font-weight:bold}
+.leader-card .faction-tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.75em;color:#fff;margin-bottom:8px}
+.leader-card .ability{font-size:.9em;color:#5C3A21;background:rgba(92,58,33,.06);padding:6px 10px;border-radius:4px;
+  border-left:2px solid #8B6914}
+
+.game-header{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;
+  background:linear-gradient(180deg,#2D2D44,#3D3D54);
+  border:2px solid #4A4A6A;border-radius:8px;margin-bottom:8px;flex-wrap:wrap;gap:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.game-header .player-info{text-align:center;min-width:140px}
+.game-header .player-info .name{font-size:1em;font-weight:bold;color:#F5F0E8}
+.game-header .player-info .leader{font-size:.75em;color:#B8C9D1}
+.player-info{text-align:center;min-width:140px}
+.player-info .name{font-size:1em;font-weight:bold;color:#2C2C2C}
+.player-info .leader{font-size:.75em;color:#8B7355}
+.score-center{text-align:center;padding:0 16px}
+.score-center .rounds{font-size:.8em;color:#B8C9D1}
+.score-center .score{font-size:1.8em;font-weight:bold;color:#D4A840;letter-spacing:4px}
+.score-center .rounds-won{font-size:.8em;color:#B8C9D1;margin-top:2px}
+.provisions-bar{display:flex;align-items:center;gap:6px;font-size:.85em}
+.provisions-bar .label{color:#B8C9D1}
+.provisions-bar .pips{display:flex;gap:2px}
+.provisions-bar .pip{width:14px;height:14px;border-radius:50%;background:#D4C4A8;transition:background .3s;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.15)}
+.provisions-bar .pip.filled{background:linear-gradient(135deg,#D4A840,#B8860B)}
+.provisions-bar .pip.filled.player{background:linear-gradient(135deg,#4CAF50,#2E7D32)}
+.provisions-bar .pip.filled.ai{background:linear-gradient(135deg,#E53935,#B22222)}
+.provisions-bar .count{font-weight:bold;color:#5C3A21;min-width:30px}
+
+.battlefield{margin:6px 0;position:relative}
+.board-section{margin-bottom:4px}
+.board-section.ai-rows{opacity:.95}
+.section-label{text-align:center;font-size:.8em;color:#8B7355;padding:4px 0;letter-spacing:2px}
+.row{display:flex;align-items:center;padding:6px 10px;min-height:72px;
+  border:1px solid #D8CDB4;border-radius:4px;margin-bottom:6px;
+  background:rgba(253,250,242,.6);transition:all .2s ease}
+.row.highlight{border-color:#8B6914;background:rgba(139,105,20,.08);
+  box-shadow:0 0 8px rgba(139,105,20,.15)}
+.row.highlight:hover{background:rgba(139,105,20,.15)}
+.row-label{writing-mode:vertical-rl;font-size:.75em;color:#8B7355;min-width:28px;text-align:center;letter-spacing:3px;
+  border-right:1px solid #D8CDB4;padding-right:6px;margin-right:8px}
+.row-cards{display:flex;gap:4px;flex-wrap:wrap;flex:1;min-height:48px;align-items:center}
+.row-power{font-size:1em;font-weight:bold;color:#5C3A21;min-width:40px;text-align:right;margin-left:8px}
+.row-power .val{font-size:1.2em;
+  background:linear-gradient(135deg,#D4A840,#B8860B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:none;filter:drop-shadow(0 0 3px rgba(212,168,64,.3))}
+
+.card-mini{
+  background:linear-gradient(160deg,#FDFAF2 0%,#F5EFE0 50%,#EDE6D6 100%);
+  border:1px solid #C8B898;border-radius:4px;padding:4px 8px;min-width:70px;
+  text-align:center;position:relative;transition:all .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-mini .c-name{font-size:.7em;font-weight:bold;color:#2C2C2C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
+.card-mini .c-str{font-size:.9em;font-weight:bold;color:#5C3A21;
+  background:linear-gradient(135deg,#D4A840,#B8860B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.card-mini .c-faction-dot{position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%}
+.card-mini.has-ability{border-style:dashed}
+
+.card-back{width:40px;height:28px;
+  background:repeating-linear-gradient(45deg,#8B6914,#8B6914 2px,#A07818 2px,#A07818 4px);
+  border:1px solid #6B5010;border-radius:3px;display:inline-block}
+
+.hand-area{padding:8px 0}
+.hand-label{font-size:.85em;color:#8B7355;margin-bottom:6px;text-align:center;letter-spacing:2px}
+.hand-cards{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;min-height:80px;padding:4px}
+.hand-cards.empty{color:#B8A88A;font-style:italic;align-items:center;justify-content:center}
+
+.turn-indicator{text-align:center;padding:6px;font-size:.9em;letter-spacing:2px}
+.turn-indicator .your-turn{color:#2E7D32;font-weight:bold}
+.turn-indicator .ai-turn{color:#B22222;font-weight:bold}
+.turn-indicator .waiting{color:#8B7355}
+
+.action-bar{display:flex;justify-content:center;gap:12px;padding:8px 0;flex-wrap:wrap}
+
+.log-area{margin-top:8px;border:1px solid #D8CDB4;border-radius:4px;padding:8px;max-height:100px;
+  overflow-y:auto;background:rgba(253,250,242,.5);font-size:.75em;color:#6B5B47}
+.log-area .log-entry{padding:2px 0;border-bottom:1px solid rgba(216,205,180,.3)}
+.log-area .log-entry:last-child{border-bottom:none}
+.log-area .log-player{color:#2E7D32}
+.log-area .log-ai{color:#B22222}
+.log-area .log-system{color:#8B7355;font-style:italic}
+
+.notification{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(44,44,44,.92);color:#F5F0E8;padding:24px 48px;border-radius:8px;
+  font-size:1.5em;z-index:1000;letter-spacing:4px;text-align:center;
+  animation:notifAnim 2.5s ease-in-out forwards;pointer-events:none;
+  border:1px solid rgba(139,105,20,.3);
+  box-shadow:0 0 40px rgba(0,0,0,.3),0 0 80px rgba(139,105,20,.1)}
+@keyframes notifAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}10%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
+
+.round-result{text-align:center;padding:40px 20px}
+.round-result h2{font-size:2em;color:#5C3A21;margin-bottom:20px;
+  background:linear-gradient(180deg,#D4A840,#B8860B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.round-result .result-text{font-size:1.3em;color:#2C2C2C;margin-bottom:10px}
+.round-result .power-compare{margin:20px 0;padding:20px;
+  background:linear-gradient(180deg,#FDFAF2,#F5F0E8);
+  border:2px solid #C8B898;border-radius:8px}
+.round-result .power-row{display:flex;justify-content:space-around;margin:10px 0}
+.round-result .power-val{font-size:1.5em;font-weight:bold}
+.round-result .power-val.win{color:#2E7D32}
+.round-result .power-val.lose{color:#B22222}
+
+.game-result{text-align:center;padding:60px 20px}
+.game-result h1{font-size:2.5em;margin-bottom:20px;letter-spacing:6px}
+.game-result .victory{color:#2E7D32}
+.game-result .defeat{color:#B22222}
+.game-result .final-score{font-size:2em;color:#5C3A21;margin:20px 0;
+  background:linear-gradient(135deg,#D4A840,#B8860B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.game-result .detail{color:#8B7355;margin-bottom:30px}
+
+@keyframes cardPlay{
+  0%{transform:scale(1.3);opacity:.8}
+  40%{transform:scale(.92);opacity:1}
+  70%{transform:scale(1.05)}
+  100%{transform:scale(1)}
+}
+.card-mini.play-animation{animation:cardPlay .5s cubic-bezier(.34,1.56,.64,1)}
+
+@keyframes skillFlash{
+  0%{box-shadow:0 0 0 0 rgba(255,255,255,.8)}
+  50%{box-shadow:0 0 20px 10px rgba(255,255,255,.4)}
+  100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}
+}
+.skill-flash{animation:skillFlash .6s ease-out;position:relative}
+.skill-flash::after{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(circle,rgba(255,255,255,.6) 0%,transparent 70%);
+  animation:skillFlash .6s ease-out;pointer-events:none;border-radius:inherit;
+}
+
+@keyframes aiFlip{
+  0%{transform:rotateY(180deg) scale(0.5);opacity:0.3}
+  50%{transform:rotateY(90deg) scale(0.7)}
+  100%{transform:rotateY(0deg) scale(1);opacity:1}
+}
+.card-mini.ai-play-card{animation:aiFlip .6s ease-out}
+
+/* 领袖卡特殊样式 */
+.leader-card{position:relative;overflow:hidden}
+.leader-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(135deg,rgba(255,215,0,.08) 0%,transparent 50%,rgba(139,69,19,.05) 100%);
+  pointer-events:none}
+.leader-card .faction-tag{font-size:.75em;padding:3px 10px;border-radius:12px;color:white;font-weight:bold;letter-spacing:2px}
+.leader-card .era{font-size:.75em;color:#8B7355;margin-bottom:4px;letter-spacing:3px}
+.leader-card .name{font-size:1.3em;font-weight:bold;color:#5C3A21;margin-bottom:6px;letter-spacing:3px}
+.leader-card .ability{font-size:.85em;color:#5C3A21;background:rgba(92,58,33,.06);padding:6px 12px;border-radius:6px;border-left:3px solid #8B6914}
+
+/* === 全局过渡增强 === */
+*{transition-property:none}
+.btn,.card,.card-mini,.leader-card,.row,.hand-cards,.action-bar button,.row-power .val,.card-back-pile .card-back{transition:all .2s ease}
+
+/* === 新卡牌结构 === */
+.card{width:130px;min-height:190px;display:flex;flex-direction:column;position:relative;overflow:hidden;
+  border:2px solid #C8B898;border-radius:8px;cursor:pointer;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.card .card-faction-stripe{position:absolute;top:0;left:0;width:3px;height:100%;border-radius:8px 0 0 8px}
+.card .card-top-bar{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:.65em;position:relative;z-index:2}
+.card .card-cost-chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,#2D2D44,#3D3D54);color:#F5F0E8;font-size:.85em;font-weight:bold;
+  box-shadow:0 2px 4px rgba(0,0,0,.3);border:1.5px solid rgba(255,255,255,.15)}
+.card .card-rarity-icon{font-size:1em;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
+.card .card-illustration{flex:1;display:flex;align-items:center;justify-content:center;min-height:70px;
+  position:relative;overflow:hidden}
+.card .card-illustration svg{width:48px;height:56px;opacity:.85;filter:drop-shadow(0 1px 3px rgba(0,0,0,.1))}
+.card .card-illustration::after{content:'';position:absolute;bottom:0;left:0;right:0;height:30%;
+  background:linear-gradient(0deg,rgba(0,0,0,.04) 0%,transparent 100%);pointer-events:none}
+.card .card-name{padding:4px 8px 2px;font-family:'Noto Serif SC','STKaiti','KaiTi',serif;font-size:.82em;font-weight:700;
+  text-align:center;color:#2C2C2C;line-height:1.3}
+.card .card-tags{display:flex;justify-content:center;gap:4px;padding:2px 6px;flex-wrap:wrap}
+.card .card-type-tag{font-size:.55em;padding:1px 6px;border-radius:8px;color:#fff;letter-spacing:1px;
+  background:rgba(45,45,68,.7)}
+.card .card-faction-tag{font-size:.55em;padding:1px 6px;border-radius:8px;color:#fff;letter-spacing:1px}
+.card .card-ability{font-size:.55em;font-family:'Noto Serif SC','STKaiti','KaiTi',serif;text-align:center;color:#5C3A21;
+  padding:3px 8px;background:rgba(92,58,33,.04);margin:0 6px;border-radius:3px;min-height:24px;
+  display:flex;align-items:center;justify-content:center;
+  border-left:2px solid rgba(139,105,20,.15);line-height:1.4}
+.card .card-stats-bar{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;
+  border-top:1px dashed rgba(139,115,85,.3);margin-top:auto}
+.card .card-atk{display:flex;align-items:center;gap:3px;font-size:.65em;font-weight:bold;color:#C83C3C}
+.card .card-atk::before{content:'⚔';font-size:.9em;opacity:.7}
+.card .card-sep{width:1px;height:14px;background:rgba(139,115,85,.3)}
+.card .card-def{display:flex;align-items:center;gap:3px;font-size:.65em;font-weight:bold;color:#3D6B8E}
+.card .card-def::before{content:'♥';font-size:.9em;opacity:.7}
+
+/* === 稀有度边框升级 === */
+/* common: 单线细框 #4A4A6A，无装饰 */
+.card.rarity-common,.card.card-rarity-gray{border:1px solid #4A4A6A;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+/* rare: 双线框 #3D6B8E，角落云气纹 */
+.card.rarity-rare,.card.card-rarity-blue{border:2px double #3D6B8E;box-shadow:0 0 8px rgba(61,107,142,.25),inset 0 0 8px rgba(61,107,142,.06)}
+.card.rarity-rare::before,.card.card-rarity-blue::before{content:'﹃';position:absolute;bottom:-2px;right:2px;font-size:12px;
+  color:rgba(61,107,142,.25);pointer-events:none;z-index:3;font-style:normal;font-family:serif;line-height:1}
+.card.rarity-rare::after,.card.card-rarity-blue::after{content:'﹃';position:absolute;top:-2px;left:2px;font-size:12px;
+  color:rgba(61,107,142,.25);pointer-events:none;z-index:3;font-style:normal;font-family:serif;line-height:1;
+  transform:rotate(180deg)}
+/* epic: 双线框 + 内嵌线 #D4A84B，角落莲花纹 ❀，边框金色光晕 */
+.card.rarity-epic,.card.card-rarity-purple{border:2px double #D4A84B;box-shadow:0 0 14px rgba(212,168,64,.35),inset 0 0 12px rgba(212,168,64,.08)}
+.card.rarity-epic::before,.card.card-rarity-purple::before{content:'❀';position:absolute;bottom:-1px;right:1px;font-size:11px;
+  color:rgba(212,168,64,.45);pointer-events:none;z-index:3;text-shadow:0 0 4px rgba(212,168,64,.3)}
+.card.rarity-epic::after,.card.card-rarity-purple::after{content:'❀';position:absolute;top:-1px;left:1px;font-size:11px;
+  color:rgba(212,168,64,.45);pointer-events:none;z-index:3;text-shadow:0 0 4px rgba(212,168,64,.3)}
+.card.rarity-epic:hover,.card.card-rarity-purple:hover{box-shadow:0 0 20px rgba(212,168,64,.5),inset 0 0 14px rgba(212,168,64,.12)}
+/* legendary: 多层复杂边框 #C83C3C + #D4A84B，角落瑞兽纹，动态呼吸光效 */
+.card.rarity-legendary,.card.card-rarity-gold{border:2.5px solid #C83C3C;
+  box-shadow:0 0 14px rgba(200,60,60,.35),0 0 24px rgba(212,168,64,.25),inset 0 0 18px rgba(212,168,64,.1);
+  animation:legendaryBreath 2.5s ease-in-out infinite}
+.card.rarity-legendary::before,.card.card-rarity-gold::before{content:'龙';position:absolute;bottom:-1px;right:1px;font-size:10px;
+  color:rgba(200,60,60,.5);pointer-events:none;z-index:3;font-weight:bold;
+  text-shadow:0 0 6px rgba(212,168,64,.4),0 0 2px rgba(200,60,60,.3)}
+.card.rarity-legendary::after,.card.card-rarity-gold::after{content:'凤';position:absolute;top:-1px;left:1px;font-size:10px;
+  color:rgba(212,168,64,.55);pointer-events:none;z-index:3;font-weight:bold;
+  text-shadow:0 0 6px rgba(200,60,60,.4),0 0 2px rgba(212,168,64,.4)}
+.card.rarity-legendary:hover,.card.card-rarity-gold:hover{animation:legendaryPulse 1.5s ease-in-out infinite;box-shadow:0 0 24px rgba(200,60,60,.55),0 0 40px rgba(212,168,64,.45)}
+@keyframes legendaryBreath{0%,100%{box-shadow:0 0 10px rgba(200,60,60,.2),0 0 18px rgba(212,168,64,.15)}50%{box-shadow:0 0 22px rgba(200,60,60,.45),0 0 36px rgba(212,168,64,.35)}}
+@keyframes legendaryPulse{0%,100%{box-shadow:0 0 14px rgba(200,60,60,.35),0 0 24px rgba(212,168,64,.25)}50%{box-shadow:0 0 28px rgba(200,60,60,.55),0 0 44px rgba(212,168,64,.45)}}
+
+/* === 卡牌悬停增强 === */
+.card:hover{transform:translateY(-10px);box-shadow:0 18px 36px rgba(0,0,0,.22),0 0 18px var(--faction-glow,rgba(212,168,64,.25))}
+.card.selected{transform:translateY(-10px) scale(1.03);box-shadow:0 18px 36px rgba(0,0,0,.22),0 0 0 3px var(--faction-color,#C41E3A),0 0 24px var(--faction-glow,rgba(196,30,58,.35))}
+.card.unplayable{opacity:.4;cursor:not-allowed;transform:none !important;box-shadow:none !important}
+.card:not(.unplayable):not(.selected){animation:playablePulse 2.5s ease-in-out infinite}
+@keyframes playablePulse{0%,100%{box-shadow:0 2px 6px rgba(0,0,0,.08)}50%{box-shadow:0 2px 6px rgba(0,0,0,.08),0 0 10px var(--faction-glow,rgba(212,168,64,.2))}}
+
+/* === 阵营背景色增强 === */
+.card.faction-song{background:linear-gradient(135deg,#FDF5F5,#F8E8EA 50%,#F2DDE0);box-shadow:inset 0 0 12px rgba(200,60,60,.06),0 2px 6px rgba(200,60,60,.08)}
+.card.faction-qi{background:linear-gradient(135deg,#F0F4FA,#E4EAF4 50%,#D8E2EE);box-shadow:inset 0 0 12px rgba(61,107,142,.06),0 2px 6px rgba(61,107,142,.08)}
+.card.faction-liang{background:linear-gradient(135deg,#F0F4FA,#E4EAF4 50%,#D8E2EE);box-shadow:inset 0 0 12px rgba(61,107,142,.06),0 2px 6px rgba(61,107,142,.08)}
+.card.faction-chen{background:linear-gradient(135deg,#F0F4FA,#E4EAF4 50%,#D8E2EE);box-shadow:inset 0 0 12px rgba(61,107,142,.06),0 2px 6px rgba(61,107,142,.08)}
+.card.faction-beiwei{background:linear-gradient(135deg,#FDF8ED,#F0EAD8 50%,#E8DFC8);box-shadow:inset 0 0 12px rgba(139,105,20,.06),0 2px 6px rgba(139,105,20,.08)}
+.card.faction-dongwei{background:linear-gradient(135deg,#FDF8ED,#F0EAD8 50%,#E8DFC8);box-shadow:inset 0 0 12px rgba(139,105,20,.06),0 2px 6px rgba(139,105,20,.08)}
+.card.faction-xiwei{background:linear-gradient(135deg,#FDF8ED,#F0EAD8 50%,#E8DFC8);box-shadow:inset 0 0 12px rgba(139,105,20,.06),0 2px 6px rgba(139,105,20,.08)}
+.card.faction-beiqi{background:linear-gradient(135deg,#F5F5FA,#EDEDF2 50%,#E5E3EC);box-shadow:inset 0 0 12px rgba(61,79,95,.06),0 2px 6px rgba(61,79,95,.08)}
+.card.faction-beizhou{background:linear-gradient(135deg,#F5F5FA,#EDEDF2 50%,#E5E3EC);box-shadow:inset 0 0 12px rgba(61,79,95,.06),0 2px 6px rgba(61,79,95,.08)}
+.card.faction-common{background:linear-gradient(135deg,#F8F6F2,#F5F3EE 50%,#EDE8E0);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+
+/* === 战场/棋盘增强 === */
+.battlefield{position:relative;
+  background:linear-gradient(180deg,rgba(245,240,232,.95) 0%,rgba(237,228,212,.9) 100%);
+  border:1px solid rgba(139,115,85,.2);border-radius:8px;padding:10px;margin:8px 0;
+  box-shadow:inset 0 2px 12px rgba(0,0,0,.05),0 1px 4px rgba(0,0,0,.06)}
+.battlefield::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:
+    radial-gradient(ellipse 80% 25% at 30% 20%,rgba(61,107,142,.04) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 20% at 70% 80%,rgba(200,60,60,.03) 0%,transparent 70%),
+    radial-gradient(ellipse 90% 12% at 50% 50%,rgba(139,115,85,.05) 0%,transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80'%3E%3Cpath d='M0,80 Q50,40 100,55 Q150,20 200,45 Q250,10 300,35 Q350,25 400,50 L400,80Z' fill='%238B7355' opacity='.04'/%3E%3Cpath d='M0,80 Q80,50 160,60 Q240,30 320,55 Q380,40 400,60 L400,80Z' fill='%236B5B45' opacity='.03'/%3E%3C/svg%3E") center bottom / 100% 80px no-repeat,
+    radial-gradient(ellipse 60% 20% at 20% 90%,rgba(139,115,85,.06) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 15% at 80% 85%,rgba(139,115,85,.05) 0%,transparent 70%),
+    radial-gradient(ellipse 80% 10% at 50% 95%,rgba(139,115,85,.07) 0%,transparent 60%);
+  pointer-events:none;border-radius:8px}
+.battlefield::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;
+  background:linear-gradient(0deg,rgba(60,50,40,.06) 0%,transparent 100%);
+  border-radius:0 0 8px 8px;pointer-events:none}
+.board-section{position:relative}
+.section-label{text-align:center;font-size:.8em;color:#8B7355;padding:6px 0;letter-spacing:3px;
+  font-family:'Noto Sans SC',sans-serif;font-weight:500;position:relative}
+.section-label::before,.section-label::after{content:'';position:absolute;top:50%;
+  width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(139,115,85,.4))}
+.section-label::before{left:calc(50% - 120px)}
+.section-label::after{right:calc(50% - 120px)}
+.decorative-line{height:4px;background:linear-gradient(90deg,transparent 2%,#8B6914 15%,#C83C3C 30%,#D4A84B 50%,#C83C3C 70%,#8B6914 85%,transparent 98%);
+  margin:12px 0;border-radius:2px;position:relative;box-shadow:0 0 8px rgba(139,105,20,.2)}
+.decorative-line::before{content:'';position:absolute;top:-3px;left:0;right:0;height:10px;
+  background:linear-gradient(90deg,transparent 5%,rgba(200,184,152,.25) 25%,rgba(200,184,152,.25) 75%,transparent 95%);
+  border-radius:5px}
+.decorative-line::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:10px;
+  background:linear-gradient(90deg,transparent 5%,rgba(200,184,152,.15) 25%,rgba(200,184,152,.15) 75%,transparent 95%);
+  border-radius:5px}
+.board-section.ai-rows{position:relative}
+.board-section.ai-rows::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(139,115,85,.3),transparent)}
+.row{background:linear-gradient(135deg,rgba(253,250,242,.7) 0%,rgba(245,240,232,.5) 100%);
+  border:1px solid rgba(216,205,180,.5);border-radius:6px;min-height:72px;
+  box-shadow:inset 0 1px 3px rgba(255,255,255,.5),0 1px 2px rgba(0,0,0,.03);
+  margin-bottom:6px}
+.row.highlight{border-color:rgba(139,105,20,.4);background:linear-gradient(135deg,rgba(139,105,20,.06) 0%,rgba(212,168,64,.04) 100%);
+  box-shadow:0 0 10px rgba(139,105,20,.12),inset 0 1px 3px rgba(255,255,255,.5)}
+
+/* === 对手手牌计数 === */
+.opponent-hand-pile{display:flex;align-items:center;gap:10px;justify-content:center;padding:6px 0}
+.card-back-pile{position:relative;width:56px;height:38px}
+.card-back-pile .card-back{position:absolute;width:40px;height:26px;
+  background:repeating-linear-gradient(45deg,#8B6914,#8B6914 2px,#A07818 2px,#A07818 4px);
+  border:1px solid #6B5010;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.card-back-pile .card-back:nth-child(1){transform:rotate(-4deg);z-index:1}
+.card-back-pile .card-back:nth-child(2){transform:rotate(1deg);z-index:2;left:5px;top:3px}
+.card-back-pile .card-back:nth-child(3){transform:rotate(-1.5deg);z-index:3;left:10px;top:1px}
+.card-back-count{position:absolute;z-index:4;right:-10px;top:-10px;
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#C83C3C,#A03020);
+  color:#fff;font-size:.8em;font-weight:bold;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.25);
+  font-family:'Noto Sans SC',sans-serif !important;line-height:1 !important;padding:0 !important;margin:0 !important}
+
+/* === 按钮增强 === */
+.btn{height:44px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.3);transition:all .2s ease;
+  font-family:'Noto Sans SC',sans-serif;font-weight:500;letter-spacing:2px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.btn:active{transform:translateY(0);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
+.btn-primary{background:linear-gradient(180deg,#C83C3C,#A03020 40%,#8B2500);border-color:#6B1E00;color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.btn-primary:hover{background:linear-gradient(180deg,#D44444,#C83C3C 40%,#A03020);border-color:#8B2500;
+  box-shadow:0 6px 16px rgba(200,60,60,.35)}
+.btn-secondary{background:linear-gradient(180deg,#3D3D54,#2D2D44 40%,#1D1D34);border-color:#1A1A2E;color:#F5F0E8;
+  text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.btn-secondary:hover{background:linear-gradient(180deg,#4D4D64,#3D3D54 40%,#2D2D44);border-color:#2D2D44}
+.btn-sm{height:36px;padding:6px 18px;font-size:.85em}
+.btn-pass{background:linear-gradient(180deg,#6B5B47,#5C4E3A 40%,#4A3E30);border-color:#3C3228;color:#D8CDB4;
+  text-shadow:0 1px 1px rgba(0,0,0,.2)}
+.btn-pass:hover{background:linear-gradient(180deg,#7B6B57,#6B5B47 40%,#5C4E3A);box-shadow:0 6px 16px rgba(107,91,71,.3)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:grayscale(.6);box-shadow:none}
+
+/* === 手牌区域增强 === */
+.hand-area{padding:10px 0}
+.hand-label{font-size:.85em;color:#8B7355;margin-bottom:8px;text-align:center;letter-spacing:3px;
+  font-family:'Noto Sans SC',sans-serif;font-weight:500}
+.hand-cards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:80px;padding:8px}
+
+/* === 菜单按钮增强 === */
+.menu-screen .btn{height:50px;font-size:1.15em;padding:14px 44px}
+
+/* === 响应式 === */
+@media(max-width:768px){
+  .card{width:110px;min-height:170px}
+  .card .card-illustration svg{width:38px;height:46px}
+  .hand-cards{gap:8px}
+  .row{min-height:64px}
+  .battlefield{padding:8px}
+  .decorative-line{margin:8px 0}
+  .game-header{flex-direction:column;gap:8px}
+  .game-header .player-info{min-width:120px}
+  .score-center{padding:8px 0}
+  .btn{height:42px;font-size:1em}
+  .card-back-pile .card-back{width:34px;height:22px}
+  .opponent-hand-pile{gap:8px}
+}
+@media(max-width:480px){
+  .card{width:100px;min-height:160px}
+  .card .card-illustration svg{width:32px;height:40px}
+  .card .card-ability{font-size:.5em;min-height:20px}
+  .row{min-height:56px;padding:4px 6px}
+  .hand-cards{gap:6px}
+  .btn{height:40px;font-size:.9em;padding:10px 20px}
+  .leader-grid{grid-template-columns:1fr}
+  .menu-title{font-size:2em;letter-spacing:4px}
+  .menu-seal{width:64px;height:64px;font-size:16px}
+}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const ROW_NAMES={infantry:'步兵',cavalry:'骑兵',navy:'水军',strategy:'谋略'};
+
+const ROW_ICONS={
+infantry:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M16 18L5 22V30L16 36L27 30V22Z" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><path d="M16 22L9 24V28.5L16 32L23 28.5V24Z" stroke="currentColor" stroke-width="1" fill="none" opacity=".25"/><line x1="6" y1="2" x2="22" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><line x1="26" y1="2" x2="10" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><path d="M9 6L13 9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".3"/><path d="M23 6L19 9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".3"/><circle cx="16" cy="9" r="1.5" fill="currentColor" opacity=".3"/><path d="M3 5L5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".3"/><path d="M29 5L27 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".3"/></svg>`,
+cavalry:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M8 12Q6 8 10 5L14 3L18 5L22 3Q26 5 25 9L24 12" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><path d="M10 5L6 8L4 12L3 16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/><path d="M24 12L26 16L28 20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/><circle cx="25" cy="7" r="1.5" fill="currentColor" opacity=".35"/><path d="M12 14L22 14L26 22L28 30L24 34L16 36L8 34L4 30L6 22Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".4"/><path d="M4 30L2 36" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".3"/><path d="M12 14L10 22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".3"/><path d="M22 14L24 22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".3"/><path d="M28 30L30 36" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".3"/><path d="M10 26L24 26" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".2"/><path d="M14 16Q18 12 22 16" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".2"/><ellipse cx="16" cy="38" rx="10" ry="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".2"/></svg>`,
+navy:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M16 4L16 28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".5"/><path d="M16 4L28 16L16 16Z" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><path d="M16 7L5 17L16 17Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".35"/><path d="M16 4L17 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".4"/><path d="M14 10L20 10" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".2"/><path d="M6 30Q10 26 14 30Q18 26 22 30Q26 26 28 30" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".5"/><path d="M3 34Q8 30 13 34Q18 30 23 34Q28 30 30 34" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".35"/><path d="M0 38Q6 34 12 38Q18 34 24 38Q30 34 32 38" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".2"/><circle cx="16" cy="4" r="2" fill="currentColor" opacity=".25"/></svg>`,
+strategy:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M7 8Q7 3 12 3L20 3Q25 3 25 8L25 33Q25 38 20 38L12 38Q7 38 7 33Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><path d="M11 3L11 38" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".25"/><path d="M9 6L11 3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".35"/><path d="M9 35L11 38" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".35"/><path d="M14 10L23 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".4"/><path d="M14 15L23 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".35"/><path d="M14 20L21 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".3"/><path d="M14 25L20 25" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".25"/><path d="M14 30L18 30" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".2"/><path d="M2 14Q1 16 3 17L5 18" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".3"/><path d="M30 14Q31 16 29 17L27 18" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".3"/><path d="M24 8L27 6L30 8" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" opacity=".2"/></svg>`,
+weather:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M6 16Q3 12 7 8Q11 4 16 8Q21 4 25 8Q29 12 26 16Q29 20 26 24Q22 28 16 24Q10 28 6 24Q3 20 6 16Z" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><path d="M10 12Q13 8 17 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".35"/><path d="M12 18Q15 14 19 18" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".25"/><path d="M16 6L14 12L17 10L15 18L18 15L14 24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><path d="M14 24L16 30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".4"/><path d="M16 30L13 36" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".3"/><path d="M8 28Q6 26 8 24" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".2"/><path d="M24 26Q26 24 24 22" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".2"/><path d="M4 14Q2 13 4 11" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" opacity=".15"/><path d="M28 14Q30 13 28 11" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" opacity=".15"/></svg>`,
+commander:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M8 4L16 2L24 4L22 18L16 16L10 18Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><path d="M16 2L16 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".45"/><path d="M10 18L16 16L22 18" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".3"/><path d="M6 22Q4 26 6 30L10 34L16 38L22 34L26 30Q28 26 26 22L22 18L16 16L10 18Z" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/><path d="M10 26L22 26" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".3"/><path d="M12 30L20 30" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".25"/><path d="M14 34L18 34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".2"/><path d="M16 20L16 34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".15"/><path d="M6 6L4 4M26 6L28 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".3"/><path d="M8 8L5 8M24 8L27 8" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".2"/></svg>`
+};
+
+function getCardCategory(card){
+  if(!card.ability) return 'commander';
+  const t=card.ability.split(':')[0];
+  if(t==='boost_row'||t==='weaken_row'||t==='discard'||t==='combo_boost'||t==='destroy'||t==='resurrect'||t==='protect'||t==='spy'||t==='draw_extra') return 'strategy';
+  if(t==='draw'||t==='gain_provisions') return 'weather';
+  return 'commander';
+}
+
+function getCardRarity(card){
+  if(card.strength>=8) return 'gold';
+  if(card.strength>=6) return 'purple';
+  if(card.strength>=4) return 'blue';
+  return 'gray';
+}
+
+function getCategoryIcon(card){
+  return ROW_ICONS[getCardCategory(card)];
+}
+
+const FACTIONS={
+common:{name:'公用',color:'#4A4A6A',bg:'#F5F0E8'},
+song:{name:'宋',color:'#C83C3C',bg:'#F8E8EA'},
+qi:{name:'齐',color:'#3D6B8E',bg:'#E4EAF4'},
+liang:{name:'梁',color:'#3D6B8E',bg:'#E4EAF4'},
+chen:{name:'陈',color:'#3D6B8E',bg:'#E4EAF4'},
+beiwei:{name:'北魏',color:'#8B6914',bg:'#F0EAD8'},
+dongwei:{name:'东魏',color:'#8B6914',bg:'#F0EAD8'},
+xiwei:{name:'西魏',color:'#8B6914',bg:'#F0EAD8'},
+beiqi:{name:'北齐',color:'#3D4F5F',bg:'#EDEDF2'},
+beizhou:{name:'北周',color:'#3D4F5F',bg:'#EDEDF2'}
+};
+
+const CARDS_DATA=[
+{id:100,name:'斥候',faction:'common',strength:2,row:'infantry',ability:null,desc:'探听敌情'},
+{id:101,name:'民兵',faction:'common',strength:3,row:'infantry',ability:null,desc:'保家卫国'},
+{id:102,name:'弓箭手',faction:'common',strength:4,row:'cavalry',ability:null,desc:'远程射击'},
+{id:103,name:'辎重',faction:'common',strength:1,row:'navy',ability:'gain_provisions:1',desc:'补给粮草+1'},
+{id:104,name:'谋士',faction:'common',strength:2,row:'strategy',ability:'draw:1',desc:'运筹帷幄，抽1牌'},
+{id:105,name:'刺客',faction:'common',strength:5,row:'cavalry',ability:'discard:1',desc:'暗杀行动，对手弃1牌'},
+{id:106,name:'弩手',faction:'common',strength:6,row:'cavalry',ability:null,desc:'强弓劲弩'},
+{id:107,name:'盾兵',faction:'common',strength:3,row:'infantry',ability:'boost_row:1',desc:'盾阵，本行+1'},
+{id:108,name:'轻骑',faction:'common',strength:4,row:'cavalry',ability:null,desc:'轻骑突进'},
+{id:109,name:'传令',faction:'common',strength:1,row:'strategy',ability:'draw:1',desc:'传令兵，抽1牌'},
+{id:1,name:'刘裕',faction:'song',strength:6,row:'infantry',ability:'ambush:3',desc:'突袭！首回合步兵+3'},
+{id:2,name:'檀道济',faction:'song',strength:7,row:'infantry',ability:null,desc:'唱筹量沙，名将'},
+{id:3,name:'沈庆之',faction:'song',strength:5,row:'infantry',ability:'boost_row:1',desc:'老兵名将，本行+1'},
+{id:4,name:'到彦之',faction:'song',strength:4,row:'infantry',ability:'command:2',desc:'军令如山，弃最弱牌抽2'},
+{id:5,name:'谢晦',faction:'song',strength:3,row:'strategy',ability:'draw:1',desc:'谋略过人，抽1牌'},
+{id:6,name:'萧道成',faction:'qi',strength:5,row:'infantry',ability:null,desc:'齐高帝，雄主'},
+{id:7,name:'王俭',faction:'qi',strength:4,row:'strategy',ability:'control:1',desc:'离间计，对手最强行-1'},
+{id:8,name:'褚渊',faction:'qi',strength:3,row:'strategy',ability:'skirmish:0',desc:'书谋，跳过对手一回合'},
+{id:9,name:'崔祖思',faction:'qi',strength:5,row:'infantry',ability:'weaken_row:1',desc:'削弱对手一行-1'},
+{id:10,name:'王僧虔',faction:'qi',strength:6,row:'cavalry',ability:null,desc:'书法传家，名士'},
+{id:11,name:'萧衍',faction:'liang',strength:7,row:'navy',ability:null,desc:'梁武帝，崇佛'},
+{id:12,name:'韦睿',faction:'liang',strength:6,row:'infantry',ability:'shield:1',desc:'佛光普照，全场+1'},
+{id:13,name:'陈庆之',faction:'liang',strength:8,row:'cavalry',ability:null,desc:'白袍战神，名垂千古'},
+{id:14,name:'羊侃',faction:'liang',strength:5,row:'navy',ability:'navy_boost:2',desc:'水攻，水军+2'},
+{id:15,name:'侯景',faction:'liang',strength:4,row:'infantry',ability:'discard:1',desc:'乱臣贼子，对手弃1牌'},
+{id:16,name:'陈霸先',faction:'chen',strength:6,row:'infantry',ability:null,desc:'陈武帝，开国'},
+{id:17,name:'吴明彻',faction:'chen',strength:7,row:'infantry',ability:null,desc:'南朝名将，北伐'},
+{id:18,name:'侯瑱',faction:'chen',strength:5,row:'navy',ability:'farm:2',desc:'屯田，每回合+2粮草'},
+{id:19,name:'章昭达',faction:'chen',strength:4,row:'infantry',ability:'fortify:1',desc:'坚壁清野，本行+1'},
+{id:20,name:'黄法氍',faction:'chen',strength:3,row:'navy',ability:'gain_provisions:1',desc:'筹措粮草，+1'},
+{id:21,name:'拓跋焘',faction:'beiwei',strength:8,row:'cavalry',ability:null,desc:'太武帝，统一北方'},
+{id:22,name:'崔浩',faction:'beiwei',strength:5,row:'strategy',ability:'weaken_row:2',desc:'军师，对手一行-2'},
+{id:23,name:'尔朱荣',faction:'beiwei',strength:7,row:'cavalry',ability:null,desc:'权臣，骁勇善战'},
+{id:24,name:'贺拔岳',faction:'beiwei',strength:6,row:'cavalry',ability:'flex:0',desc:'铁骑纵横，骑兵任意行'},
+{id:25,name:'奚康生',faction:'beiwei',strength:4,row:'cavalry',ability:'assimilate:0',desc:'汉化，吸收对手一张牌'},
+{id:26,name:'高欢',faction:'dongwei',strength:7,row:'infantry',ability:null,desc:'神武帝，雄主'},
+{id:27,name:'高澄',faction:'dongwei',strength:5,row:'strategy',ability:'gain_provisions:2',desc:'富国强兵，+2粮草'},
+{id:28,name:'慕容绍宗',faction:'dongwei',strength:6,row:'infantry',ability:'armor:1',desc:'坚甲，所有友方+1'},
+{id:29,name:'高岳',faction:'dongwei',strength:4,row:'infantry',ability:'siege:2',desc:'围城，对手最强行-2'},
+{id:30,name:'刘丰',faction:'dongwei',strength:3,row:'navy',ability:'draw:1',desc:'水军将领，抽1牌'},
+{id:31,name:'宇文泰',faction:'xiwei',strength:8,row:'infantry',ability:null,desc:'大冢宰，八柱国'},
+{id:32,name:'李虎',faction:'xiwei',strength:6,row:'cavalry',ability:'coordinate:1',desc:'联防，同阵营相邻+1'},
+{id:33,name:'侯莫陈崇',faction:'xiwei',strength:5,row:'cavalry',ability:'boost_row:1',desc:'骁勇，本行+1'},
+{id:34,name:'赵贵',faction:'xiwei',strength:4,row:'infantry',ability:'ambush_card:0',desc:'伏兵，藏一张牌'},
+{id:35,name:'独孤信',faction:'xiwei',strength:5,row:'strategy',ability:null,desc:'八柱国，美男子'},
+{id:36,name:'高洋',faction:'beiqi',strength:8,row:'cavalry',ability:null,desc:'文宣帝，疯癫天才'},
+{id:37,name:'斛律光',faction:'beiqi',strength:7,row:'cavalry',ability:'crit:0',desc:'暴击，随机消灭对手一张'},
+{id:38,name:'兰陵王',faction:'beiqi',strength:6,row:'cavalry',ability:'berserk:0',desc:'狂攻！战力翻倍但下回合-2'},
+{id:39,name:'段韶',faction:'beiqi',strength:5,row:'infantry',ability:'boost_row:2',desc:'名将，本行+2'},
+{id:40,name:'傅伏',faction:'beiqi',strength:4,row:'infantry',ability:null,desc:'忠臣守城'},
+{id:41,name:'宇文邕',faction:'beizhou',strength:7,row:'cavalry',ability:null,desc:'周武帝，雄才大略'},
+{id:42,name:'韦孝宽',faction:'beizhou',strength:6,row:'infantry',ability:'unify:0',desc:'统一之势，每出一张辅助类+0.5全局'},
+{id:43,name:'于翼',faction:'beizhou',strength:5,row:'cavalry',ability:'anti_south:3',desc:'灭陈，对南朝阵营+3'},
+{id:44,name:'辛威',faction:'beizhou',strength:4,row:'infantry',ability:'draw:1',desc:'勇将，抽1牌'},
+{id:45,name:'梁士彦',faction:'beizhou',strength:3,row:'navy',ability:'discard:1',desc:'猛将，对手弃1牌'},
+{id:46,name:'宋军旗',faction:'song',strength:2,row:'infantry',ability:'combo_boost:2',desc:'连携，友方连携+2'},
+{id:47,name:'铁鹞子',faction:'beiwei',strength:3,row:'cavalry',ability:'destroy:1',desc:'拆牌，消灭对手1张'},
+{id:48,name:'舍利',faction:'liang',strength:1,row:'strategy',ability:'resurrect:1',desc:'回收，从墓地拉1张'},
+{id:49,name:'铁甲',faction:'dongwei',strength:2,row:'infantry',ability:'protect:1',desc:'护盾，获得1点护甲'},
+{id:50,name:'细作',faction:'beiqi',strength:1,row:'strategy',ability:'spy:1',desc:'间谍，查看并弃对手1张'},
+{id:110,name:'过牌',faction:'common',strength:1,row:'strategy',ability:'draw_extra:2',desc:'运筹，额外抽2张牌'},
+{id:111,name:'连环计',faction:'common',strength:2,row:'strategy',ability:'destroy:1',desc:'连环计，消灭对手1张'},
+{id:112,name:'暗度陈仓',faction:'common',strength:1,row:'strategy',ability:'spy:1',desc:'暗度陈仓，间谍行动'}
+];
+
+const LEADERS_DATA=[
+{id:1,name:'宋武帝刘裕',faction:'song',ability:{type:'row_boost',row:'infantry',value:2},desc:'本局步兵战力+2',era:'南朝·宋'},
+{id:2,name:'齐高帝萧道成',faction:'qi',ability:{type:'extra_draw',value:2},desc:'每局多抽2张牌',era:'南朝·齐'},
+{id:3,name:'梁武帝萧衍',faction:'liang',ability:{type:'row_boost',row:'navy',value:2},desc:'本局水军战力+2',era:'南朝·梁'},
+{id:4,name:'陈武帝陈霸先',faction:'chen',ability:{type:'extra_provisions',value:3},desc:'每局粮草+3',era:'南朝·陈'},
+{id:5,name:'北魏太武帝拓跋焘',faction:'beiwei',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',era:'北朝·北魏'},
+{id:6,name:'东魏孝静帝元善见',faction:'dongwei',ability:{type:'opponent_discard',value:1},desc:'每局对手弃1张牌',era:'北朝·东魏'},
+{id:7,name:'西魏文帝元宝炬',faction:'xiwei',ability:{type:'all_boost',value:1},desc:'本局全军战力+1',era:'北朝·西魏'},
+{id:8,name:'北齐文宣帝高洋',faction:'beiqi',ability:{type:'extra_draw',value:1},desc:'每局多抽1张牌',era:'北朝·北齐'},
+{id:9,name:'北周武帝宇文邕',faction:'beizhou',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',era:'北朝·北周'}
+];
+
+let uid=0;
+function makeCard(c){return{...c,uid:++uid}}
+function getCardCost(s){return Math.ceil(s/3)}
+
+window.G={
+phase:'menu',round:0,scores:[0,0],
+playerLeader:null,aiLeader:null,
+playerDeck:[],aiDeck:[],
+playerHand:[],aiHand:[],
+playerBoard:{infantry:[],cavalry:[],navy:[],strategy:[]},
+aiBoard:{infantry:[],cavalry:[],navy:[],strategy:[]},
+provisions:[8,8],
+currentTurn:'player',
+playerPassed:false,aiPassed:false,
+selectedCard:null,logs:[],turnCount:0,
+globalBuffs:{playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null},
+graveyard:[],
+mulliganSelected:new Set(),
+leaderAbilityUsed:[false,false]
+};
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function buildDeck(faction){
+  const fc=CARDS_DATA.filter(c=>c.faction===faction);
+  const commonCards=CARDS_DATA.filter(c=>c.faction==='common');
+  shuffle(commonCards);
+  const deck=[...fc,...commonCards];
+  shuffle(deck);
+  return deck.map(c=>makeCard(c));
+}
+
+function applyLeaderDeckAbility(leader,deck){
+  const a=leader.ability;
+  if(a.type==='row_boost') deck.forEach(c=>{if(c.row===a.row)c.strength+=a.value});
+  if(a.type==='all_boost') deck.forEach(c=>c.strength+=a.value);
+}
+
+function applyRoundStartAbilities(){
+  applyLeaderAbilityForRound(G.playerLeader,0);
+  applyLeaderAbilityForRound(G.aiLeader,1);
+}
+
+function applyLeaderAbilityForRound(leader,playerIdx){
+  if(!leader)return;
+  const a=leader.ability;
+  if(a.type==='extra_draw') drawCards(playerIdx,a.value);
+  if(a.type==='extra_provisions') G.provisions[playerIdx]+=a.value;
+  if(a.type==='opponent_discard'){
+    const opp=1-playerIdx;
+    const h=getHand(opp);
+    for(let i=0;i<a.value&&h.length>0;i++){
+      const idx=Math.floor(Math.random()*h.length);
+      addLog(`【${leader.name}】效果：${opp===0?'你':'AI'}弃掉了${h[idx].name}`);
+      h.splice(idx,1);
+    }
+  }
+}
+
+function getHand(p){return p===0?G.playerHand:G.aiHand}
+function getDeck(p){return p===0?G.playerDeck:G.aiDeck}
+function getBoard(p){return p===0?G.playerBoard:G.aiBoard}
+
+function drawCards(playerIdx,count){
+  const hand=getHand(playerIdx);
+  const deck=getDeck(playerIdx);
+  for(let i=0;i<count&&hand.length<10&&deck.length>0;i++) hand.push(deck.shift());
+}
+
+function getRowPower(cards,playerIdx){
+  const buffs=G.globalBuffs;
+  const armor=playerIdx===0?buffs.playerArmor:buffs.aiArmor;
+  const unify=playerIdx===0?buffs.playerUnify:buffs.aiUnify;
+  return cards.reduce((s,c)=>s+Math.max(1,c.strength+armor+Math.floor(unify*0.5)),0);
+}
+function getBoardPower(board,playerIdx){return getRowPower(board.infantry,playerIdx)+getRowPower(board.cavalry,playerIdx)+getRowPower(board.navy,playerIdx)+getRowPower(board.strategy,playerIdx)}
+
+function weakestOpponentRow(opponentBoard,oppIdx){
+  const rows=['infantry','cavalry','navy','strategy'];
+  let min=Infinity,wk='infantry';
+  rows.forEach(r=>{const p=getRowPower(opponentBoard[r],oppIdx);if(p<min){min=p;wk=r}});
+  return wk;
+}
+
+function triggerAbility(card,playerIdx){
+  if(!card.ability)return;
+  const[t,v]=card.ability.split(':');
+  const n=parseInt(v);
+  const opp=1-playerIdx;
+  const myBoard=getBoard(playerIdx);
+  const oppBoard=getBoard(opp);
+  switch(t){
+    case'draw':
+      drawCards(playerIdx,n);
+      addLog(`${card.name}的效果：抽${n}张牌`);
+      break;
+    case'discard':{
+      const oppH=getHand(opp);
+      for(let i=0;i<n&&oppH.length>0;i++){
+        const idx=Math.floor(Math.random()*oppH.length);
+        addLog(`${card.name}的效果：${opp===0?'你':'AI'}弃掉了${oppH[idx].name}`);
+        oppH.splice(idx,1);
+      }
+      break;}
+    case'boost_row':
+      myBoard[card.row].forEach(c=>{if(c.uid!==card.uid)c.strength+=n});
+      addLog(`${card.name}的效果：本行+${n}`);
+      break;
+    case'weaken_row':{
+      const wk=weakestOpponentRow(oppBoard,opp);
+      oppBoard[wk].forEach(c=>c.strength=Math.max(1,c.strength-n));
+      addLog(`${card.name}的效果：${opp===0?'你':'AI'}${ROW_NAMES[wk]}行-${n}`);
+      break;}
+    case'gain_provisions':
+      G.provisions[playerIdx]+=n;
+      addLog(`${card.name}的效果：+${n}粮草`);
+      break;
+    case'ambush':
+      if(G.turnCount===0&&!G.globalBuffs.ambushTriggered){
+        myBoard.infantry.forEach(c=>c.strength+=n);
+        G.globalBuffs.ambushTriggered=true;
+        addLog(`${card.name}的效果：突袭！步兵行+${n}`);
+      }
+      break;
+    case'command':{
+      const cmdH=getHand(playerIdx);
+      if(cmdH.length>0){
+        let weakIdx=0,weakStr=Infinity;
+        cmdH.forEach((c,i)=>{if(c.strength<weakStr){weakStr=c.strength;weakIdx=i}});
+        const discarded=cmdH.splice(weakIdx,1)[0];
+        addLog(`${card.name}的效果：弃掉了${discarded.name}（${discarded.strength}）`);
+        if(cmdH.length>0){
+          drawCards(playerIdx,n);
+          addLog(`${card.name}的效果：抽${n}张牌`);
+        }
+      }
+      break;}
+    case'control':{
+      let ctrlMaxP=-1,ctrlMaxRow='infantry';
+      ['infantry','cavalry','navy','strategy'].forEach(r=>{
+        const p=getRowPower(oppBoard[r],opp);
+        if(p>ctrlMaxP){ctrlMaxP=p;ctrlMaxRow=r}
+      });
+      oppBoard[ctrlMaxRow].forEach(c=>c.strength=Math.max(1,c.strength-1));
+      addLog(`${card.name}的效果：离间计！${opp===0?'你':'AI'}${ROW_NAMES[ctrlMaxRow]}行-1`);
+      break;}
+    case'skirmish':
+      if(playerIdx===0) G.aiPassed=true;
+      else G.playerPassed=true;
+      addLog(`${card.name}的效果：${opp===0?'你':'AI'}被迫跳过`);
+      break;
+    case'shield':
+      ['infantry','cavalry','navy','strategy'].forEach(r=>{
+        myBoard[r].forEach(c=>c.strength+=n);
+      });
+      addLog(`${card.name}的效果：全场+${n}`);
+      break;
+    case'navy_boost':
+      myBoard.navy.forEach(c=>{if(c.uid!==card.uid)c.strength+=n});
+      addLog(`${card.name}的效果：水军行+${n}`);
+      break;
+    case'farm':
+      if(playerIdx===0) G.globalBuffs.playerFarm=n;
+      else G.globalBuffs.aiFarm=n;
+      addLog(`${card.name}的效果：每回合+${n}粮草`);
+      break;
+    case'fortify':
+      myBoard[card.row].forEach(c=>{if(c.uid!==card.uid)c.strength+=n});
+      addLog(`${card.name}的效果：本行+${n}`);
+      break;
+    case'flex':
+      addLog(`${card.name}的效果：可放入任意行`);
+      break;
+    case'assimilate':{
+      let aMinCard=null,aMinStr=Infinity,aMinRow=null;
+      ['infantry','cavalry','navy','strategy'].forEach(r=>{
+        oppBoard[r].forEach(c=>{
+          if(c.strength<aMinStr){aMinStr=c.strength;aMinCard=c;aMinRow=r}
+        });
+      });
+      if(aMinCard){
+        oppBoard[aMinRow]=oppBoard[aMinRow].filter(c=>c.uid!==aMinCard.uid);
+        getHand(playerIdx).push(aMinCard);
+        addLog(`${card.name}的效果：吸收了${opp===0?'你':'AI'}的${aMinCard.name}`);
+      }
+      break;}
+    case'armor':
+      if(playerIdx===0) G.globalBuffs.playerArmor+=n;
+      else G.globalBuffs.aiArmor+=n;
+      addLog(`${card.name}的效果：全军护甲+${n}`);
+      break;
+    case'siege':{
+      let sMaxP=-1,sMaxRow='infantry';
+      ['infantry','cavalry','navy','strategy'].forEach(r=>{
+        const p=getRowPower(oppBoard[r],opp);
+        if(p>sMaxP){sMaxP=p;sMaxRow=r}
+      });
+      oppBoard[sMaxRow].forEach(c=>c.strength=Math.max(1,c.strength-n));
+      addLog(`${card.name}的效果：围城！${opp===0?'你':'AI'}${ROW_NAMES[sMaxRow]}行-${n}`);
+      break;}
+    case'coordinate':
+      myBoard[card.row].forEach(c=>{
+        if(c.uid!==card.uid&&c.faction===card.faction) c.strength+=n;
+      });
+      addLog(`${card.name}的效果：联防，同阵营+${n}`);
+      break;
+    case'ambush_card':{
+      drawCards(playerIdx,1);
+      const ambH=getHand(opp);
+      if(ambH.length>0){
+        const idx=Math.floor(Math.random()*ambH.length);
+        addLog(`${card.name}的效果：${opp===0?'你':'AI'}弃掉了${ambH[idx].name}`);
+        ambH.splice(idx,1);
+      }
+      addLog(`${card.name}的效果：抽1牌，对手弃1牌`);
+      break;}
+    case'berserk':
+      card.strength*=2;
+      if(playerIdx===0) G.globalBuffs.playerBerserkCard=card.uid;
+      else G.globalBuffs.aiBerserkCard=card.uid;
+      addLog(`${card.name}的效果：狂攻！战力翻倍为${card.strength}`);
+      break;
+    case'crit':{
+      let cMaxCard=null,cMaxStr=-1,cMaxRow=null;
+      ['infantry','cavalry','navy','strategy'].forEach(r=>{
+        oppBoard[r].forEach(c=>{
+          if(c.strength>cMaxStr){cMaxStr=c.strength;cMaxCard=c;cMaxRow=r}
+        });
+      });
+      if(cMaxCard){
+        oppBoard[cMaxRow]=oppBoard[cMaxRow].filter(c=>c.uid!==cMaxCard.uid);
+        addLog(`${card.name}的效果：消灭了${opp===0?'你':'AI'}的${cMaxCard.name}（${cMaxStr}）`);
+      }
+      break;}
+    case'unify':
+      if(playerIdx===0) G.globalBuffs.playerUnify+=1;
+      else G.globalBuffs.aiUnify+=1;
+      addLog(`${card.name}的效果：统一之力+1`);
+      break;
+    case'anti_south':{
+      const southFactions=['song','qi','liang','chen'];
+      const oppLeaderFaction=(playerIdx===0?G.aiLeader:G.playerLeader)?.faction||'';
+      if(southFactions.includes(oppLeaderFaction)){
+        card.strength+=n;
+        addLog(`${card.name}的效果：灭${oppLeaderFaction}！战力+${n}`);
+      }
+      break;}
+    case'combo_boost':{
+      const sameType=Object.values(myBoard).flat().filter(c=>c.uid!==card.uid&&c.ability&&c.ability.split(':')[0]==='combo_boost');
+      sameType.forEach(c=>c.strength+=n);
+      addLog(`${card.name}的效果：连携！友方连携卡+${n}`);
+      break;}
+    case'destroy':{
+      const oppAll=Object.entries(oppBoard).flatMap(([r,cards])=>cards.map(c=>({...c,_row:r})));
+      for(let i=0;i<n&&oppAll.length>0;i++){
+        const ri=Math.floor(Math.random()*oppAll.length);
+        const target=oppAll.splice(ri,1)[0];
+        oppBoard[target._row]=oppBoard[target._row].filter(c=>c.uid!==target.uid);
+        G.graveyard.push(target);
+        addLog(`${card.name}的效果：消灭了${opp===0?'你':'AI'}的${target.name}`);
+      }
+      break;}
+    case'resurrect':{
+      for(let i=0;i<n&&G.graveyard.length>0;i++){
+        const ri=Math.floor(Math.random()*G.graveyard.length);
+        const card2=G.graveyard.splice(ri,1)[0];
+        getHand(playerIdx).push(card2);
+        addLog(`${card.name}的效果：从墓地回收了${card2.name}`);
+      }
+      break;}
+    case'protect':
+      card.protectArmor=(card.protectArmor||0)+n;
+      addLog(`${card.name}的效果：获得${n}点护甲`);
+      break;
+    case'spy':{
+      const oppH2=getHand(opp);
+      if(oppH2.length>0){
+        let spyMax=-1,spyIdx=0;
+        oppH2.forEach((c,i)=>{if(c.strength>spyMax){spyMax=c.strength;spyIdx=i}});
+        const discarded=oppH2.splice(spyIdx,1)[0];
+        G.graveyard.push(discarded);
+        addLog(`${card.name}的效果：间谍行动，${opp===0?'你':'AI'}弃掉了${discarded.name}（${discarded.strength}）`);
+      }
+      break;}
+    case'draw_extra':
+      drawCards(playerIdx,n);
+      addLog(`${card.name}的效果：额外抽${n}张牌`);
+      break;
+  }
+}
+
+function triggerAbilityWithFlash(card,playerIdx,row){
+  triggerAbility(card,playerIdx);
+  const board=getBoard(playerIdx);
+  const cards=board[row];
+  const lastCard=cards[cards.length-1];
+  if(lastCard){
+    setTimeout(()=>{
+      const els=document.querySelectorAll('.card-mini');
+      for(const el of els){
+        const nameEl=el.querySelector('.c-name');
+        if(nameEl&&nameEl.textContent===card.name){
+          el.classList.add('skill-flash');
+          setTimeout(()=>el.classList.remove('skill-flash'),700);
+          break;
+        }
+      }
+    },50);
+  }
+}
+
+function playCard(playerIdx,handIdx,row){
+  const hand=getHand(playerIdx);
+  const card=hand.splice(handIdx,1)[0];
+
+  const berserkKey=playerIdx===0?'playerBerserkCard':'aiBerserkCard';
+  const berserkUid=G.globalBuffs[berserkKey];
+  if(berserkUid!=null){
+    const board=getBoard(playerIdx);
+    for(const r of ['infantry','cavalry','navy','strategy']){
+      const bCard=board[r].find(c=>c.uid===berserkUid);
+      if(bCard){
+        bCard.strength=Math.max(1,bCard.strength-2);
+        addLog(`${bCard.name} 狂攻反噬，战力-2`);
+        break;
+      }
+    }
+    G.globalBuffs[berserkKey]=null;
+  }
+
+  const board=getBoard(playerIdx);
+  board[row].push(card);
+  G.provisions[playerIdx]-=getCardCost(card.strength);
+  G._lastPlayedUid=card.uid;
+  G._lastPlayedBy=playerIdx;
+  const name=playerIdx===0?'你':'AI';
+  addLog(`${name}打出了 ${card.name}（${ROW_NAMES[row]} ${card.strength}）`);
+  if(playerIdx===1){
+    setTimeout(()=>triggerAbilityWithFlash(card,playerIdx,row),650);
+  }else{
+    triggerAbilityWithFlash(card,playerIdx,row);
+  }
+}
+
+function startRound(){
+  G.round++;
+  G.playerPassed=false;
+  G.aiPassed=false;
+  G.selectedCard=null;
+  G.turnCount=0;
+  G.provisions=[8,8];
+  G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+  G.graveyard=[];
+  G.logs=[];
+  // 第1局不自动抽牌（换牌阶段已经处理）
+  const drawCount=G.round<=1?0:4;
+  if(drawCount>0){
+    drawCards(0,drawCount);
+    drawCards(1,drawCount);
+  }
+  applyRoundStartAbilities();
+  G.currentTurn='player';
+  addLog(`═══ 第${G.round}局开始 ═══`);
+  if(drawCount>0) addLog(`双方各抽${drawCount}张牌`);
+  render();
+}
+
+function playerPlayCard(handIdx,row){
+  if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
+  const card=G.playerHand[handIdx];
+  if(getCardCost(card.strength)>G.provisions[0])return;
+  playCard(0,handIdx,row);
+  G.selectedCard=null;
+  G.turnCount++;
+  afterPlayerTurn();
+}
+
+function playerPass(){
+  if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
+  G.playerPassed=true;
+  G.selectedCard=null;
+  addLog('你放弃了本局');
+  if(G.aiPassed){endRound();return}
+  G.currentTurn='ai';
+  render();
+  setTimeout(aiTurn,800);
+}
+
+function afterPlayerTurn(){
+  // 如果玩家没有可出的牌，自动Pass
+  if(!hasPlayableCard(0)){
+    addLog('你没有可出的牌了');
+    G.playerPassed=true;
+    G.selectedCard=null;
+    if(G.aiPassed){endRound();return}
+    G.currentTurn='ai';
+    render();
+    setTimeout(aiTurn,600);
+    return;
+  }
+  if(G.aiPassed){
+    if(G.playerPassed){
+      endRound();return;
+    }
+    G.currentTurn='player';
+    render();
+    return;
+  }
+  G.currentTurn='ai';
+  if(G.globalBuffs.aiFarm>0){
+    G.provisions[1]+=G.globalBuffs.aiFarm;
+    addLog(`AI获得${G.globalBuffs.aiFarm}粮草（屯田）`);
+  }
+  render();
+  setTimeout(aiTurn,600);
+}
+
+function hasPlayableCard(p){
+  const hand=getHand(p);
+  const prov=G.provisions[p];
+  return hand.some(c=>getCardCost(c.strength)<=prov);
+}
+
+function aiTurn(){
+  if(G.phase!=='playing')return;
+  if(G.aiPassed){
+    if(G.playerPassed){endRound();return}
+    G.currentTurn='player';
+    render();
+    return;
+  }
+  if(!hasPlayableCard(1)){
+    G.aiPassed=true;
+    addLog('AI无牌可出，放弃了');
+    if(G.playerPassed){endRound();return}
+    G.currentTurn='player';
+    render();return;
+  }
+  if(G.leaderAbilityUsed[1]===false&&Math.random()<0.4){
+    useLeaderAbility(1);
+    render();
+  }
+  if(aiShouldPass()){
+    G.aiPassed=true;
+    addLog('AI放弃了本局');
+    if(G.playerPassed){endRound();return}
+    G.currentTurn='player';
+    render();return;
+  }
+  const choice=aiChooseCard();
+  if(!choice){G.aiPassed=true;addLog('AI放弃了');if(G.playerPassed){endRound();return}G.currentTurn='player';render();return}
+  setTimeout(()=>{
+    playCard(1,choice.handIdx,choice.row);
+    G.turnCount++;
+    if(G.playerPassed){endRound();return}
+    G.currentTurn='player';
+    if(G.globalBuffs.playerFarm>0){
+      G.provisions[0]+=G.globalBuffs.playerFarm;
+      addLog(`你获得${G.globalBuffs.playerFarm}粮草（屯田）`);
+    }
+    render();
+  },600);
+}
+
+function aiShouldPass(){
+  if(G.turnCount<3)return false;
+  const aiP=getBoardPower(G.aiBoard,1);
+  const plP=getBoardPower(G.playerBoard,0);
+  // 只有当AI无牌可出时才Pass
+  if(!hasPlayableCard(1))return true;
+  return false;
+}
+
+function aiChooseCard(){
+  const hand=G.aiHand;
+  const prov=G.provisions[1];
+  const playable=hand.map((c,i)=>({card:c,idx:i})).filter(x=>getCardCost(x.card.strength)<=prov);
+  if(!playable.length)return null;
+  const aiP=getBoardPower(G.aiBoard,1);
+  const plP=getBoardPower(G.playerBoard,0);
+  let best=null,bestScore=-9999;
+  for(const{card,idx}of playable){
+    let score=card.strength;
+    const rp={infantry:getRowPower(G.aiBoard.infantry,1),cavalry:getRowPower(G.aiBoard.cavalry,1),navy:getRowPower(G.aiBoard.navy,1),strategy:getRowPower(G.aiBoard.strategy,1)};
+    const minR=Object.keys(rp).reduce((a,b)=>rp[a]<rp[b]?a:b);
+    let targetRow=card.row;
+    if(card.row===minR)score+=4;
+    if(card.ability){
+      const[t]=card.ability.split(':');
+      if(t==='ambush')score+=(G.turnCount===0?5:0);
+      if(t==='command')score+=3;
+      if(t==='control')score+=5;
+      if(t==='skirmish')score+=4;
+      if(t==='shield')score+=4;
+      if(t==='navy_boost')score+=3;
+      if(t==='farm')score+=3;
+      if(t==='fortify')score+=3;
+      if(t==='flex'){score+=2;targetRow=minR}
+      if(t==='assimilate')score+=5;
+      if(t==='armor')score+=4;
+      if(t==='siege')score+=4;
+      if(t==='coordinate')score+=3;
+      if(t==='ambush_card')score+=3;
+      if(t==='berserk')score+=(aiP<plP?5:2);
+      if(t==='crit')score+=6;
+      if(t==='unify')score+=3;
+      if(t==='anti_south'){
+        const oppFaction=G.playerLeader?G.playerLeader.faction:'';
+        if(['song','qi','liang','chen'].includes(oppFaction))score+=4;
+      }
+      if(t==='boost_row')score+=3;
+      if(t==='weaken_row')score+=4;
+      if(t==='discard')score+=3;
+      if(t==='draw')score+=2;
+      if(t==='gain_provisions')score+=1;
+      if(t==='combo_boost')score+=3;
+      if(t==='destroy')score+=5;
+      if(t==='resurrect')score+=4;
+      if(t==='protect')score+=3;
+      if(t==='spy')score+=5;
+      if(t==='draw_extra')score+=3;
+    }
+    if(aiP<plP)score+=card.strength*0.5;
+    score+=Math.random()*2;
+    if(score>bestScore){bestScore=score;best={handIdx:idx,row:targetRow}}
+  }
+  return best;
+}
+
+function endRound(){
+  const pP=getBoardPower(G.playerBoard,0);
+  const aP=getBoardPower(G.aiBoard,1);
+  let winner;
+  if(pP>aP){winner=0;G.scores[0]++}
+  else if(aP>pP){winner=1;G.scores[1]++}
+  else{winner=-1}
+  const winText=winner===0?'你赢了本局！':winner===1?'AI赢了本局！':'本局平局！';
+  addLog(`═══ 第${G.round}局结束 ═══`);
+  addLog(`你的战力：${pP} vs AI战力：${aP} → ${winText}`);
+  G.phase='round_result';
+  G._roundResult={playerPower:pP,aiPower:aP,winner};
+  render();
+  showNotification(winText);
+}
+
+function checkGameEnd(){
+  if(G.scores[0]>=2||G.scores[1]>=2||G.round>=3){
+    G.phase='game_result';
+    render();
+    const winText=G.scores[0]>G.scores[1]?'你赢得了天下！':'AI赢得了天下！';
+    showNotification(winText,3000);
+  }else{
+    G.phase='playing';
+    setTimeout(startRound,1500);
+  }
+}
+
+function nextRoundOrGame(){
+  checkGameEnd();
+}
+
+function addLog(msg){G.logs.push(msg);if(G.logs.length>50)G.logs.shift()}
+
+function showNotification(text,dur=2500){
+  const el=document.createElement('div');
+  el.className='notification';
+  el.textContent=text;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),dur+500);
+}
+
+function render(){
+  const app=document.getElementById('app');
+  const lastUid=G._lastPlayedUid;
+  const lastBy=G._lastPlayedBy;
+  G._lastPlayedUid=null;
+  G._lastPlayedBy=null;
+  switch(G.phase){
+    case'menu':renderMenu(app);break;
+    case'tutorial':renderTutorial(app);break;
+    case'leader_select':renderLeaderSelect(app);break;
+    case'mulligan':renderMulligan(app);break;
+    case'playing':renderGame(app,lastUid,lastBy);break;
+    case'round_result':renderRoundResult(app);break;
+    case'game_result':renderGameResult(app);break;
+  }
+}
+
+function renderMenu(el){
+  el.innerHTML=`
+  <div class="menu-screen">
+  <div class="menu-battlefield">
+    <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMax slice">
+      <!-- 远山 -->
+      <path d="M0,400 Q150,300 300,350 Q450,280 600,320 Q750,260 900,310 Q1050,270 1200,340 L1200,600 L0,600Z" fill="#8B7355" opacity=".3"/>
+      <path d="M0,420 Q200,340 400,380 Q600,300 800,360 Q1000,290 1200,370 L1200,600 L0,600Z" fill="#6B5B45" opacity=".25"/>
+      <!-- 城池左 -->
+      <rect x="80" y="340" width="60" height="80" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
+      <rect x="75" y="330" width="70" height="15" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
+      <line x1="80" y1="330" x2="80" y2="310" stroke="#5C3A21" stroke-width="1" opacity=".3"/>
+      <line x1="140" y1="330" x2="140" y2="310" stroke="#5C3A21" stroke-width="1" opacity=".3"/>
+      <!-- 城池右 -->
+      <rect x="1060" y="330" width="60" height="90" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
+      <rect x="1055" y="320" width="70" height="15" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
+      <!-- 烽火台 -->
+      <polygon points="600,280 585,320 615,320" fill="none" stroke="#8B2500" stroke-width="1.5" opacity=".35"/>
+      <path d="M597,275 Q600,260 603,275" stroke="#C41E3A" stroke-width="2" fill="none" opacity=".4"/>
+      <!-- 骑兵左 -->
+      <g transform="translate(200,360) scale(.7)" opacity=".35">
+        <path d="M10,20 L30,5 L50,20 L45,35 L15,35Z" stroke="#3C3C3C" stroke-width="2" fill="none"/>
+        <path d="M30,5 L30,-5" stroke="#3C3C3C" stroke-width="2"/>
+        <circle cx="30" cy="-8" r="3" fill="#3C3C3C" opacity=".5"/>
+      </g>
+      <g transform="translate(240,355) scale(.6)" opacity=".3">
+        <path d="M10,20 L30,5 L50,20 L45,35 L15,35Z" stroke="#3C3C3C" stroke-width="2" fill="none"/>
+        <circle cx="30" cy="-8" r="3" fill="#3C3C3C" opacity=".5"/>
+      </g>
+      <!-- 骑兵右 -->
+      <g transform="translate(920,355) scale(.7) scaleX(-1)" opacity=".35">
+        <path d="M10,20 L30,5 L50,20 L45,35 L15,35Z" stroke="#3C3C3C" stroke-width="2" fill="none"/>
+        <circle cx="30" cy="-8" r="3" fill="#3C3C3C" opacity=".5"/>
+      </g>
+      <!-- 步兵阵 -->
+      <g opacity=".25">
+        <line x1="400" y1="400" x2="400" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+        <line x1="420" y1="400" x2="420" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+        <line x1="440" y1="400" x2="440" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+        <line x1="460" y1="400" x2="460" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+        <line x1="740" y1="400" x2="740" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+        <line x1="760" y1="400" x2="760" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+        <line x1="780" y1="400" x2="780" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+        <line x1="800" y1="400" x2="800" y2="370" stroke="#3C3C3C" stroke-width="2"/>
+      </g>
+      <!-- 战船 -->
+      <g transform="translate(500,460)" opacity=".25">
+        <path d="M0,0 Q20,-15 40,-10 Q50,0 40,10 Q20,15 0,0Z" stroke="#5C3A21" stroke-width="1.5" fill="none"/>
+        <line x1="20" y1="-10" x2="20" y2="-35" stroke="#5C3A21" stroke-width="1.5"/>
+        <path d="M20,-35 L35,-25 L20,-20Z" stroke="#5C3A21" stroke-width="1" fill="none"/>
+      </g>
+      <g transform="translate(700,470)" opacity=".2">
+        <path d="M0,0 Q15,-12 30,-8 Q40,0 30,8 Q15,12 0,0Z" stroke="#5C3A21" stroke-width="1.5" fill="none"/>
+        <line x1="15" y1="-8" x2="15" y2="-28" stroke="#5C3A21" stroke-width="1.5"/>
+        <path d="M15,-28 L28,-20 L15,-16Z" stroke="#5C3A21" stroke-width="1" fill="none"/>
+      </g>
+      <!-- 旌旗 -->
+      <line x1="350" y1="380" x2="350" y2="340" stroke="#8B2500" stroke-width="1" opacity=".3"/>
+      <polygon points="350,340 370,345 350,355" fill="#C41E3A" opacity=".2"/>
+      <line x1="850" y1="375" x2="850" y2="335" stroke="#8B2500" stroke-width="1" opacity=".3"/>
+      <polygon points="850,335 830,340 850,350" fill="#C41E3A" opacity=".2"/>
+      <!-- 水面 -->
+      <path d="M0,500 Q150,490 300,500 Q450,510 600,500 Q750,490 900,500 Q1050,510 1200,500" stroke="#8B7355" stroke-width="1" fill="none" opacity=".15"/>
+      <path d="M0,520 Q200,510 400,520 Q600,530 800,520 Q1000,510 1200,520" stroke="#8B7355" stroke-width="1" fill="none" opacity=".1"/>
+      <!-- 飞鸟 -->
+      <path d="M300,200 Q310,190 320,200" stroke="#3C3C3C" stroke-width="1" fill="none" opacity=".2"/>
+      <path d="M330,195 Q340,185 350,195" stroke="#3C3C3C" stroke-width="1" fill="none" opacity=".15"/>
+      <path d="M880,210 Q890,200 900,210" stroke="#3C3C3C" stroke-width="1" fill="none" opacity=".2"/>
+    </svg>
+  </div>
+    <div class="poetry-container">
+      <div class="poetry-line">余 霞 散 成 绮</div>
+      <div class="poetry-line">澄 江 静 如 练</div>
+      <div class="poetry-line">池 塘 生 春 草</div>
+      <div class="poetry-line">园 柳 变 鸣 禽</div>
+      <div class="poetry-line">大 江 流 日 夜</div>
+      <div class="poetry-line">客 心 悲 未 央</div>
+      <div class="poetry-line">蝉 噪 林 逾 静</div>
+      <div class="poetry-line">鸟 鸣 山 更 幽</div>
+      <div class="poetry-line">泻 水 置 平 地</div>
+      <div class="poetry-line">各 自 东 西 南 北 流</div>
+    </div>
+    <div class="menu-seal">天下<br>对弈</div>
+    <div class="menu-title">南北朝·天下对弈</div>
+    <div class="menu-subtitle">— 卡 牌 对 战 —</div>
+    <div class="decorative-line" style="width:200px"></div>
+    <p style="color:#8B7355;margin:16px 0 28px;font-size:.9em;letter-spacing:2px;line-height:1.8">
+      四行布阵·三局两胜<br>运筹帷幄·决胜千里
+    </p>
+    <button class="btn btn-primary" onclick="G.phase='tutorial';render()">开 始 游 戏</button>
+    <div style="margin-top:40px;color:#B8A88A;font-size:.75em;letter-spacing:1px">
+      昆特牌风格 · 南北朝历史题材
+    </div>
+  </div>`;
+}
+
+function renderTutorial(el){
+  el.innerHTML=`
+  <div class="tutorial-overlay" onclick="event.target===this&&(G.phase='leader_select';render())">
+    <div class="tutorial-card">
+      <div class="tut-title">天下对弈</div>
+      <div class="tut-subtitle">— 游戏规则 —</div>
+      <div class="tut-deco">☰ ☰ ☰</div>
+      <ul class="tut-rules">
+        <li><span class="tut-rule-icon">⚔</span>四行布阵：步兵、骑兵、水军、谋略各占一行，计算各行战力总和</li>
+        <li><span class="tut-rule-icon">🌾</span>粮草出牌：每张牌需要消耗粮草（力量值÷3向上取整）</li>
+        <li><span class="tut-rule-icon">🏆</span>三局两胜：先赢两局者获胜，共三局</li>
+        <li><span class="tut-rule-icon">🏳</span>Pass机制：放弃本局后不可再出牌，双方都Pass则结算</li>
+      </ul>
+      <div class="tut-btn-wrap">
+        <button class="tut-btn" onclick="G.phase='leader_select';render()">我明白了，开始！</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderLeaderSelect(el){
+  let cards='';
+  LEADERS_DATA.forEach(l=>{
+    const f=FACTIONS[l.faction];
+    const sel=G._selectedLeader===l.id?'selected':'';
+    cards+=`<div class="leader-card ${sel}" onclick="selectLeader(${l.id})">
+      <div class="scroll-line-left"></div>
+      <div class="scroll-line-right"></div>
+      <div class="era">${l.era}</div>
+      <div class="name">${l.name}</div>
+      <span class="faction-tag" style="background:${f.color}">${f.name}</span>
+      <div class="ability">✦ ${l.desc}</div>
+    </div>`;
+  });
+  el.innerHTML=`
+  <div class="leader-select">
+    <h2>选择领袖</h2>
+    <p class="subtitle">你的领袖将决定阵营与特殊能力</p>
+    <div class="leader-grid">${cards}</div>
+    <button class="btn btn-primary" onclick="confirmLeader()" ${G._selectedLeader?'':'disabled'}>确 认 出 征</button>
+  </div>`;
+}
+
+function selectLeader(id){
+  G._selectedLeader=id;
+  render();
+}
+
+function confirmLeader(){
+  if(!G._selectedLeader)return;
+  G.playerLeader=LEADERS_DATA.find(l=>l.id===G._selectedLeader);
+  let aiLeaders=LEADERS_DATA.filter(l=>l.id!==G._selectedLeader);
+  G.aiLeader=aiLeaders[Math.floor(Math.random()*aiLeaders.length)];
+  G.playerDeck=buildDeck(G.playerLeader.faction);
+  G.aiDeck=buildDeck(G.aiLeader.faction);
+  applyLeaderDeckAbility(G.playerLeader,G.playerDeck);
+  applyLeaderDeckAbility(G.aiLeader,G.aiDeck);
+  G.scores=[0,0];
+  G.round=0;
+  drawCards(0,7);
+  drawCards(1,7);
+  G.phase='mulligan';
+  G.mulliganSelected=new Set();
+  addLog('进入换牌阶段');
+  render();
+}
+
+function renderMulligan(app){
+  const f=FACTIONS[G.playerLeader.faction];
+  const sel=G.mulliganSelected;
+  const cardsHtml=G.playerHand.map((c,i)=>{
+    const cf=FACTIONS[c.faction];
+    const isSelected=sel.has(i);
+    const rarity=getCardRarity(c);
+    const rarityCls='card-rarity-'+rarity;
+    const rarityIcons={gold:'✦',purple:'◆',blue:'◇',gray:''};
+    const rarityIcon=rarityIcons[rarity]||'';
+    const cardIcon=getCategoryIcon(c);
+    const abilityText=(c.desc||'');
+    const rowName=ROW_NAMES[c.row];
+    return`<div class="card ${isSelected?'selected':''} ${rarityCls}" onclick="onMulliganCardClick(${i})" title="${c.name} - ${c.desc}"
+      style="--faction-color:${cf.color};--faction-glow:${cf.color}40;perspective:600px;${isSelected?'transform:translateY(-8px) scale(1.03);':''}">
+      <div class="card-faction-stripe" style="background:${cf.color}"></div>
+      <div class="card-top-bar">
+        <span class="card-cost-chip">${getCardCost(c.strength)}</span>
+        <span class="card-rarity-icon" style="color:${rarity==='gold'?'#D4A840':rarity==='purple'?'#9B59B6':rarity==='blue'?'#3D6B8E':'#4A4A6A'}">${rarityIcon}</span>
+      </div>
+      <div class="card-illustration" style="color:${cf.color}">${cardIcon}</div>
+      <div class="card-name">${c.name}</div>
+      <div class="card-tags">
+        <span class="card-type-tag">${rowName}</span>
+        <span class="card-faction-tag" style="background:${cf.color}">${cf.name}</span>
+      </div>
+      <div class="card-ability">${abilityText}</div>
+      <div class="card-stats-bar">
+        <span class="card-atk">${c.strength}</span>
+        <span class="card-sep"></span>
+        <span class="card-def">${c.strength}</span>
+      </div>
+    </div>`;
+  }).join('');
+  app.innerHTML=`
+  <div class="leader-select">
+    <h2>换牌阶段</h2>
+    <p class="subtitle">点击选择要替换的牌（可换 ${sel.size} 张）</p>
+    <div class="hand-cards" style="justify-content:center;flex-wrap:wrap;gap:10px;padding:16px">
+      ${cardsHtml}
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="btn btn-primary" onclick="confirmMulligan()">确认换牌</button>
+    </div>
+  </div>`;
+}
+
+function onMulliganCardClick(idx){
+  if(G.phase!=='mulligan')return;
+  if(G.mulliganSelected.has(idx)){
+    G.mulliganSelected.delete(idx);
+  }else{
+    G.mulliganSelected.add(idx);
+  }
+  render();
+}
+
+function confirmMulligan(){
+  const sorted=[...G.mulliganSelected].sort((a,b)=>b-a);
+  sorted.forEach(idx=>{
+    if(G.playerHand.length>idx) G.playerHand.splice(idx,1);
+    drawCards(0,1);
+  });
+  const aiReplace=Math.floor(Math.random()*3);
+  for(let i=0;i<aiReplace&&G.aiHand.length>0;i++){
+    const ri=Math.floor(Math.random()*G.aiHand.length);
+    G.aiHand.splice(ri,1);
+    drawCards(1,1);
+  }
+  G.phase='playing';
+  G.round=1;
+  G.mulliganSelected=new Set();
+  G.currentTurn='player';
+  G.playerPassed=false;
+  G.aiPassed=false;
+  G.provisions=[8,8];
+  G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+  addLog('换牌完成！第1局开始');
+  addLog(`你现有 ${G.playerHand.length} 张手牌，牌库剩余 ${G.playerDeck.length} 张`);
+  showNotification('换牌完成！');
+  render();
+}
+
+function useLeaderAbility(playerIdx){
+  if(G.leaderAbilityUsed[playerIdx])return;
+  const leader=playerIdx===0?G.playerLeader:G.aiLeader;
+  if(!leader)return;
+  const ability=leader.ability;
+  switch(ability.type){
+    case'row_boost':
+      getBoard(playerIdx)[ability.row].forEach(c=>c.strength+=ability.value);
+      addLog(`【${leader.name}】技能：${ROW_NAMES[ability.row]}行+${ability.value}`);
+      break;
+    case'extra_draw':
+      drawCards(playerIdx,ability.value);
+      addLog(`【${leader.name}】技能：抽${ability.value}张牌`);
+      break;
+    case'opponent_discard':{
+      const opp=1-playerIdx;
+      const oppH=getHand(opp);
+      for(let i=0;i<ability.value&&oppH.length>0;i++){
+        const ri=Math.floor(Math.random()*oppH.length);
+        addLog(`【${leader.name}】技能：对手弃${oppH[ri].name}`);
+        oppH.splice(ri,1);
+      }
+      break;}
+    case'extra_provisions':
+      G.provisions[playerIdx]+=ability.value;
+      addLog(`【${leader.name}】技能：粮草+${ability.value}`);
+      break;
+    case'all_boost':
+      ['infantry','cavalry','navy','strategy'].forEach(r=>getBoard(playerIdx)[r].forEach(c=>c.strength+=ability.value));
+      addLog(`【${leader.name}】技能：全场+${ability.value}`);
+      break;
+  }
+  G.leaderAbilityUsed[playerIdx]=true;
+  render();
+}
+
+function renderGame(el,lastUid,lastBy){
+  const pF=FACTIONS[G.playerLeader.faction];
+  const aF=FACTIONS[G.aiLeader.faction];
+  const pP=getBoardPower(G.playerBoard,0);
+  const aP=getBoardPower(G.aiBoard,1);
+  const turnText=G.currentTurn==='player'?'你的回合':'AI思考中...';
+  const turnClass=G.currentTurn==='player'?'your-turn':'ai-turn';
+
+  el.innerHTML=`
+  <div class="game-header">
+    <div class="player-info">
+      <div class="name" style="color:${pF.color}">你</div>
+      <div class="leader">${G.playerLeader.name}</div>
+      <div class="provisions-bar">
+        <span class="label">粮草</span>
+        <div class="pips">${renderPips(G.provisions[0],10,'player')}</div>
+        <span class="count">${G.provisions[0]}</span>
+      </div>
+    </div>
+    <div class="score-center">
+      <div class="rounds">第 ${G.round} / 3 局</div>
+      <div class="score">${G.scores[0]} : ${G.scores[1]}</div>
+      <div class="rounds-won">你 ${G.scores[0]}胜 · AI ${G.scores[1]}胜</div>
+    </div>
+    <div class="player-info">
+      <div class="name" style="color:${aF.color}">AI</div>
+      <div class="leader">${G.aiLeader.name}</div>
+      <div class="provisions-bar">
+        <span class="label">粮草</span>
+        <div class="pips">${renderPips(G.provisions[1],10,'ai')}</div>
+        <span class="count">${G.provisions[1]}</span>
+      </div>
+      <div class="opponent-hand-pile">
+        <span style="font-size:.85em;color:#B8C9D1;font-weight:500">🃏 ${G.aiHand.length} 张手牌</span>
+      </div>
+    </div>
+  </div>
+  <div class="battlefield">
+    <div class="board-section ai-rows">
+      <div class="section-label">— AI 阵营 · 战力 ${aP} —</div>
+      ${renderRow('navy',G.aiBoard.navy,false,lastUid,lastBy)}
+      ${renderRow('cavalry',G.aiBoard.cavalry,false,lastUid,lastBy)}
+      ${renderRow('infantry',G.aiBoard.infantry,false,lastUid,lastBy)}
+      ${renderRow('strategy',G.aiBoard.strategy,false,lastUid,lastBy)}
+    </div>
+    <div class="decorative-line"></div>
+    <div class="board-section player-rows">
+      <div class="section-label">— 你的阵营 · 战力 ${pP} —</div>
+      ${renderRow('infantry',G.playerBoard.infantry,true,lastUid,lastBy)}
+      ${renderRow('cavalry',G.playerBoard.cavalry,true,lastUid,lastBy)}
+      ${renderRow('navy',G.playerBoard.navy,true,lastUid,lastBy)}
+      ${renderRow('strategy',G.playerBoard.strategy,true,lastUid,lastBy)}
+    </div>
+  </div>
+  <div class="turn-indicator">
+    <span class="${turnClass}">${turnText}</span>
+    ${G.playerPassed&&!G.aiPassed?'<span class="waiting"> · 你已放弃，等待AI</span>':''}
+  </div>
+  <div class="hand-area">
+    <div class="hand-label">— 你的手牌 (${G.playerHand.length}张) —</div>
+    <div class="hand-cards ${G.playerHand.length===0?'empty':''}">
+      ${G.playerHand.length===0?'无手牌':G.playerHand.map((c,i)=>renderHandCard(c,i)).join('')}
+    </div>
+  </div>
+  <div class="action-bar">
+    <button class="btn btn-sm btn-primary" onclick="useLeaderAbility(0)" ${G.currentTurn!=='player'||G.playerPassed||G.leaderAbilityUsed[0]?'disabled':''}>${G.leaderAbilityUsed[0]?'已使用':'主将技能'} · ${G.playerLeader?G.playerLeader.name:''}</button>
+    <button class="btn btn-sm btn-pass" onclick="playerPass()" ${G.currentTurn!=='player'||G.playerPassed?'disabled':''}>放弃本局</button>
+  </div>
+  <div class="log-area">
+    ${G.logs.map(l=>`<div class="log-entry">${l}</div>`).join('')}
+  </div>`;
+
+  const la=document.querySelector('.log-area');
+  if(la)la.scrollTop=la.scrollHeight;
+}
+
+function renderPips(current,max,playerClass){
+  let html='';
+  for(let i=0;i<max;i++){
+    const filled=i<current?`filled ${playerClass}`:'';
+    html+=`<div class="pip ${filled}"></div>`;
+  }
+  return html;
+}
+
+function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
+  const playerIdx=isPlayer?0:1;
+  const power=getRowPower(cards,playerIdx);
+  const highlight=isPlayer&&G.currentTurn==='player'&&!G.playerPassed&&G.selectedCard!==null;
+  const canPlay=highlight;
+  const cardsHtml=cards.length===0?'<span style="color:#B8A88A;font-size:.75em">空</span>':
+    cards.map(c=>{
+      const f=FACTIONS[c.faction];
+      const animClass=c.uid===lastUid?(lastBy===1?' ai-play-card':' play-animation'):'';
+      return`<div class="card-mini ${c.ability?'has-ability':''}${animClass}" style="perspective:600px">
+        <div class="c-faction-dot" style="background:${f.color}"></div>
+        <div class="c-name" title="${c.name}">${c.name}</div>
+        <div class="c-str">${c.strength}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
+      </div>`;
+    }).join('');
+  const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.playerHand[G.selectedCard]&&G.playerHand[G.selectedCard].row===rowType;
+const canPlayRow=isMatch&&canPlay;
+return`<div class="row ${canPlayRow?'highlight':''}" ${canPlayRow?`onclick="onRowClick('${rowType}')"`:''}>
+    <div class="row-label">${ROW_NAMES[rowType]}</div>
+    <div class="row-cards">${cardsHtml}</div>
+    <div class="row-power"><div class="val">${power}</div></div>
+  </div>`;
+}
+
+function renderHandCard(card,idx){
+  const f=FACTIONS[card.faction];
+  const cost=getCardCost(card.strength);
+  const playable=G.currentTurn==='player'&&!G.playerPassed&&cost<=G.provisions[0];
+  const selected=G.selectedCard===idx;
+  const cls=selected?'selected':(!playable?'unplayable':'');
+  const rarity=getCardRarity(card);
+  const rarityCls='card-rarity-'+rarity;
+  const rarityIcons={gold:'✦',purple:'◆',blue:'◇',gray:''};
+  const rarityIcon=rarityIcons[rarity]||'';
+  const abilityText=(card.desc||'')+(card.protectArmor?`<span style="color:#4A90D9;font-weight:bold">🛡${card.protectArmor}</span>`:'');
+  const cardIcon=getCategoryIcon(card);
+  const rowName=ROW_NAMES[card.row];
+  return`<div class="card ${cls} ${rarityCls}" onclick="onCardClick(${idx})" title="${card.name} - ${card.desc}"
+    style="--faction-color:${f.color};--faction-glow:${f.color}40;perspective:600px">
+    <div class="card-faction-stripe" style="background:${f.color}"></div>
+    <div class="card-top-bar">
+      <span class="card-cost-chip">${cost}</span>
+      <span class="card-rarity-icon" style="color:${rarity==='gold'?'#D4A840':rarity==='purple'?'#9B59B6':rarity==='blue'?'#3D6B8E':'#4A4A6A'}">${rarityIcon}</span>
+    </div>
+    <div class="card-illustration" style="color:${f.color}">${cardIcon}</div>
+    <div class="card-name">${card.name}</div>
+    <div class="card-tags">
+      <span class="card-type-tag">${rowName}</span>
+      <span class="card-faction-tag" style="background:${f.color}">${f.name}</span>
+    </div>
+    <div class="card-ability">${abilityText}</div>
+    <div class="card-stats-bar">
+      <span class="card-atk">${card.strength}</span>
+      <span class="card-sep"></span>
+      <span class="card-def">${card.strength}</span>
+    </div>
+  </div>`;
+}
+
+function onCardClick(idx){
+  if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
+  const card=G.playerHand[idx];
+  if(getCardCost(card.strength)>G.provisions[0])return;
+  if(G.selectedCard===idx){
+    G.selectedCard=null;
+  }else{
+    G.selectedCard=idx;
+  }
+  render();
+}
+
+function onRowClick(rowType){
+  if(G.selectedCard===null||G.selectedCard===undefined)return;
+  const card=G.playerHand[G.selectedCard];
+  if(!card)return;
+  // 只能放到对应行
+  if(card.row!==rowType){
+    addLog('该卡牌只能放入'+ROW_NAMES[card.row]);
+    return;
+  }
+  playerPlayCard(G.selectedCard,rowType);
+}
+
+function renderRoundResult(el){
+  const r=G._roundResult;
+  const pWin=r.winner===0;
+  const aWin=r.winner===1;
+  const tie=r.winner===-1;
+  el.innerHTML=`
+  <div class="round-result">
+    <h2>第${G.round}局 结果</h2>
+    <div class="power-compare">
+      <div class="power-row">
+        <div>
+          <div style="color:#8B7355;font-size:.85em">你的战力</div>
+          <div class="power-val ${pWin?'win':'lose'}">${r.playerPower}</div>
+        </div>
+        <div style="font-size:1.5em;color:#C8B898;align-self:center">VS</div>
+        <div>
+          <div style="color:#8B7355;font-size:.85em">AI战力</div>
+          <div class="power-val ${aWin?'win':'lose'}">${r.aiPower}</div>
+        </div>
+      </div>
+    </div>
+    <div class="result-text">${pWin?'你赢得了本局！':aWin?'AI赢得了本局！':'本局平局！'}</div>
+    <div style="color:#8B7355;margin-bottom:20px">当前比分：${G.scores[0]} : ${G.scores[1]}</div>
+    <button class="btn btn-primary" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续下一局'}</button>
+  </div>`;
+}
+
+function renderGameResult(el){
+  const playerWin=G.scores[0]>G.scores[1];
+  el.innerHTML=`
+  <div class="game-result">
+    <div class="menu-seal" style="margin:0 auto 30px">${playerWin?'胜利':'败北'}</div>
+    <h1 class="${playerWin?'victory':'defeat'}">${playerWin?'天下归一':'功败垂成'}</h1>
+    <div class="final-score">${G.scores[0]} : ${G.scores[1]}</div>
+    <div class="detail">
+      ${G.playerLeader.name}（${FACTIONS[G.playerLeader.faction].name}）VS ${G.aiLeader.name}（${FACTIONS[G.aiLeader.faction].name}）
+    </div>
+    <div class="decorative-line" style="width:200px;margin:20px auto"></div>
+    <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
+      ${playerWin?'运筹帷幄之中，决胜千里之外。':'胜败乃兵家常事，再接再厉。'}
+    </p>
+    <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
+  </div>`;
+}
+
+function resetGame(){
+  uid=0;
+  G.phase='menu';G.round=0;G.scores=[0,0];
+  G.playerLeader=null;G.aiLeader=null;
+  G.playerDeck=[];G.aiDeck=[];
+  G.playerHand=[];G.aiHand=[];
+  G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.provisions=[8,8];G.currentTurn='player';
+  G.playerPassed=false;G.aiPassed=false;
+  G.selectedCard=null;G.logs=[];G.turnCount=0;
+  G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+  G.graveyard=[];
+  G._selectedLeader=null;G._roundResult=null;G._lastPlayedBy=null;
+  G.mulliganSelected=new Set();G.leaderAbilityUsed=[false,false];
+  render();
+}
+
+document.addEventListener('DOMContentLoaded',()=>render());
+</script>
+</body>
+</html>
