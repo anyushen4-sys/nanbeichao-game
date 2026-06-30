@@ -168,12 +168,14 @@ body{color:#2C2C2C;font-family:'Noto Sans SC','STKaiti','KaiTi','SimSun','宋体
 .provisions-bar .count{font-weight:bold;color:#5C3A21;min-width:30px}
 
 .battlefield{margin:6px 0;position:relative}
-.board-section{margin-bottom:4px}
+.battlefield-bg{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;z-index:0;pointer-events:none}
+.battlefield-bg img{width:100%;height:100%;object-fit:cover;opacity:.35;filter:saturate(.6) brightness(.85)}
+.board-section{margin-bottom:4px;position:relative;z-index:1}
 .board-section.ai-rows{opacity:.95}
 .section-label{text-align:center;font-size:.8em;color:#8B7355;padding:4px 0;letter-spacing:2px}
 .row{display:flex;align-items:center;padding:6px 10px;min-height:72px;
   border:1px solid #D8CDB4;border-radius:4px;margin-bottom:6px;
-  background:rgba(253,250,242,.6);transition:all .2s ease}
+  background:rgba(253,250,242,.6);transition:all .2s ease;position:relative;z-index:1}
 .row.highlight{border-color:#8B6914;background:rgba(139,105,20,.08);
   box-shadow:0 0 8px rgba(139,105,20,.15)}
 .row.highlight:hover{background:rgba(139,105,20,.15)}
@@ -1388,7 +1390,7 @@ function renderMulligan(app){
         <span class="card-cost-chip">${getCardCost(c.strength)}</span>
         <span class="card-rarity-icon" style="color:${rarity==='gold'?'#D4A840':rarity==='purple'?'#9B59B6':rarity==='blue'?'#3D6B8E':'#4A4A6A'}">${rarityIcon}</span>
       </div>
-      <div class="card-illustration" style="color:${cf.color}">${cardIcon}</div>
+      <div class="card-illustration"><img src="assets/cards/card_${c.id}.png" alt="${c.name}" onerror="this.style.display='none'"/></div>
       <div class="card-name">${c.name}</div>
       <div class="card-tags">
         <span class="card-type-tag">${rowName}</span>
@@ -1526,6 +1528,7 @@ function renderGame(el,lastUid,lastBy){
       </div>
     </div>
   </div>
+  <div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>
   <div class="battlefield">
     <div class="board-section ai-rows">
       <div class="section-label">— AI 阵营 · 战力 ${aP} —</div>
@@ -1618,7 +1621,7 @@ function renderHandCard(card,idx){
       <span class="card-cost-chip">${cost}</span>
       <span class="card-rarity-icon" style="color:${rarity==='gold'?'#D4A840':rarity==='purple'?'#9B59B6':rarity==='blue'?'#3D6B8E':'#4A4A6A'}">${rarityIcon}</span>
     </div>
-    <div class="card-illustration" style="color:${f.color}">${cardIcon}</div>
+    <div class="card-illustration"><img src="assets/cards/card_${card.id}.png" alt="${card.name}" onerror="this.style.display='none'"/></div>
     <div class="card-name">${card.name}</div>
     <div class="card-tags">
       <span class="card-type-tag">${rowName}</span>
