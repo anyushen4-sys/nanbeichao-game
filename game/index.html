@@ -4,494 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>南北朝·天下对弈</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
-body{color:#2C2C2C;font-family:'Noto Sans SC','STKaiti','KaiTi','SimSun','宋体',sans-serif;min-height:100vh;overflow-x:hidden;
-  background-color:#F5F0E8;
-  background-image:
-    radial-gradient(ellipse 40% 4% at 30% 88%,rgba(139,115,85,.12) 0%,transparent 100%),
-    radial-gradient(ellipse 30% 3% at 68% 84%,rgba(139,115,85,.08) 0%,transparent 100%),
-    radial-gradient(ellipse 50% 5% at 50% 91%,rgba(139,115,85,.1) 0%,transparent 100%),
-    linear-gradient(180deg,transparent 0%,rgba(255,255,255,.15) 10%,rgba(245,240,232,.22) 20%,transparent 35%),
-    linear-gradient(180deg,transparent 48%,rgba(255,255,255,.08) 62%,rgba(245,240,232,.12) 76%,transparent 86%),
-    radial-gradient(ellipse 120% 38% at 50% 105%,#2C2C2C 0%,#3D3530 22%,#5A4F44 42%,transparent 58%),
-    radial-gradient(ellipse 85% 22% at 20% 100%,#3A3228 0%,transparent 52%),
-    radial-gradient(ellipse 95% 25% at 80% 100%,#2E2924 0%,transparent 48%),
-    radial-gradient(ellipse 65% 14% at 40% 96%,#4A4038 0%,transparent 42%),
-    radial-gradient(ellipse 50% 10% at 65% 93%,#3D3530 0%,transparent 38%),
-    linear-gradient(180deg,#F5F0E8 0%,#EDE4D4 30%,#E8DFD0 60%,#F0EBE0 100%)}
-#app{max-width:1100px;margin:0 auto;padding:10px;min-height:100vh;position:relative}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#EDE4D4}
-::-webkit-scrollbar-thumb{background:#B8A88A;border-radius:3px}
+<link rel="stylesheet" href="css/game.css"/>
 
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes poetryFade{0%{opacity:0;transform:translateY(8px)}15%{opacity:.55;transform:translateY(0)}85%{opacity:.55;transform:translateY(0)}100%{opacity:0;transform:translateY(-8px)}}
-@keyframes sealStamp{0%{transform:rotate(-12deg) scale(1.2);opacity:0}60%{transform:rotate(-12deg) scale(.95);opacity:1}100%{transform:rotate(-12deg) scale(1);opacity:1}}
-@keyframes paperUnfurl{0%{max-height:0;opacity:0;padding:0 16px}100%{max-height:300px;opacity:1;padding:16px}}
-
-.menu-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;position:relative}
-.menu-screen::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  background:
-    radial-gradient(ellipse 80% 30% at 50% 15%,rgba(139,115,85,.08) 0%,transparent 70%),
-    radial-gradient(ellipse 40% 15% at 15% 25%,rgba(44,44,44,.06) 0%,transparent 70%),
-    radial-gradient(ellipse 35% 12% at 85% 20%,rgba(44,44,44,.05) 0%,transparent 70%),
-    radial-gradient(ellipse 50% 8% at 50% 8%,rgba(200,196,188,.3) 0%,transparent 60%);
-  pointer-events:none;z-index:0}
-.menu-battlefield{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
-.menu-battlefield svg{width:100%;height:100%;opacity:.55}
-.menu-screen>*{position:relative;z-index:1}
-
-.menu-title{font-size:3em;
-  background:linear-gradient(180deg,#D4A840 0%,#C5941A 25%,#E8C84A 50%,#B8860B 75%,#D4A840 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 0 16px rgba(212,168,64,.5)) drop-shadow(0 0 4px rgba(184,134,11,.6)) drop-shadow(0 3px 6px rgba(0,0,0,.3));
-  margin-bottom:10px;letter-spacing:8px;animation:float 4s ease-in-out infinite}
-.menu-subtitle{font-size:1.2em;color:#8B7355;margin-bottom:40px;letter-spacing:6px;
-  text-shadow:0 1px 2px rgba(0,0,0,.1)}
-.menu-seal{width:80px;height:80px;
-  background:linear-gradient(135deg,#B22222,#C41E3A,#A01830);
-  border:2px solid #8B1A2B;
-  border-radius:4px;
-  box-shadow:inset 0 0 10px rgba(0,0,0,.4),inset 0 0 20px rgba(0,0,0,.15),
-    0 2px 6px rgba(0,0,0,.25),0 0 12px rgba(178,34,34,.2),
-    2px 2px 0 #8B1A2B,-1px -1px 0 #D44050,3px 0 0 rgba(139,26,43,.3),0 3px 0 rgba(139,26,43,.3);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:20px;font-weight:bold;
-  transform:rotate(-12deg);margin-bottom:30px;letter-spacing:2px;line-height:1.2;
-  animation:sealStamp .6s ease-out;
-  text-shadow:0 1px 2px rgba(0,0,0,.3),1px 1px 0 rgba(139,26,43,.5)}
-
-.poetry-container{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;z-index:0}
-.poetry-line{position:absolute;width:100%;text-align:center;color:#C8B898;font-size:.85em;letter-spacing:8px;opacity:0}
-.poetry-line:nth-child(1){top:5%;animation:poetryFade 10s ease-in-out 0s infinite}
-.poetry-line:nth-child(2){top:14%;animation:poetryFade 10s ease-in-out 2.5s infinite}
-.poetry-line:nth-child(3){top:24%;animation:poetryFade 10s ease-in-out 5s infinite}
-.poetry-line:nth-child(4){top:34%;animation:poetryFade 10s ease-in-out 1.5s infinite}
-.poetry-line:nth-child(5){top:44%;animation:poetryFade 10s ease-in-out 4s infinite}
-.poetry-line:nth-child(6){top:54%;animation:poetryFade 10s ease-in-out 6.5s infinite}
-.poetry-line:nth-child(7){top:64%;animation:poetryFade 10s ease-in-out 3s infinite}
-.poetry-line:nth-child(8){top:74%;animation:poetryFade 10s ease-in-out 5.5s infinite}
-.poetry-line:nth-child(9){top:84%;animation:poetryFade 10s ease-in-out 1s infinite}
-.poetry-line:nth-child(10){top:92%;animation:poetryFade 10s ease-in-out 8s infinite}
-
-.btn{background:linear-gradient(180deg,#7A5C2E,#6B4E25 40%,#5C421C 100%);
-  color:#F5F0E8;border:2px solid #4A3410;padding:12px 36px;font-size:1.1em;font-family:inherit;
-  cursor:pointer;border-radius:6px;transition:all .2s ease;letter-spacing:2px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 3px 8px rgba(0,0,0,.35);
-  text-shadow:0 1px 2px rgba(0,0,0,.4);
-  background-image:
-    repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(0,0,0,.04) 6px,rgba(0,0,0,.04) 7px),
-    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.02) 3px,rgba(255,255,255,.02) 4px)}
-.btn:hover{background:linear-gradient(180deg,#8B6914,#7A5C2E 40%,#6B4E25 100%);border-color:#3A2808;
-  transform:translateY(-2px);box-shadow:0 6px 16px rgba(122,92,46,.5),inset 0 1px 0 rgba(255,255,255,.2)}
-.btn:active{transform:translateY(0);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
-.btn-sm{padding:8px 20px;font-size:.9em}
-.btn-danger{background:linear-gradient(180deg,#8B2500,#7A2000);border-color:#5C1A00}
-.btn-danger:hover{background:linear-gradient(180deg,#A03000,#8B2500);border-color:#6B1E00}
-.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:grayscale(.6);box-shadow:none}
-
-.tutorial-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:900;animation:tutFadeIn .4s ease}
-.tutorial-card{background:linear-gradient(180deg,#FDFAF2,#F8F2E8);border:3px solid #7A5C2E;border-radius:12px;padding:40px 48px;max-width:520px;width:90%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.4);animation:tutSlideUp .5s ease;
-  background-image:
-    repeating-linear-gradient(0deg,transparent,transparent 24px,rgba(139,105,20,.03) 24px,rgba(139,105,20,.03) 25px),
-    repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(139,105,20,.015) 40px,rgba(139,105,20,.015) 41px)}
-.tutorial-card::before{content:'';position:absolute;top:-1px;left:20px;right:20px;height:3px;background:linear-gradient(90deg,transparent,#C41E3A 20%,#C41E3A 80%,transparent);border-radius:2px}
-.tutorial-card::after{content:'';position:absolute;bottom:-1px;left:20px;right:20px;height:3px;background:linear-gradient(90deg,transparent,#C41E3A 20%,#C41E3A 80%,transparent);border-radius:2px}
-.tutorial-card .tut-title{text-align:center;font-size:1.6em;color:#5C3A21;margin-bottom:6px;letter-spacing:4px}
-.tutorial-card .tut-subtitle{text-align:center;font-size:.85em;color:#8B7355;margin-bottom:24px;letter-spacing:2px}
-.tutorial-card .tut-deco{text-align:center;margin-bottom:20px;color:#C41E3A;font-size:1.2em;letter-spacing:8px;opacity:.6}
-.tutorial-card .tut-rules{list-style:none;padding:0;margin:0 0 28px}
-.tutorial-card .tut-rules li{padding:10px 14px;margin-bottom:8px;background:rgba(92,58,33,.04);border-left:3px solid #7A5C2E;border-radius:0 4px 4px 0;font-size:.92em;color:#3C3C3C;line-height:1.7;letter-spacing:1px}
-.tutorial-card .tut-rules li .tut-rule-icon{display:inline-block;width:22px;text-align:center;margin-right:6px;color:#7A5C2E;font-weight:bold}
-.tutorial-card .tut-btn-wrap{text-align:center}
-.tutorial-card .tut-btn{background:linear-gradient(180deg,#7A5C2E,#5C421C);color:#F5F0E8;border:2px solid #4A3410;padding:12px 40px;font-size:1.05em;font-family:inherit;cursor:pointer;border-radius:4px;transition:all .2s;letter-spacing:3px;
-  box-shadow:0 3px 8px rgba(0,0,0,.3);
-  background-image:repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(0,0,0,.04) 6px,rgba(0,0,0,.04) 7px)}
-.tutorial-card .tut-btn:hover{background:linear-gradient(180deg,#8B6914,#7A5C2E);border-color:#3A2808;transform:translateY(-1px);box-shadow:0 4px 12px rgba(122,92,46,.4)}
-@keyframes tutFadeIn{0%{opacity:0}100%{opacity:1}}
-@keyframes tutSlideUp{0%{opacity:0;transform:translateY(30px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
-
-.leader-select{text-align:center;padding:20px 0}
-.leader-select h2{font-size:1.8em;color:#5C3A21;margin-bottom:8px;letter-spacing:4px}
-.leader-select .subtitle{color:#8B7355;margin-bottom:24px}
-.leader-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:30px}
-.leader-card{border:2px solid #C8B898;border-radius:8px;padding:16px;cursor:pointer;transition:all .25s;
-  background:linear-gradient(180deg,#FDFAF2 0%,#F8F2E6 100%);
-  background-image:
-    repeating-linear-gradient(0deg,transparent,transparent 20px,rgba(139,105,20,.02) 20px,rgba(139,105,20,.02) 21px),
-    repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(139,105,20,.015) 40px,rgba(139,105,20,.015) 41px);
-  position:relative;overflow:hidden;
-  box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.leader-card::before{content:'';position:absolute;top:0;left:0;right:0;height:8px;
-  background:linear-gradient(180deg,#8B6914 0%,#C8B898 40%,rgba(200,184,152,.3) 100%);
-  border-radius:8px 8px 0 0}
-.leader-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;
-  background:linear-gradient(0deg,#8B6914 0%,#C8B898 40%,rgba(200,184,152,.3) 100%);
-  border-radius:0 0 8px 8px}
-.leader-card .scroll-line-left{position:absolute;top:8px;bottom:8px;left:4px;width:2px;
-  background:linear-gradient(180deg,transparent,#C8B898 20%,#C8B898 80%,transparent);opacity:.4;border-radius:1px}
-.leader-card .scroll-line-right{position:absolute;top:8px;bottom:8px;right:4px;width:2px;
-  background:linear-gradient(180deg,transparent,#C8B898 20%,#C8B898 80%,transparent);opacity:.4;border-radius:1px}
-.leader-card:hover{border-color:#8B6914;transform:translateY(-4px);
-  box-shadow:0 8px 24px rgba(139,105,20,.2),0 0 20px rgba(212,168,64,.15)}
-.leader-card.selected{border-color:#C41E3A;box-shadow:0 0 0 3px rgba(196,30,58,.2),0 0 20px rgba(196,30,58,.15)}
-.leader-card .era{font-size:.8em;color:#8B7355;margin-bottom:4px}
-.leader-card .name{font-size:1.3em;color:#2C2C2C;margin-bottom:6px;font-weight:bold}
-.leader-card .faction-tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.75em;color:#fff;margin-bottom:8px}
-.leader-card .ability{font-size:.9em;color:#5C3A21;background:rgba(92,58,33,.06);padding:6px 10px;border-radius:4px;
-  border-left:2px solid #8B6914}
-
-.game-header{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;
-  background:linear-gradient(180deg,#2D2D44,#3D3D54);
-  border:2px solid #4A4A6A;border-radius:8px;margin-bottom:8px;flex-wrap:wrap;gap:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.game-header .player-info{text-align:center;min-width:140px}
-.game-header .player-info .name{font-size:1em;font-weight:bold;color:#F5F0E8}
-.game-header .player-info .leader{font-size:.75em;color:#B8C9D1}
-.player-info{text-align:center;min-width:140px}
-.player-info .name{font-size:1em;font-weight:bold;color:#2C2C2C}
-.player-info .leader{font-size:.75em;color:#8B7355}
-.score-center{text-align:center;padding:0 16px}
-.score-center .rounds{font-size:.8em;color:#B8C9D1}
-.score-center .score{font-size:1.8em;font-weight:bold;color:#D4A840;letter-spacing:4px}
-.score-center .rounds-won{font-size:.8em;color:#B8C9D1;margin-top:2px}
-.provisions-bar{display:flex;align-items:center;gap:6px;font-size:.85em}
-.provisions-bar .label{color:#B8C9D1}
-.provisions-bar .pips{display:flex;gap:2px}
-.provisions-bar .pip{width:14px;height:14px;border-radius:50%;background:#D4C4A8;transition:background .3s;
-  box-shadow:inset 0 1px 2px rgba(0,0,0,.15)}
-.provisions-bar .pip.filled{background:linear-gradient(135deg,#D4A840,#B8860B)}
-.provisions-bar .pip.filled.player{background:linear-gradient(135deg,#4CAF50,#2E7D32)}
-.provisions-bar .pip.filled.ai{background:linear-gradient(135deg,#E53935,#B22222)}
-.provisions-bar .count{font-weight:bold;color:#5C3A21;min-width:30px}
-
-.battlefield{margin:6px 0;position:relative}
-.battlefield-bg{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;z-index:0;pointer-events:none}
-.battlefield-bg img{width:100%;height:100%;object-fit:cover;opacity:.35;filter:saturate(.6) brightness(.85)}
-.board-section{margin-bottom:4px;position:relative;z-index:1}
-.board-section.ai-rows{opacity:.95}
-.section-label{text-align:center;font-size:.8em;color:#8B7355;padding:4px 0;letter-spacing:2px}
-.row{display:flex;align-items:center;padding:6px 10px;min-height:72px;
-  border:1px solid #D8CDB4;border-radius:4px;margin-bottom:6px;
-  background:rgba(253,250,242,.6);transition:all .2s ease;position:relative;z-index:1}
-.row.highlight{border-color:#8B6914;background:rgba(139,105,20,.08);
-  box-shadow:0 0 8px rgba(139,105,20,.15)}
-.row.highlight:hover{background:rgba(139,105,20,.15)}
-.row-label{writing-mode:vertical-rl;font-size:.75em;color:#8B7355;min-width:28px;text-align:center;letter-spacing:3px;
-  border-right:1px solid #D8CDB4;padding-right:6px;margin-right:8px}
-.row-cards{display:flex;gap:4px;flex-wrap:wrap;flex:1;min-height:48px;align-items:center}
-.row-power{font-size:1em;font-weight:bold;color:#5C3A21;min-width:40px;text-align:right;margin-left:8px}
-.row-power .val{font-size:1.2em;
-  background:linear-gradient(135deg,#D4A840,#B8860B);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  text-shadow:none;filter:drop-shadow(0 0 3px rgba(212,168,64,.3))}
-
-.card-mini{
-  background:linear-gradient(160deg,#FDFAF2 0%,#F5EFE0 50%,#EDE6D6 100%);
-  border:1px solid #C8B898;border-radius:4px;padding:4px 8px;min-width:70px;
-  text-align:center;position:relative;transition:all .2s;
-  box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.card-mini .c-name{font-size:.7em;font-weight:bold;color:#2C2C2C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
-.card-mini .c-str{font-size:.9em;font-weight:bold;color:#5C3A21;
-  background:linear-gradient(135deg,#D4A840,#B8860B);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.card-mini .c-faction-dot{position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%}
-.card-mini.has-ability{border-style:dashed}
-
-.card-back{width:40px;height:28px;
-  background:repeating-linear-gradient(45deg,#8B6914,#8B6914 2px,#A07818 2px,#A07818 4px);
-  border:1px solid #6B5010;border-radius:3px;display:inline-block}
-
-.hand-area{padding:8px 0}
-.hand-label{font-size:.85em;color:#8B7355;margin-bottom:6px;text-align:center;letter-spacing:2px}
-.hand-cards{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;min-height:80px;padding:4px}
-.hand-cards.empty{color:#B8A88A;font-style:italic;align-items:center;justify-content:center}
-
-.turn-indicator{text-align:center;padding:6px;font-size:.9em;letter-spacing:2px}
-.turn-indicator .your-turn{color:#2E7D32;font-weight:bold}
-.turn-indicator .ai-turn{color:#B22222;font-weight:bold}
-.turn-indicator .waiting{color:#8B7355}
-
-.action-bar{display:flex;justify-content:center;gap:12px;padding:8px 0;flex-wrap:wrap}
-
-.log-area{margin-top:8px;border:1px solid #D8CDB4;border-radius:4px;padding:8px;max-height:100px;
-  overflow-y:auto;background:rgba(253,250,242,.5);font-size:.75em;color:#6B5B47}
-.log-area .log-entry{padding:2px 0;border-bottom:1px solid rgba(216,205,180,.3)}
-.log-area .log-entry:last-child{border-bottom:none}
-.log-area .log-player{color:#2E7D32}
-.log-area .log-ai{color:#B22222}
-.log-area .log-system{color:#8B7355;font-style:italic}
-
-.notification{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  background:rgba(44,44,44,.92);color:#F5F0E8;padding:24px 48px;border-radius:8px;
-  font-size:1.5em;z-index:1000;letter-spacing:4px;text-align:center;
-  animation:notifAnim 2.5s ease-in-out forwards;pointer-events:none;
-  border:1px solid rgba(139,105,20,.3);
-  box-shadow:0 0 40px rgba(0,0,0,.3),0 0 80px rgba(139,105,20,.1)}
-@keyframes notifAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}10%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
-
-.round-result{text-align:center;padding:40px 20px}
-.round-result h2{font-size:2em;color:#5C3A21;margin-bottom:20px;
-  background:linear-gradient(180deg,#D4A840,#B8860B);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.round-result .result-text{font-size:1.3em;color:#2C2C2C;margin-bottom:10px}
-.round-result .power-compare{margin:20px 0;padding:20px;
-  background:linear-gradient(180deg,#FDFAF2,#F5F0E8);
-  border:2px solid #C8B898;border-radius:8px}
-.round-result .power-row{display:flex;justify-content:space-around;margin:10px 0}
-.round-result .power-val{font-size:1.5em;font-weight:bold}
-.round-result .power-val.win{color:#2E7D32}
-.round-result .power-val.lose{color:#B22222}
-
-.game-result{text-align:center;padding:60px 20px}
-.game-result h1{font-size:2.5em;margin-bottom:20px;letter-spacing:6px}
-.game-result .victory{color:#2E7D32}
-.game-result .defeat{color:#B22222}
-.game-result .final-score{font-size:2em;color:#5C3A21;margin:20px 0;
-  background:linear-gradient(135deg,#D4A840,#B8860B);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.game-result .detail{color:#8B7355;margin-bottom:30px}
-
-@keyframes cardPlay{
-  0%{transform:scale(1.3);opacity:.8}
-  40%{transform:scale(.92);opacity:1}
-  70%{transform:scale(1.05)}
-  100%{transform:scale(1)}
-}
-.card-mini.play-animation{animation:cardPlay .5s cubic-bezier(.34,1.56,.64,1)}
-
-@keyframes skillFlash{
-  0%{box-shadow:0 0 0 0 rgba(255,255,255,.8)}
-  50%{box-shadow:0 0 20px 10px rgba(255,255,255,.4)}
-  100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}
-}
-.skill-flash{animation:skillFlash .6s ease-out;position:relative}
-.skill-flash::after{
-  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  background:radial-gradient(circle,rgba(255,255,255,.6) 0%,transparent 70%);
-  animation:skillFlash .6s ease-out;pointer-events:none;border-radius:inherit;
-}
-
-@keyframes aiFlip{
-  0%{transform:rotateY(180deg) scale(0.5);opacity:0.3}
-  50%{transform:rotateY(90deg) scale(0.7)}
-  100%{transform:rotateY(0deg) scale(1);opacity:1}
-}
-.card-mini.ai-play-card{animation:aiFlip .6s ease-out}
-
-/* 领袖卡特殊样式 */
-.leader-card{position:relative;overflow:hidden}
-.leader-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  background:linear-gradient(135deg,rgba(255,215,0,.08) 0%,transparent 50%,rgba(139,69,19,.05) 100%);
-  pointer-events:none}
-.leader-card .faction-tag{font-size:.75em;padding:3px 10px;border-radius:12px;color:white;font-weight:bold;letter-spacing:2px}
-.leader-card .era{font-size:.75em;color:#8B7355;margin-bottom:4px;letter-spacing:3px}
-.leader-card .name{font-size:1.3em;font-weight:bold;color:#5C3A21;margin-bottom:6px;letter-spacing:3px}
-.leader-card .ability{font-size:.85em;color:#5C3A21;background:rgba(92,58,33,.06);padding:6px 12px;border-radius:6px;border-left:3px solid #8B6914}
-
-/* === 全局过渡增强 === */
-*{transition-property:none}
-.btn,.card,.card-mini,.leader-card,.row,.hand-cards,.action-bar button,.row-power .val,.card-back-pile .card-back{transition:all .2s ease}
-
-/* === 新卡牌结构 === */
-.card{width:130px;min-height:190px;display:flex;flex-direction:column;position:relative;overflow:hidden;
-  border:2px solid #C8B898;border-radius:8px;cursor:pointer;flex-shrink:0;
-  box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.card .card-faction-stripe{position:absolute;top:0;left:0;width:3px;height:100%;border-radius:8px 0 0 8px}
-.card .card-top-bar{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:.65em;position:relative;z-index:2}
-.card .card-cost-chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
-  background:linear-gradient(135deg,#2D2D44,#3D3D54);color:#F5F0E8;font-size:.85em;font-weight:bold;
-  box-shadow:0 2px 4px rgba(0,0,0,.3);border:1.5px solid rgba(255,255,255,.15)}
-.card .card-rarity-icon{font-size:1em;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
-.card .card-illustration{flex:1;display:flex;align-items:center;justify-content:center;min-height:70px;
-  position:relative;overflow:hidden}
-.card .card-illustration svg{width:48px;height:56px;opacity:.85;filter:drop-shadow(0 1px 3px rgba(0,0,0,.1))}
-.card .card-illustration::after{content:'';position:absolute;bottom:0;left:0;right:0;height:30%;
-  background:linear-gradient(0deg,rgba(0,0,0,.04) 0%,transparent 100%);pointer-events:none}
-.card .card-name{padding:4px 8px 2px;font-family:'Noto Serif SC','STKaiti','KaiTi',serif;font-size:.82em;font-weight:700;
-  text-align:center;color:#2C2C2C;line-height:1.3}
-.card .card-tags{display:flex;justify-content:center;gap:4px;padding:2px 6px;flex-wrap:wrap}
-.card .card-type-tag{font-size:.55em;padding:1px 6px;border-radius:8px;color:#fff;letter-spacing:1px;
-  background:rgba(45,45,68,.7)}
-.card .card-faction-tag{font-size:.55em;padding:1px 6px;border-radius:8px;color:#fff;letter-spacing:1px}
-.card .card-ability{font-size:.55em;font-family:'Noto Serif SC','STKaiti','KaiTi',serif;text-align:center;color:#5C3A21;
-  padding:3px 8px;background:rgba(92,58,33,.04);margin:0 6px;border-radius:3px;min-height:24px;
-  display:flex;align-items:center;justify-content:center;
-  border-left:2px solid rgba(139,105,20,.15);line-height:1.4}
-.card .card-stats-bar{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;
-  border-top:1px dashed rgba(139,115,85,.3);margin-top:auto}
-.card .card-atk{display:flex;align-items:center;gap:3px;font-size:.65em;font-weight:bold;color:#C83C3C}
-.card .card-atk::before{content:'⚔';font-size:.9em;opacity:.7}
-.card .card-sep{width:1px;height:14px;background:rgba(139,115,85,.3)}
-.card .card-def{display:flex;align-items:center;gap:3px;font-size:.65em;font-weight:bold;color:#3D6B8E}
-.card .card-def::before{content:'♥';font-size:.9em;opacity:.7}
-
-/* === 稀有度边框升级 === */
-/* common: 单线细框 #4A4A6A，无装饰 */
-.card.rarity-common,.card.card-rarity-gray{border:1px solid #4A4A6A;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-/* rare: 双线框 #3D6B8E，角落云气纹 */
-.card.rarity-rare,.card.card-rarity-blue{border:2px double #3D6B8E;box-shadow:0 0 8px rgba(61,107,142,.25),inset 0 0 8px rgba(61,107,142,.06)}
-.card.rarity-rare::before,.card.card-rarity-blue::before{content:'﹃';position:absolute;bottom:-2px;right:2px;font-size:12px;
-  color:rgba(61,107,142,.25);pointer-events:none;z-index:3;font-style:normal;font-family:serif;line-height:1}
-.card.rarity-rare::after,.card.card-rarity-blue::after{content:'﹃';position:absolute;top:-2px;left:2px;font-size:12px;
-  color:rgba(61,107,142,.25);pointer-events:none;z-index:3;font-style:normal;font-family:serif;line-height:1;
-  transform:rotate(180deg)}
-/* epic: 双线框 + 内嵌线 #D4A84B，角落莲花纹 ❀，边框金色光晕 */
-.card.rarity-epic,.card.card-rarity-purple{border:2px double #D4A84B;box-shadow:0 0 14px rgba(212,168,64,.35),inset 0 0 12px rgba(212,168,64,.08)}
-.card.rarity-epic::before,.card.card-rarity-purple::before{content:'❀';position:absolute;bottom:-1px;right:1px;font-size:11px;
-  color:rgba(212,168,64,.45);pointer-events:none;z-index:3;text-shadow:0 0 4px rgba(212,168,64,.3)}
-.card.rarity-epic::after,.card.card-rarity-purple::after{content:'❀';position:absolute;top:-1px;left:1px;font-size:11px;
-  color:rgba(212,168,64,.45);pointer-events:none;z-index:3;text-shadow:0 0 4px rgba(212,168,64,.3)}
-.card.rarity-epic:hover,.card.card-rarity-purple:hover{box-shadow:0 0 20px rgba(212,168,64,.5),inset 0 0 14px rgba(212,168,64,.12)}
-/* legendary: 多层复杂边框 #C83C3C + #D4A84B，角落瑞兽纹，动态呼吸光效 */
-.card.rarity-legendary,.card.card-rarity-gold{border:2.5px solid #C83C3C;
-  box-shadow:0 0 14px rgba(200,60,60,.35),0 0 24px rgba(212,168,64,.25),inset 0 0 18px rgba(212,168,64,.1);
-  animation:legendaryBreath 2.5s ease-in-out infinite}
-.card.rarity-legendary::before,.card.card-rarity-gold::before{content:'龙';position:absolute;bottom:-1px;right:1px;font-size:10px;
-  color:rgba(200,60,60,.5);pointer-events:none;z-index:3;font-weight:bold;
-  text-shadow:0 0 6px rgba(212,168,64,.4),0 0 2px rgba(200,60,60,.3)}
-.card.rarity-legendary::after,.card.card-rarity-gold::after{content:'凤';position:absolute;top:-1px;left:1px;font-size:10px;
-  color:rgba(212,168,64,.55);pointer-events:none;z-index:3;font-weight:bold;
-  text-shadow:0 0 6px rgba(200,60,60,.4),0 0 2px rgba(212,168,64,.4)}
-.card.rarity-legendary:hover,.card.card-rarity-gold:hover{animation:legendaryPulse 1.5s ease-in-out infinite;box-shadow:0 0 24px rgba(200,60,60,.55),0 0 40px rgba(212,168,64,.45)}
-@keyframes legendaryBreath{0%,100%{box-shadow:0 0 10px rgba(200,60,60,.2),0 0 18px rgba(212,168,64,.15)}50%{box-shadow:0 0 22px rgba(200,60,60,.45),0 0 36px rgba(212,168,64,.35)}}
-@keyframes legendaryPulse{0%,100%{box-shadow:0 0 14px rgba(200,60,60,.35),0 0 24px rgba(212,168,64,.25)}50%{box-shadow:0 0 28px rgba(200,60,60,.55),0 0 44px rgba(212,168,64,.45)}}
-
-/* === 卡牌悬停增强 === */
-.card:hover{transform:translateY(-10px);box-shadow:0 18px 36px rgba(0,0,0,.22),0 0 18px var(--faction-glow,rgba(212,168,64,.25))}
-.card.selected{transform:translateY(-10px) scale(1.03);box-shadow:0 18px 36px rgba(0,0,0,.22),0 0 0 3px var(--faction-color,#C41E3A),0 0 24px var(--faction-glow,rgba(196,30,58,.35))}
-.card.unplayable{opacity:.4;cursor:not-allowed;transform:none !important;box-shadow:none !important}
-.card:not(.unplayable):not(.selected){animation:playablePulse 2.5s ease-in-out infinite}
-@keyframes playablePulse{0%,100%{box-shadow:0 2px 6px rgba(0,0,0,.08)}50%{box-shadow:0 2px 6px rgba(0,0,0,.08),0 0 10px var(--faction-glow,rgba(212,168,64,.2))}}
-
-/* === 阵营背景色增强 === */
-.card.faction-song{background:linear-gradient(135deg,#FDF5F5,#F8E8EA 50%,#F2DDE0);box-shadow:inset 0 0 12px rgba(200,60,60,.06),0 2px 6px rgba(200,60,60,.08)}
-.card.faction-qi{background:linear-gradient(135deg,#F0F4FA,#E4EAF4 50%,#D8E2EE);box-shadow:inset 0 0 12px rgba(61,107,142,.06),0 2px 6px rgba(61,107,142,.08)}
-.card.faction-liang{background:linear-gradient(135deg,#F0F4FA,#E4EAF4 50%,#D8E2EE);box-shadow:inset 0 0 12px rgba(61,107,142,.06),0 2px 6px rgba(61,107,142,.08)}
-.card.faction-chen{background:linear-gradient(135deg,#F0F4FA,#E4EAF4 50%,#D8E2EE);box-shadow:inset 0 0 12px rgba(61,107,142,.06),0 2px 6px rgba(61,107,142,.08)}
-.card.faction-beiwei{background:linear-gradient(135deg,#FDF8ED,#F0EAD8 50%,#E8DFC8);box-shadow:inset 0 0 12px rgba(139,105,20,.06),0 2px 6px rgba(139,105,20,.08)}
-.card.faction-dongwei{background:linear-gradient(135deg,#FDF8ED,#F0EAD8 50%,#E8DFC8);box-shadow:inset 0 0 12px rgba(139,105,20,.06),0 2px 6px rgba(139,105,20,.08)}
-.card.faction-xiwei{background:linear-gradient(135deg,#FDF8ED,#F0EAD8 50%,#E8DFC8);box-shadow:inset 0 0 12px rgba(139,105,20,.06),0 2px 6px rgba(139,105,20,.08)}
-.card.faction-beiqi{background:linear-gradient(135deg,#F5F5FA,#EDEDF2 50%,#E5E3EC);box-shadow:inset 0 0 12px rgba(61,79,95,.06),0 2px 6px rgba(61,79,95,.08)}
-.card.faction-beizhou{background:linear-gradient(135deg,#F5F5FA,#EDEDF2 50%,#E5E3EC);box-shadow:inset 0 0 12px rgba(61,79,95,.06),0 2px 6px rgba(61,79,95,.08)}
-.card.faction-common{background:linear-gradient(135deg,#F8F6F2,#F5F3EE 50%,#EDE8E0);box-shadow:0 1px 4px rgba(0,0,0,.04)}
-
-/* === 战场/棋盘增强 === */
-.battlefield{position:relative;
-  background:linear-gradient(180deg,rgba(245,240,232,.95) 0%,rgba(237,228,212,.9) 100%);
-  border:1px solid rgba(139,115,85,.2);border-radius:8px;padding:10px;margin:8px 0;
-  box-shadow:inset 0 2px 12px rgba(0,0,0,.05),0 1px 4px rgba(0,0,0,.06)}
-.battlefield::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  background:
-    radial-gradient(ellipse 80% 25% at 30% 20%,rgba(61,107,142,.04) 0%,transparent 70%),
-    radial-gradient(ellipse 60% 20% at 70% 80%,rgba(200,60,60,.03) 0%,transparent 70%),
-    radial-gradient(ellipse 90% 12% at 50% 50%,rgba(139,115,85,.05) 0%,transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80'%3E%3Cpath d='M0,80 Q50,40 100,55 Q150,20 200,45 Q250,10 300,35 Q350,25 400,50 L400,80Z' fill='%238B7355' opacity='.04'/%3E%3Cpath d='M0,80 Q80,50 160,60 Q240,30 320,55 Q380,40 400,60 L400,80Z' fill='%236B5B45' opacity='.03'/%3E%3C/svg%3E") center bottom / 100% 80px no-repeat,
-    radial-gradient(ellipse 60% 20% at 20% 90%,rgba(139,115,85,.06) 0%,transparent 70%),
-    radial-gradient(ellipse 50% 15% at 80% 85%,rgba(139,115,85,.05) 0%,transparent 70%),
-    radial-gradient(ellipse 80% 10% at 50% 95%,rgba(139,115,85,.07) 0%,transparent 60%);
-  pointer-events:none;border-radius:8px}
-.battlefield::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;
-  background:linear-gradient(0deg,rgba(60,50,40,.06) 0%,transparent 100%);
-  border-radius:0 0 8px 8px;pointer-events:none}
-.board-section{position:relative}
-.section-label{text-align:center;font-size:.8em;color:#8B7355;padding:6px 0;letter-spacing:3px;
-  font-family:'Noto Sans SC',sans-serif;font-weight:500;position:relative}
-.section-label::before,.section-label::after{content:'';position:absolute;top:50%;
-  width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(139,115,85,.4))}
-.section-label::before{left:calc(50% - 120px)}
-.section-label::after{right:calc(50% - 120px)}
-.decorative-line{height:4px;background:linear-gradient(90deg,transparent 2%,#8B6914 15%,#C83C3C 30%,#D4A84B 50%,#C83C3C 70%,#8B6914 85%,transparent 98%);
-  margin:12px 0;border-radius:2px;position:relative;box-shadow:0 0 8px rgba(139,105,20,.2)}
-.decorative-line::before{content:'';position:absolute;top:-3px;left:0;right:0;height:10px;
-  background:linear-gradient(90deg,transparent 5%,rgba(200,184,152,.25) 25%,rgba(200,184,152,.25) 75%,transparent 95%);
-  border-radius:5px}
-.decorative-line::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:10px;
-  background:linear-gradient(90deg,transparent 5%,rgba(200,184,152,.15) 25%,rgba(200,184,152,.15) 75%,transparent 95%);
-  border-radius:5px}
-.board-section.ai-rows{position:relative}
-.board-section.ai-rows::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(139,115,85,.3),transparent)}
-.row{background:linear-gradient(135deg,rgba(253,250,242,.7) 0%,rgba(245,240,232,.5) 100%);
-  border:1px solid rgba(216,205,180,.5);border-radius:6px;min-height:72px;
-  box-shadow:inset 0 1px 3px rgba(255,255,255,.5),0 1px 2px rgba(0,0,0,.03);
-  margin-bottom:6px}
-.row.highlight{border-color:rgba(139,105,20,.4);background:linear-gradient(135deg,rgba(139,105,20,.06) 0%,rgba(212,168,64,.04) 100%);
-  box-shadow:0 0 10px rgba(139,105,20,.12),inset 0 1px 3px rgba(255,255,255,.5)}
-
-/* === 对手手牌计数 === */
-.opponent-hand-pile{display:flex;align-items:center;gap:10px;justify-content:center;padding:6px 0}
-.card-back-pile{position:relative;width:56px;height:38px}
-.card-back-pile .card-back{position:absolute;width:40px;height:26px;
-  background:repeating-linear-gradient(45deg,#8B6914,#8B6914 2px,#A07818 2px,#A07818 4px);
-  border:1px solid #6B5010;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.card-back-pile .card-back:nth-child(1){transform:rotate(-4deg);z-index:1}
-.card-back-pile .card-back:nth-child(2){transform:rotate(1deg);z-index:2;left:5px;top:3px}
-.card-back-pile .card-back:nth-child(3){transform:rotate(-1.5deg);z-index:3;left:10px;top:1px}
-.card-back-count{position:absolute;z-index:4;right:-10px;top:-10px;
-  width:26px;height:26px;border-radius:50%;
-  background:linear-gradient(135deg,#C83C3C,#A03020);
-  color:#fff;font-size:.8em;font-weight:bold;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 6px rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.25);
-  font-family:'Noto Sans SC',sans-serif !important;line-height:1 !important;padding:0 !important;margin:0 !important}
-
-/* === 按钮增强 === */
-.btn{height:44px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.3);transition:all .2s ease;
-  font-family:'Noto Sans SC',sans-serif;font-weight:500;letter-spacing:2px}
-.btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.35)}
-.btn:active{transform:translateY(0);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
-.btn-primary{background:linear-gradient(180deg,#C83C3C,#A03020 40%,#8B2500);border-color:#6B1E00;color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.3)}
-.btn-primary:hover{background:linear-gradient(180deg,#D44444,#C83C3C 40%,#A03020);border-color:#8B2500;
-  box-shadow:0 6px 16px rgba(200,60,60,.35)}
-.btn-secondary{background:linear-gradient(180deg,#3D3D54,#2D2D44 40%,#1D1D34);border-color:#1A1A2E;color:#F5F0E8;
-  text-shadow:0 1px 2px rgba(0,0,0,.3)}
-.btn-secondary:hover{background:linear-gradient(180deg,#4D4D64,#3D3D54 40%,#2D2D44);border-color:#2D2D44}
-.btn-sm{height:36px;padding:6px 18px;font-size:.85em}
-.btn-pass{background:linear-gradient(180deg,#6B5B47,#5C4E3A 40%,#4A3E30);border-color:#3C3228;color:#D8CDB4;
-  text-shadow:0 1px 1px rgba(0,0,0,.2)}
-.btn-pass:hover{background:linear-gradient(180deg,#7B6B57,#6B5B47 40%,#5C4E3A);box-shadow:0 6px 16px rgba(107,91,71,.3)}
-.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:grayscale(.6);box-shadow:none}
-
-/* === 手牌区域增强 === */
-.hand-area{padding:10px 0}
-.hand-label{font-size:.85em;color:#8B7355;margin-bottom:8px;text-align:center;letter-spacing:3px;
-  font-family:'Noto Sans SC',sans-serif;font-weight:500}
-.hand-cards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:80px;padding:8px}
-
-/* === 菜单按钮增强 === */
-.menu-screen .btn{height:50px;font-size:1.15em;padding:14px 44px}
-
-/* === 响应式 === */
-@media(max-width:768px){
-  .card{width:110px;min-height:170px}
-  .card .card-illustration svg{width:38px;height:46px}
-  .hand-cards{gap:8px}
-  .row{min-height:64px}
-  .battlefield{padding:8px}
-  .decorative-line{margin:8px 0}
-  .game-header{flex-direction:column;gap:8px}
-  .game-header .player-info{min-width:120px}
-  .score-center{padding:8px 0}
-  .btn{height:42px;font-size:1em}
-  .card-back-pile .card-back{width:34px;height:22px}
-  .opponent-hand-pile{gap:8px}
-}
-@media(max-width:480px){
-  .card{width:100px;min-height:160px}
-  .card .card-illustration svg{width:32px;height:40px}
-  .card .card-ability{font-size:.5em;min-height:20px}
-  .row{min-height:56px;padding:4px 6px}
-  .hand-cards{gap:6px}
-  .btn{height:40px;font-size:.9em;padding:10px 20px}
-  .leader-grid{grid-template-columns:1fr}
-  .menu-title{font-size:2em;letter-spacing:4px}
-  .menu-seal{width:64px;height:64px;font-size:16px}
-}
-
-</style>
 </head>
 <body>
 <div id="app"></div>
@@ -607,14 +121,14 @@ const CARDS_DATA=[
 
 const LEADERS_DATA=[
 {id:1,name:'宋武帝刘裕',faction:'song',ability:{type:'row_boost',row:'infantry',value:2},desc:'本局步兵战力+2',era:'南朝·宋'},
-{id:2,name:'齐高帝萧道成',faction:'qi',ability:{type:'extra_draw',value:2},desc:'每局多抽2张牌',era:'南朝·齐'},
-{id:3,name:'梁武帝萧衍',faction:'liang',ability:{type:'row_boost',row:'navy',value:2},desc:'本局水军战力+2',era:'南朝·梁'},
-{id:4,name:'陈武帝陈霸先',faction:'chen',ability:{type:'extra_provisions',value:3},desc:'每局粮草+3',era:'南朝·陈'},
+{id:2,name:'齐高帝萧道成',faction:'qi',ability:{type:'extra_draw',value:1},desc:'每局多抽1张牌',era:'南朝·齐'},
+{id:3,name:'梁武帝萧衍',faction:'liang',ability:{type:'extra_provisions',value:1},desc:'每局粮草+1',era:'南朝·梁'},
+{id:4,name:'陈武帝陈霸先',faction:'chen',ability:{type:'row_boost',row:'navy',value:2},desc:'本局水军战力+2',era:'南朝·陈'},
 {id:5,name:'北魏太武帝拓跋焘',faction:'beiwei',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',era:'北朝·北魏'},
 {id:6,name:'东魏孝静帝元善见',faction:'dongwei',ability:{type:'opponent_discard',value:1},desc:'每局对手弃1张牌',era:'北朝·东魏'},
 {id:7,name:'西魏文帝元宝炬',faction:'xiwei',ability:{type:'all_boost',value:1},desc:'本局全军战力+1',era:'北朝·西魏'},
-{id:8,name:'北齐文宣帝高洋',faction:'beiqi',ability:{type:'extra_draw',value:1},desc:'每局多抽1张牌',era:'北朝·北齐'},
-{id:9,name:'北周武帝宇文邕',faction:'beizhou',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',era:'北朝·北周'}
+{id:8,name:'北齐文宣帝高洋',faction:'beiqi',ability:{type:'double_edge',value:3},desc:'最强行+3，最弱行-1（双刃暴君）',era:'北朝·北齐'},
+{id:9,name:'北周武帝宇文邕',faction:'beizhou',ability:{type:'hand_boost',value:2},desc:'手牌随机2张+2（整军经武）',era:'北朝·北周'}
 ];
 
 let uid=0;
@@ -673,6 +187,17 @@ function applyLeaderAbilityForRound(leader,playerIdx){
       addLog(`【${leader.name}】效果：${opp===0?'你':'AI'}弃掉了${h[idx].name}`);
       h.splice(idx,1);
     }
+  }
+  if(a.type==='row_boost' && a.row==='any'){
+    const myBoard=getBoard(playerIdx);
+    const rows=['infantry','cavalry','navy','strategy'];
+    let maxPower=-1,bestRow='infantry';
+    rows.forEach(r=>{
+      const p=getRowPower(myBoard[r],playerIdx);
+      if(p>maxPower){maxPower=p;bestRow=r}
+    });
+    myBoard[bestRow].forEach(c=>{c.strength+=a.value});
+    addLog(`【${leader.name}】效果：${ROW_NAMES[bestRow]}行+${a.value}`);
   }
 }
 
@@ -1210,95 +735,30 @@ function render(){
 function renderMenu(el){
   el.innerHTML=`
   <div class="menu-screen">
-  <div class="menu-battlefield">
-    <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMax slice">
-      <!-- 远山 -->
-      <path d="M0,400 Q150,300 300,350 Q450,280 600,320 Q750,260 900,310 Q1050,270 1200,340 L1200,600 L0,600Z" fill="#8B7355" opacity=".3"/>
-      <path d="M0,420 Q200,340 400,380 Q600,300 800,360 Q1000,290 1200,370 L1200,600 L0,600Z" fill="#6B5B45" opacity=".25"/>
-      <!-- 城池左 -->
-      <rect x="80" y="340" width="60" height="80" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
-      <rect x="75" y="330" width="70" height="15" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
-      <line x1="80" y1="330" x2="80" y2="310" stroke="#5C3A21" stroke-width="1" opacity=".3"/>
-      <line x1="140" y1="330" x2="140" y2="310" stroke="#5C3A21" stroke-width="1" opacity=".3"/>
-      <!-- 城池右 -->
-      <rect x="1060" y="330" width="60" height="90" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
-      <rect x="1055" y="320" width="70" height="15" fill="none" stroke="#5C3A21" stroke-width="1.5" opacity=".4"/>
-      <!-- 烽火台 -->
-      <polygon points="600,280 585,320 615,320" fill="none" stroke="#8B2500" stroke-width="1.5" opacity=".35"/>
-      <path d="M597,275 Q600,260 603,275" stroke="#C41E3A" stroke-width="2" fill="none" opacity=".4"/>
-      <!-- 骑兵左 -->
-      <g transform="translate(200,360) scale(.7)" opacity=".35">
-        <path d="M10,20 L30,5 L50,20 L45,35 L15,35Z" stroke="#3C3C3C" stroke-width="2" fill="none"/>
-        <path d="M30,5 L30,-5" stroke="#3C3C3C" stroke-width="2"/>
-        <circle cx="30" cy="-8" r="3" fill="#3C3C3C" opacity=".5"/>
-      </g>
-      <g transform="translate(240,355) scale(.6)" opacity=".3">
-        <path d="M10,20 L30,5 L50,20 L45,35 L15,35Z" stroke="#3C3C3C" stroke-width="2" fill="none"/>
-        <circle cx="30" cy="-8" r="3" fill="#3C3C3C" opacity=".5"/>
-      </g>
-      <!-- 骑兵右 -->
-      <g transform="translate(920,355) scale(.7) scaleX(-1)" opacity=".35">
-        <path d="M10,20 L30,5 L50,20 L45,35 L15,35Z" stroke="#3C3C3C" stroke-width="2" fill="none"/>
-        <circle cx="30" cy="-8" r="3" fill="#3C3C3C" opacity=".5"/>
-      </g>
-      <!-- 步兵阵 -->
-      <g opacity=".25">
-        <line x1="400" y1="400" x2="400" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-        <line x1="420" y1="400" x2="420" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-        <line x1="440" y1="400" x2="440" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-        <line x1="460" y1="400" x2="460" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-        <line x1="740" y1="400" x2="740" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-        <line x1="760" y1="400" x2="760" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-        <line x1="780" y1="400" x2="780" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-        <line x1="800" y1="400" x2="800" y2="370" stroke="#3C3C3C" stroke-width="2"/>
-      </g>
-      <!-- 战船 -->
-      <g transform="translate(500,460)" opacity=".25">
-        <path d="M0,0 Q20,-15 40,-10 Q50,0 40,10 Q20,15 0,0Z" stroke="#5C3A21" stroke-width="1.5" fill="none"/>
-        <line x1="20" y1="-10" x2="20" y2="-35" stroke="#5C3A21" stroke-width="1.5"/>
-        <path d="M20,-35 L35,-25 L20,-20Z" stroke="#5C3A21" stroke-width="1" fill="none"/>
-      </g>
-      <g transform="translate(700,470)" opacity=".2">
-        <path d="M0,0 Q15,-12 30,-8 Q40,0 30,8 Q15,12 0,0Z" stroke="#5C3A21" stroke-width="1.5" fill="none"/>
-        <line x1="15" y1="-8" x2="15" y2="-28" stroke="#5C3A21" stroke-width="1.5"/>
-        <path d="M15,-28 L28,-20 L15,-16Z" stroke="#5C3A21" stroke-width="1" fill="none"/>
-      </g>
-      <!-- 旌旗 -->
-      <line x1="350" y1="380" x2="350" y2="340" stroke="#8B2500" stroke-width="1" opacity=".3"/>
-      <polygon points="350,340 370,345 350,355" fill="#C41E3A" opacity=".2"/>
-      <line x1="850" y1="375" x2="850" y2="335" stroke="#8B2500" stroke-width="1" opacity=".3"/>
-      <polygon points="850,335 830,340 850,350" fill="#C41E3A" opacity=".2"/>
-      <!-- 水面 -->
-      <path d="M0,500 Q150,490 300,500 Q450,510 600,500 Q750,490 900,500 Q1050,510 1200,500" stroke="#8B7355" stroke-width="1" fill="none" opacity=".15"/>
-      <path d="M0,520 Q200,510 400,520 Q600,530 800,520 Q1000,510 1200,520" stroke="#8B7355" stroke-width="1" fill="none" opacity=".1"/>
-      <!-- 飞鸟 -->
-      <path d="M300,200 Q310,190 320,200" stroke="#3C3C3C" stroke-width="1" fill="none" opacity=".2"/>
-      <path d="M330,195 Q340,185 350,195" stroke="#3C3C3C" stroke-width="1" fill="none" opacity=".15"/>
-      <path d="M880,210 Q890,200 900,210" stroke="#3C3C3C" stroke-width="1" fill="none" opacity=".2"/>
-    </svg>
-  </div>
-    <div class="poetry-container">
-      <div class="poetry-line">余 霞 散 成 绮</div>
-      <div class="poetry-line">澄 江 静 如 练</div>
-      <div class="poetry-line">池 塘 生 春 草</div>
-      <div class="poetry-line">园 柳 变 鸣 禽</div>
-      <div class="poetry-line">大 江 流 日 夜</div>
-      <div class="poetry-line">客 心 悲 未 央</div>
-      <div class="poetry-line">蝉 噪 林 逾 静</div>
-      <div class="poetry-line">鸟 鸣 山 更 幽</div>
-      <div class="poetry-line">泻 水 置 平 地</div>
-      <div class="poetry-line">各 自 东 西 南 北 流</div>
+    <div class="menu-battlefield">
+      <img src="assets/cover-battlefield.jpg" alt="古战场"/>
     </div>
-    <div class="menu-seal">天下<br>对弈</div>
-    <div class="menu-title">南北朝·天下对弈</div>
-    <div class="menu-subtitle">— 卡 牌 对 战 —</div>
-    <div class="decorative-line" style="width:200px"></div>
-    <p style="color:#8B7355;margin:16px 0 28px;font-size:.9em;letter-spacing:2px;line-height:1.8">
-      四行布阵·三局两胜<br>运筹帷幄·决胜千里
-    </p>
-    <button class="btn btn-primary" onclick="G.phase='tutorial';render()">开 始 游 戏</button>
-    <div style="margin-top:40px;color:#B8A88A;font-size:.75em;letter-spacing:1px">
-      昆特牌风格 · 南北朝历史题材
+    <div class="poetry-left">
+      <div class="poetry-line">余 霞 散 成 绮</div>
+      <div class="poetry-line">池 塘 生 春 草</div>
+      <div class="poetry-line">大 江 流 日 夜</div>
+    </div>
+    <div class="poetry-right">
+      <div class="poetry-line">澄 江 静 如 练</div>
+      <div class="poetry-line">客 心 悲 未 央</div>
+      <div class="poetry-line">鸟 鸣 山 更 幽</div>
+    </div>
+    <div class="menu-content-wrap">
+      <div class="menu-seal">天下对弈</div>
+      <div class="menu-title">南北朝 · 天下对弈</div>
+      <div class="menu-subtitle">— 卡牌对战 —</div>
+      <div class="menu-line"></div>
+      <div class="menu-desc">
+        四行布阵 · 三局两胜<br/>
+        运筹帷幄 · 决胜千里
+      </div>
+      <button class="menu-btn" onclick="G.phase='tutorial';render()">开始游戏</button>
+      <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
     </div>
   </div>`;
 }
@@ -1323,18 +783,43 @@ function renderTutorial(el){
   </div>`;
 }
 
+function leaderImgFallback(img, fallbackSrc, color, initial){
+  // Three-level fallback: PNG -> existing PNG -> placeholder color block
+  if(img._fallbackLevel === undefined) img._fallbackLevel = 0;
+  img._fallbackLevel++;
+  if(img._fallbackLevel === 1){
+    img.onerror=null;
+    img.src=fallbackSrc;
+    img.onerror=function(){leaderImgFallback(this, null, color, initial)};
+  } else {
+    img.style.display='none';
+    const ph=img.parentNode.querySelector('.placeholder-block');
+    if(ph) ph.style.display='flex';
+  }
+}
+
 function renderLeaderSelect(el){
   let cards='';
   LEADERS_DATA.forEach(l=>{
     const f=FACTIONS[l.faction];
+    const factionColor=f.color;
     const sel=G._selectedLeader===l.id?'selected':'';
-    cards+=`<div class="leader-card ${sel}" onclick="selectLeader(${l.id})">
-      <div class="scroll-line-left"></div>
-      <div class="scroll-line-right"></div>
-      <div class="era">${l.era}</div>
-      <div class="name">${l.name}</div>
-      <span class="faction-tag" style="background:${f.color}">${f.name}</span>
-      <div class="ability">✦ ${l.desc}</div>
+    const imgSrc=`assets/leaders/leader_L${l.id}.png`;
+    const imgFallback=`assets/leaders/leader_L${l.id}.png`;
+    cards+=`<div class="leader-card ${sel}" style="--fc:${factionColor};--fc22:${factionColor}22;--fc11:${factionColor}11" onclick="selectLeader(${l.id})">
+      <div class="leader-portrait">
+        <img src="${imgSrc}"
+             alt="${l.name}"
+             onerror="leaderImgFallback(this,'${imgFallback}','${factionColor}','${l.name[0]}')"
+             loading="lazy"/>
+        <div class="placeholder-block">${l.name[0]}</div>
+      </div>
+      <div class="leader-info">
+        <div class="era">${l.era}</div>
+        <div class="name">${l.name}</div>
+        <span class="faction-tag">${f.name}</span>
+        <div class="ability">✦ ${l.desc}</div>
+      </div>
     </div>`;
   });
   el.innerHTML=`
@@ -1342,7 +827,7 @@ function renderLeaderSelect(el){
     <h2>选择领袖</h2>
     <p class="subtitle">你的领袖将决定阵营与特殊能力</p>
     <div class="leader-grid">${cards}</div>
-    <button class="btn btn-primary" onclick="confirmLeader()" ${G._selectedLeader?'':'disabled'}>确 认 出 征</button>
+    <button class="btn btn-primary" onclick="confirmLeader()" ${G._selectedLeader?'':'disabled'}>确认出征</button>
   </div>`;
 }
 
@@ -1376,32 +861,17 @@ function renderMulligan(app){
   const cardsHtml=G.playerHand.map((c,i)=>{
     const cf=FACTIONS[c.faction];
     const isSelected=sel.has(i);
-    const rarity=getCardRarity(c);
-    const rarityCls='card-rarity-'+rarity;
-    const rarityIcons={gold:'✦',purple:'◆',blue:'◇',gray:''};
-    const rarityIcon=rarityIcons[rarity]||'';
-    const cardIcon=getCategoryIcon(c);
-    const abilityText=(c.desc||'');
+    const cost=getCardCost(c.strength);
     const rowName=ROW_NAMES[c.row];
-    return`<div class="card ${isSelected?'selected':''} ${rarityCls}" onclick="onMulliganCardClick(${i})" title="${c.name} - ${c.desc}"
-      style="--faction-color:${cf.color};--faction-glow:${cf.color}40;perspective:600px;${isSelected?'transform:translateY(-8px) scale(1.03);':''}">
-      <div class="card-faction-stripe" style="background:${cf.color}"></div>
-      <div class="card-top-bar">
-        <span class="card-cost-chip">${getCardCost(c.strength)}</span>
-        <span class="card-rarity-icon" style="color:${rarity==='gold'?'#D4A840':rarity==='purple'?'#9B59B6':rarity==='blue'?'#3D6B8E':'#4A4A6A'}">${rarityIcon}</span>
-      </div>
+    const desc=(c.desc||'')+(c.protectArmor?` 🛡${c.protectArmor}`:'');
+    return`<div class="card ${isSelected?'selected':''}" onclick="onMulliganCardClick(${i})" title="${c.name} - ${c.desc}"
+      style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px) scale(1.03);':''}">
+      <div class="card-cost">${cost}</div>
       <div class="card-illustration"><img src="assets/cards/card_${c.id}.png" alt="${c.name}" onerror="this.style.display='none'"/></div>
       <div class="card-name">${c.name}</div>
-      <div class="card-tags">
-        <span class="card-type-tag">${rowName}</span>
-        <span class="card-faction-tag" style="background:${cf.color}">${cf.name}</span>
-      </div>
-      <div class="card-ability">${abilityText}</div>
-      <div class="card-stats-bar">
-        <span class="card-atk">${c.strength}</span>
-        <span class="card-sep"></span>
-        <span class="card-def">${c.strength}</span>
-      </div>
+      <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
+      <div class="card-ability">${desc}</div>
+      <div class="card-stats-bar"><span class="card-atk">⚔ ${c.strength}</span></div>
     </div>`;
   }).join('');
   app.innerHTML=`
@@ -1486,6 +956,27 @@ function useLeaderAbility(playerIdx){
       ['infantry','cavalry','navy','strategy'].forEach(r=>getBoard(playerIdx)[r].forEach(c=>c.strength+=ability.value));
       addLog(`【${leader.name}】技能：全场+${ability.value}`);
       break;
+    case'double_edge':{
+      const myBoard=getBoard(playerIdx);
+      const rows=['infantry','cavalry','navy','strategy'];
+      let maxP=-1,bestR='infantry',minP=Infinity,worstR='infantry';
+      rows.forEach(r=>{
+        const p=getRowPower(myBoard[r],playerIdx);
+        if(p>maxP){maxP=p;bestR=r}
+        if(p<minP){minP=p;worstR=r}
+      });
+      if(bestR===worstR) bestR=rows.find(r=>r!==worstR)||'infantry';
+      myBoard[bestR].forEach(c=>c.strength+=ability.value);
+      myBoard[worstR].forEach(c=>c.strength=Math.max(1,c.strength-1));
+      addLog(`【${leader.name}】技能：${ROW_NAMES[bestR]}行+${ability.value}，${ROW_NAMES[worstR]}行-1`);
+      break;}
+    case'hand_boost':{
+      const hand=getHand(playerIdx);
+      const shuffled=[...hand].sort(()=>Math.random()-0.5);
+      const cnt=Math.min(ability.value,shuffled.length);
+      for(let i=0;i<cnt;i++) shuffled[i].strength+=2;
+      addLog(`【${leader.name}】技能：手牌${cnt}张+2`);
+      break;}
   }
   G.leaderAbilityUsed[playerIdx]=true;
   render();
@@ -1528,8 +1019,9 @@ function renderGame(el,lastUid,lastBy){
       </div>
     </div>
   </div>
-  <div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>
-  <div class="battlefield">
+  <div class="battlefield-wrap">
+    <div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>
+    <div class="battlefield">
     <div class="board-section ai-rows">
       <div class="section-label">— AI 阵营 · 战力 ${aP} —</div>
       ${renderRow('navy',G.aiBoard.navy,false,lastUid,lastBy)}
@@ -1558,10 +1050,11 @@ function renderGame(el,lastUid,lastBy){
   </div>
   <div class="action-bar">
     <button class="btn btn-sm btn-primary" onclick="useLeaderAbility(0)" ${G.currentTurn!=='player'||G.playerPassed||G.leaderAbilityUsed[0]?'disabled':''}>${G.leaderAbilityUsed[0]?'已使用':'主将技能'} · ${G.playerLeader?G.playerLeader.name:''}</button>
+    ${G.playerLeader&&!G.leaderAbilityUsed[0]?`<div class="skill-desc">${G.playerLeader.desc}</div>`:''}
     <button class="btn btn-sm btn-pass" onclick="playerPass()" ${G.currentTurn!=='player'||G.playerPassed?'disabled':''}>放弃本局</button>
   </div>
   <div class="log-area">
-    ${G.logs.map(l=>`<div class="log-entry">${l}</div>`).join('')}
+    ${G.logs.slice(-3).map(l=>`<div class="log-entry">${l}</div>`).join('')}
   </div>`;
 
   const la=document.querySelector('.log-area');
@@ -1607,32 +1100,16 @@ function renderHandCard(card,idx){
   const playable=G.currentTurn==='player'&&!G.playerPassed&&cost<=G.provisions[0];
   const selected=G.selectedCard===idx;
   const cls=selected?'selected':(!playable?'unplayable':'');
-  const rarity=getCardRarity(card);
-  const rarityCls='card-rarity-'+rarity;
-  const rarityIcons={gold:'✦',purple:'◆',blue:'◇',gray:''};
-  const rarityIcon=rarityIcons[rarity]||'';
-  const abilityText=(card.desc||'')+(card.protectArmor?`<span style="color:#4A90D9;font-weight:bold">🛡${card.protectArmor}</span>`:'');
-  const cardIcon=getCategoryIcon(card);
   const rowName=ROW_NAMES[card.row];
-  return`<div class="card ${cls} ${rarityCls}" onclick="onCardClick(${idx})" title="${card.name} - ${card.desc}"
-    style="--faction-color:${f.color};--faction-glow:${f.color}40;perspective:600px">
-    <div class="card-faction-stripe" style="background:${f.color}"></div>
-    <div class="card-top-bar">
-      <span class="card-cost-chip">${cost}</span>
-      <span class="card-rarity-icon" style="color:${rarity==='gold'?'#D4A840':rarity==='purple'?'#9B59B6':rarity==='blue'?'#3D6B8E':'#4A4A6A'}">${rarityIcon}</span>
-    </div>
+  const desc=(card.desc||'')+(card.protectArmor?` 🛡${card.protectArmor}`:'');
+  return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${card.name} - ${card.desc}"
+    style="--faction-color:${f.color};--faction-glow:${f.color}40">
+    <div class="card-cost">${cost}</div>
     <div class="card-illustration"><img src="assets/cards/card_${card.id}.png" alt="${card.name}" onerror="this.style.display='none'"/></div>
     <div class="card-name">${card.name}</div>
-    <div class="card-tags">
-      <span class="card-type-tag">${rowName}</span>
-      <span class="card-faction-tag" style="background:${f.color}">${f.name}</span>
-    </div>
-    <div class="card-ability">${abilityText}</div>
-    <div class="card-stats-bar">
-      <span class="card-atk">${card.strength}</span>
-      <span class="card-sep"></span>
-      <span class="card-def">${card.strength}</span>
-    </div>
+    <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
+    <div class="card-ability">${desc}</div>
+    <div class="card-stats-bar"><span class="card-atk">⚔ ${card.strength}</span></div>
   </div>`;
 }
 
