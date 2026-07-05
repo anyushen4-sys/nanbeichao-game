@@ -48,6 +48,6 @@ jobs:
           git diff --staged --quiet && echo "No changes to commit" && exit 0
           
           git commit -m "chore: daily triage report $(date -u +%Y-%m-%d)"
-          git push origin main
+          git push origin master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
