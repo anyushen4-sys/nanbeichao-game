@@ -1,0 +1,53 @@
+name: Daily Triage
+
+on:
+  schedule:
+    # 9:00 AM UTC, Monday-Friday (adjust timezone as needed)
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Full history for commit analysis
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run daily triage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: python3 .github/triage.py
+
+      - name: Commit and push triage report
+        run: |
+          git config user.name "loop-engineering[bot]"
+          git config user.email "loop-engineering@users.noreply.github.com"
+          
+          # Check if report was generated
+          if [ ! -f .github/triage-report.md ]; then
+            echo "No triage report generated"
+            exit 0
+          fi
+          
+          # Stage and commit
+          git add .github/triage-report.md
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+          
+          git commit -m "chore: daily triage report $(date -u +%Y-%m-%d)"
+          git push origin master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
