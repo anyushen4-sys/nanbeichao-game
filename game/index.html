@@ -849,7 +849,7 @@ function renderLeaderSelect(el){
     <h2>选择领袖</h2>
     <p class="subtitle">你的领袖将决定阵营与特殊能力</p>
     <div class="leader-grid">${cards}</div>
-    <button class="btn btn-primary" onclick="confirmLeader()" ${G._selectedLeader?'':'disabled'}>确认出征</button>
+    <button class="btn btn-primary btn-confirm-leader" onclick="confirmLeader()" ${G._selectedLeader?'':'disabled'}>确认出征</button>
   </div>`;
 }
 

@@ -1453,6 +1453,45 @@ html, body {
     background: linear-gradient(180deg,#7B6B57,#6B5B47 40%,#5C4E3A);
     box-shadow: 0 6px 16px rgba(107,91,71,.3);
 }
+/* 领袖确认出征按钮 - 大且显眼 */
+.leader-select .btn-confirm-leader {
+    display: block;
+    width: fit-content;
+    min-width: 280px;
+    margin: 32px auto 12px;
+    padding: 18px 56px;
+    height: auto;
+    font-size: 1.3em;
+    font-weight: 600;
+    letter-spacing: 6px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #D44444 0%, #C41E3A 50%, #8B2500 100%);
+    border: 2px solid #6B1E00;
+    color: #FFF8E8;
+    text-shadow: 0 1px 2px rgba(0,0,0,.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,.4), 0 0 24px rgba(196,30,58,.25), inset 0 1px 0 rgba(255,255,255,.15);
+    animation: btnConfirmPulse 2s ease-in-out infinite;
+    transition: all .25s ease;
+}
+.leader-select .btn-confirm-leader:hover:not(:disabled) {
+    background: linear-gradient(180deg, #E55555 0%, #D44444 50%, #A03020 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(196,30,58,.5), 0 0 32px rgba(196,30,58,.35), inset 0 1px 0 rgba(255,255,255,.2);
+    animation: none;
+}
+.leader-select .btn-confirm-leader:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+.leader-select .btn-confirm-leader:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+    animation: none;
+}
+@keyframes btnConfirmPulse {
+    0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,.4), 0 0 24px rgba(196,30,58,.25), inset 0 1px 0 rgba(255,255,255,.15); }
+    50%      { box-shadow: 0 4px 16px rgba(0,0,0,.5), 0 0 40px rgba(196,30,58,.55), inset 0 1px 0 rgba(255,255,255,.2); }
+}
+
 .btn:disabled {
     opacity: .45;
     cursor: not-allowed;
