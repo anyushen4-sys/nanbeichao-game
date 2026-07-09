@@ -523,13 +523,21 @@ function playerPlayCard(handIdx,row){
 
 function playerPass(){
   if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
-  G.playerPassed=true;
-  G.selectedCard=null;
-  addLog('你放弃了本局');
-  if(G.aiPassed){endRound();return}
-  G.currentTurn='ai';
-  render();
-  setTimeout(aiTurn,800);
+  // 包装：先弹确认弹窗，确认后才真正放弃
+  showConfirmModal(
+    '放弃本局？',
+    '放弃后本局不能再出牌，双方都放弃时结算本局。',
+    () => {
+      if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
+      G.playerPassed=true;
+      G.selectedCard=null;
+      addLog('你放弃了本局');
+      if(G.aiPassed){endRound();return}
+      G.currentTurn='ai';
+      render();
+      setTimeout(aiTurn,800);
+    }
+  );
 }
 
 function afterPlayerTurn(){
@@ -759,6 +767,20 @@ function renderMenu(el){
       </div>
       <button class="menu-btn" onclick="G.phase='tutorial';render()">开始游戏</button>
       <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
+    </div>
+    <div class="menu-bottom-deco">
+      <div class="deco-line"></div>
+      <div class="deco-dots">
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot south"></span>
+        <span class="deco-dot south"></span>
+        <span class="deco-dot south"></span>
+        <span class="deco-dot south"></span>
+      </div>
     </div>
   </div>`;
 }
@@ -1038,13 +1060,14 @@ function renderGame(el,lastUid,lastBy){
       ${renderRow('strategy',G.playerBoard.strategy,true,lastUid,lastBy)}
     </div>
   </div>
+  </div>
   <div class="turn-indicator">
     <span class="${turnClass}">${turnText}</span>
     ${G.playerPassed&&!G.aiPassed?'<span class="waiting"> · 你已放弃，等待AI</span>':''}
   </div>
   <div class="hand-area">
     <div class="hand-label">— 你的手牌 (${G.playerHand.length}张) —</div>
-    <div class="hand-cards ${G.playerHand.length===0?'empty':''}">
+    <div class="hand-cards ${G.playerHand.length===0?'empty':''}${G.playerHand.length>=5?' many-cards':''}${G.playerHand.length>=7?' overflow-cards':''}">
       ${G.playerHand.length===0?'无手牌':G.playerHand.map((c,i)=>renderHandCard(c,i)).join('')}
     </div>
   </div>
@@ -1056,9 +1079,7 @@ function renderGame(el,lastUid,lastBy){
   <div class="log-area">
     ${G.logs.slice(-3).map(l=>`<div class="log-entry">${l}</div>`).join('')}
   </div>`;
-
-  const la=document.querySelector('.log-area');
-  if(la)la.scrollTop=la.scrollHeight;
+if(la)la.scrollTop=la.scrollHeight;
 }
 
 function renderPips(current,max,playerClass){
@@ -1105,7 +1126,7 @@ function renderHandCard(card,idx){
   return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${card.name} - ${card.desc}"
     style="--faction-color:${f.color};--faction-glow:${f.color}40">
     <div class="card-cost">${cost}</div>
-    <div class="card-illustration"><img src="assets/cards/card_${card.id}.png" alt="${card.name}" onerror="this.style.display='none'"/></div>
+    <div class="card-illustration"><img src="assets/cards/card_${card.id}.png" alt="${card.name}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none'"/></div>
     <div class="card-name">${card.name}</div>
     <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
     <div class="card-ability">${desc}</div>
@@ -1198,9 +1219,239 @@ function resetGame(){
   G._selectedLeader=null;G._roundResult=null;G._lastPlayedBy=null;
   G.mulliganSelected=new Set();G.leaderAbilityUsed=[false,false];
   render();
-}
+  }
 
-document.addEventListener('DOMContentLoaded',()=>render());
-</script>
-</body>
-</html>
+  // ===== 任务 E 新功能：localStorage 存档 + Pass 确认弹窗 + 战绩统计 =====
+  const SAVE_KEY = 'nanbeichao_save';
+  const STATS_KEY = 'nanbeichao_stats';
+
+  function saveGameState(){
+    try {
+      const state = {
+        phase: G.phase,
+        round: G.round,
+        scores: G.scores,
+        playerLeader: G.playerLeader,
+        aiLeader: G.aiLeader,
+        provisions: G.provisions,
+        playerHand: G.playerHand,
+        aiHand: G.aiHand,
+        playerBoard: G.playerBoard,
+        aiBoard: G.aiBoard,
+        globalBuffs: G.globalBuffs,
+        graveyard: G.graveyard,
+        logs: G.logs.slice(-20),
+        currentTurn: G.currentTurn,
+        playerPassed: G.playerPassed,
+        aiPassed: G.aiPassed,
+        selectedCard: G.selectedCard,
+        turnCount: G.turnCount,
+        leaderAbilityUsed: G.leaderAbilityUsed,
+        playerDeck: G.playerDeck,
+        aiDeck: G.aiDeck,
+        savedAt: Date.now()
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    } catch(e) { /* quota / private mode */ }
+  }
+
+  function loadGameState(){
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch(e) { return null; }
+  }
+
+  function clearGameState(){
+    try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+  }
+
+  function hasSavedGame(){
+    return !!loadGameState();
+  }
+
+  function loadStats(){
+    try {
+      const raw = localStorage.getItem(STATS_KEY);
+      if (!raw) return { total: 0, wins: 0, losses: 0, ties: 0 };
+      return JSON.parse(raw);
+    } catch(e) { return { total: 0, wins: 0, losses: 0, ties: 0 }; }
+  }
+
+  function updateStats(playerWin, isTie=false){
+    try {
+      const stats = loadStats();
+      stats.total++;
+      if (isTie) stats.ties++;
+      else if (playerWin) stats.wins++;
+      else stats.losses++;
+      localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+      return stats;
+    } catch(e) { return loadStats(); }
+  }
+
+  function renderStatsHTML(stats){
+    const wr = stats.total > 0 ? Math.round((stats.wins / stats.total) * 100) : 0;
+    return `<div class="stats-line">
+      <div class="stat"><div class="stat-val">${stats.total}</div><div class="stat-label">总场次</div></div>
+      <div class="stat"><div class="stat-val win">${stats.wins}</div><div class="stat-label">胜利</div></div>
+      <div class="stat"><div class="stat-val lose">${stats.losses}</div><div class="stat-label">失败</div></div>
+      <div class="stat"><div class="stat-val">${wr}%</div><div class="stat-label">胜率</div></div>
+    </div>`;
+  }
+
+  function showConfirmModal(title, msg, onYes){
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-modal-overlay';
+    overlay.innerHTML = `<div class="confirm-modal">
+      <div class="confirm-title">${title}</div>
+      <div class="confirm-msg">${msg}</div>
+      <div class="confirm-btns">
+        <button class="confirm-btn confirm-no">取消</button>
+        <button class="confirm-btn confirm-yes">确认</button>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector('.confirm-no').onclick = close;
+    overlay.querySelector('.confirm-yes').onclick = () => { close(); onYes(); };
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  }
+
+  function continueSavedGame(){
+    const state = loadGameState();
+    if (!state) return;
+    Object.assign(G, {
+      phase: state.phase,
+      round: state.round,
+      scores: state.scores,
+      playerLeader: state.playerLeader,
+      aiLeader: state.aiLeader,
+      provisions: state.provisions,
+      playerHand: state.playerHand,
+      aiHand: state.aiHand,
+      playerBoard: state.playerBoard,
+      aiBoard: state.aiBoard,
+      globalBuffs: state.globalBuffs,
+      graveyard: state.graveyard,
+      logs: state.logs,
+      currentTurn: state.currentTurn,
+      playerPassed: state.playerPassed,
+      aiPassed: state.aiPassed,
+      selectedCard: state.selectedCard,
+      turnCount: state.turnCount,
+      leaderAbilityUsed: state.leaderAbilityUsed,
+      playerDeck: state.playerDeck,
+      aiDeck: state.aiDeck
+    });
+    G.phase = 'playing';
+    addLog(`继续上局（保存于 ${new Date(state.savedAt).toLocaleString('zh-CN')}）`);
+    render();
+  }
+
+  // 重写 resetGame，保存战绩
+  const _origResetGame = resetGame;
+  resetGame = function(){
+    _origResetGame();
+    clearGameState();
+  };
+
+  // 每次 render 后自动存档（playing 阶段）
+  const _origRender = render;
+  render = function(){
+    _origRender();
+    if (G.phase === 'playing' || G.phase === 'mulligan') {
+      saveGameState();
+    }
+  };
+
+  // 重写 checkGameEnd 记录战绩
+  const _origCheckGameEnd = checkGameEnd;
+  checkGameEnd = function(){
+    const willEnd = G.scores[0]>=2||G.scores[1]>=2||G.round>=3;
+    if (willEnd) {
+      const playerWin = G.scores[0] > G.scores[1];
+      const isTie = G.scores[0] === G.scores[1];
+      updateStats(playerWin, isTie);
+      clearGameState();
+    }
+    return _origCheckGameEnd();
+  };
+
+  // 重写 renderGameResult 增加战绩
+  const _origRenderGameResult = renderGameResult;
+  renderGameResult = function(el){
+    const playerWin = G.scores[0] > G.scores[1];
+    const stats = loadStats();
+    // 保存本局结果到 stats（实际更新在 checkGameEnd 中）
+    el.innerHTML = `
+    <div class="game-result">
+      <div class="menu-seal ${playerWin?'':'defeat'}">${playerWin?'胜利':'败北'}</div>
+      <h1 class="${playerWin?'victory':'defeat'}">${playerWin?'天下归一':'功败垂成'}</h1>
+      <div class="final-score">${G.scores[0]} : ${G.scores[1]}</div>
+      <div class="detail">
+        ${G.playerLeader.name}（${FACTIONS[G.playerLeader.faction].name}）VS ${G.aiLeader.name}（${FACTIONS[G.aiLeader.faction].name}）
+      </div>
+      <div class="decorative-line" style="width:200px;margin:20px auto"></div>
+      ${renderStatsHTML(stats)}
+      <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
+        ${playerWin?'运筹帷幄之中，决胜千里之外。':'胜败乃兵家常事，再接再厉。'}
+      </p>
+      <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
+    </div>`;
+  };
+
+  // 重写 renderMenu 增加"继续上局"按钮
+  const _origRenderMenu = renderMenu;
+  renderMenu = function(el){
+    const saved = hasSavedGame();
+    el.innerHTML = `
+    <div class="menu-screen">
+      <div class="menu-battlefield">
+        <img src="assets/cover-battlefield.jpg" alt="古战场"/>
+      </div>
+      <div class="poetry-left">
+        <div class="poetry-line">余 霞 散 成 绮</div>
+        <div class="poetry-line">池 塘 生 春 草</div>
+        <div class="poetry-line">大 江 流 日 夜</div>
+      </div>
+      <div class="poetry-right">
+        <div class="poetry-line">澄 江 静 如 练</div>
+        <div class="poetry-line">客 心 悲 未 央</div>
+        <div class="poetry-line">鸟 鸣 山 更 幽</div>
+      </div>
+      <div class="menu-content-wrap">
+        <div class="menu-seal">天下对弈</div>
+        <div class="menu-title">南北朝 · 天下对弈</div>
+        <div class="menu-subtitle">— 卡牌对战 —</div>
+        <div class="menu-line"></div>
+        <div class="menu-desc">
+          四行布阵 · 三局两胜<br/>
+          运筹帷幄 · 决胜千里
+        </div>
+        <button class="menu-btn" onclick="G.phase='tutorial';render()">开始游戏</button>
+        ${saved?`<button class="menu-btn" style="margin-top:12px;background:linear-gradient(180deg,#7A5C2E,#5C421C);font-size:1em;padding:10px 40px;" onclick="continueSavedGame()">继续上局</button>`:''}
+        <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
+      </div>
+      <div class="menu-bottom-deco">
+        <div class="deco-line"></div>
+        <div class="deco-dots">
+          <span class="deco-dot north"></span>
+          <span class="deco-dot north"></span>
+          <span class="deco-dot north"></span>
+          <span class="deco-dot north"></span>
+          <span class="deco-dot north"></span>
+          <span class="deco-dot south"></span>
+          <span class="deco-dot south"></span>
+          <span class="deco-dot south"></span>
+          <span class="deco-dot south"></span>
+        </div>
+      </div>
+    </div>`;
+  };
+
+  document.addEventListener('DOMContentLoaded',()=>render());
+  </script>
+  </body>
+  </html>
