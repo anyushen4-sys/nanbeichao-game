@@ -912,8 +912,8 @@ function renderMulligan(app){
     return`<div class="card ${isSelected?'selected':''}" onclick="onMulliganCardClick(${i})" title="${c.name} - ${c.desc}"
       style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px) scale(1.03);':''}">
       <div class="card-cost">${cost}</div>
-      <div class="card-illustration"><img src="assets/cards/card_${c.id}.png" alt="${c.name}" onerror="this.style.display='none'"/></div>
-      <div class="card-name">${c.name}</div>
+      <div class="card-illustration"><img src="assets/cards/card_${c.id}.png?v=193e007" alt="${c.name}" onload="this.classList.add('loaded')" onerror="this.style.display='none';this.nextElementSibling&&this.nextElementSibling.classList.add('show')"/><div class="card-art-fallback">${c.name}</div></div>
+            <div class="card-name">${c.name}</div>
       <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
       <div class="card-ability">${desc}</div>
       <div class="card-stats-bar"><span class="card-atk">⚔ ${c.strength}</span></div>
@@ -1149,8 +1149,8 @@ function renderHandCard(card,idx){
   return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${card.name} - ${card.desc}"
     style="--faction-color:${f.color};--faction-glow:${f.color}40">
     <div class="card-cost">${cost}</div>
-    <div class="card-illustration"><img src="assets/cards/card_${card.id}.png" alt="${card.name}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none'"/></div>
-    <div class="card-name">${card.name}</div>
+    <div class="card-illustration"><img src="assets/cards/card_${card.id}.png?v=193e007" alt="${card.name}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none';this.nextElementSibling&&this.nextElementSibling.classList.add('show')"/><div class="card-art-fallback">${card.name}</div></div>
+        <div class="card-name">${card.name}</div>
     <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
     <div class="card-ability">${desc}</div>
     <div class="card-stats-bar"><span class="card-atk">⚔ ${card.strength}</span></div>
