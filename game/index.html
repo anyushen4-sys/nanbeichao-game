@@ -577,6 +577,14 @@ function hasPlayableCard(p){
 
 function aiTurn(){
   if(G.phase!=='playing')return;
+  // 防御性检查: 如果AI粮草为0且手牌无费用可出，立即pass
+  if(G.provisions[1]<=0 && !hasPlayableCard(1)){
+    G.aiPassed=true;
+    addLog('AI无粮草可出，自动放弃');
+    if(G.playerPassed){endRound();return}
+    G.currentTurn='player';
+    render();return;
+  }
   if(G.aiPassed){
     if(G.playerPassed){endRound();return}
     G.currentTurn='player';
@@ -604,6 +612,7 @@ function aiTurn(){
   const choice=aiChooseCard();
   if(!choice){G.aiPassed=true;addLog('AI放弃了');if(G.playerPassed){endRound();return}G.currentTurn='player';render();return}
   setTimeout(()=>{
+    if(G.phase!=='playing'||G.aiPassed)return;
     playCard(1,choice.handIdx,choice.row);
     G.turnCount++;
     if(G.playerPassed){endRound();return}
