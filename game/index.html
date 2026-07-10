@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>南北朝·天下对弈</title>
 <link rel="stylesheet" href="css/game.css"/>
+<!-- 领袖图预加载: 避免选择页加载时下半屏空白 -->
+<link rel="preload" as="image" href="assets/leaders/leader_L1.png" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L2.png" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L3.png" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L4.png" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L5.png" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L6.png" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L7.png" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L8.png" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L9.png" fetchpriority="auto"/>
 
 </head>
 <body>
@@ -837,12 +847,16 @@ function renderLeaderSelect(el){
     const sel=G._selectedLeader===l.id?'selected':'';
     const imgSrc=`assets/leaders/leader_L${l.id}.png`;
     const imgFallback=`assets/leaders/leader_L${l.id}.png`;
+    // 强制 eager 加载 (避免 lazy 导致下半屏图片空白), 第一排 4 张 high priority
+    const isFirstRow = l.id <= 4;
     cards+=`<div class="leader-card ${sel}" style="--fc:${factionColor};--fc22:${factionColor}22;--fc11:${factionColor}11" onclick="selectLeader(${l.id})">
       <div class="leader-portrait">
         <img src="${imgSrc}"
              alt="${l.name}"
              onerror="leaderImgFallback(this,'${imgFallback}','${factionColor}','${l.name[0]}')"
-             loading="lazy"/>
+             loading="eager"
+             decoding="async"
+             fetchpriority="${isFirstRow?'high':'auto'}"/>
         <div class="placeholder-block">${l.name[0]}</div>
       </div>
       <div class="leader-info">
