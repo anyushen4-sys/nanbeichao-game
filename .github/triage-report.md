@@ -1,17 +1,10 @@
 # Daily Triage Report
 
-**Generated:** 2026-07-09T11:45:53Z
+**Generated:** 2026-07-10T11:43:25Z
 
 ## 1. High-Priority Items (act on these)
 
-### CI/Workflow Failures
-- **Impact:** Broken CI blocks merges and may indicate regressions
-- **Suggested action:** Investigate failing workflows, draft minimal fix in isolated worktree
-- **Effort:** Medium
-
-| Workflow | Date | Link |
-|----------|------|------|
-| pages build and deployment | 2026-07-05T13:33:53Z | [link](https://github.com/anyushen4-sys/nanbeichao-game/actions/runs/28742528458) |
+- None detected — all recent workflows passed.
 
 ## 2. Watch Items (monitor, do not act yet)
 
@@ -23,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: d3d6be2 | feat(v5): SenseNova 国风水墨领袖图 — 9张全部重生成 | 2026-07-09T08:13:59Z
-- Next triage: 2026-07-10T11:45:53Z
+- Latest commit: 193e007 | fix: 恢复并去文字 - 63 张国风水墨卡图 | 2026-07-10T11:03:15Z
+- Next triage: 2026-07-11T11:43:25Z
