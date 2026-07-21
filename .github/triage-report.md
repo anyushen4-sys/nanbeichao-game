@@ -1,6 +1,6 @@
 # Daily Triage Report
 
-**Generated:** 2026-07-20T11:36:36Z
+**Generated:** 2026-07-21T10:56:19Z
 
 ## 1. High-Priority Items (act on these)
 
@@ -16,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: 4a51101 | chore: daily triage report 2026-07-17 | 2026-07-17T10:30:07Z
-- Next triage: 2026-07-21T11:36:36Z
+- Latest commit: 76e5ca5 | fix: card 29/26/112 重做 + timestamp cache-bust 1784623193 | 2026-07-21T08:39:57Z
+- Next triage: 2026-07-22T10:56:19Z
