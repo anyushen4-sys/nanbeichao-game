@@ -20,6 +20,13 @@
 <body>
 <div id="app"></div>
 <script src="js/card_data_uris.js"></script>
+<!--
+  [架构说明 2026-07-22 cron 接管修复]
+  本游戏当前采用 INLINE 模式:所有游戏逻辑(渲染/AI/规则/UI)都在本 index.html 内联。
+  js/ 目录下的 cards.js / game.js / rules.js / ui.js / ai.js 是历史遗留的 dead code,
+  在此模式下不会被加载。如果未来需要重构为模块化,请先把这些 .js 文件恢复,
+  再把 inline 代码迁移过去。当前为最小风险,保留 inline 不动。
+-->
 <script>
 const ROW_NAMES={infantry:'步兵',cavalry:'骑兵',navy:'水军',strategy:'谋略'};
 
@@ -534,21 +541,15 @@ function playerPlayCard(handIdx,row){
 
 function playerPass(){
   if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
-  // 包装：先弹确认弹窗，确认后才真正放弃
-  showConfirmModal(
-    '放弃本局？',
-    '放弃后本局不能再出牌，双方都放弃时结算本局。',
-    () => {
-      if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
-      G.playerPassed=true;
-      G.selectedCard=null;
-      addLog('你放弃了本局');
-      if(G.aiPassed){endRound();return}
-      G.currentTurn='ai';
-      render();
-      setTimeout(aiTurn,800);
-    }
-  );
+  // 直接放弃：去掉确认弹窗(防止误以为 Pass 没生效),改为 toast 提示
+  G.playerPassed=true;
+  G.selectedCard=null;
+  addLog('你放弃了本局');
+  showToast('已放弃本局,等待 AI');
+  if(G.aiPassed){endRound();return}
+  G.currentTurn='ai';
+  render();
+  setTimeout(aiTurn,800);
 }
 
 function afterPlayerTurn(){
@@ -651,11 +652,16 @@ function aiTurn(){
 }
 
 function aiShouldPass(){
+  // 早期几轮不让 AI 主动放弃(避免一上来就 Pass 太弱)
   if(G.turnCount<3)return false;
   const aiP=getBoardPower(G.aiBoard,1);
   const plP=getBoardPower(G.playerBoard,0);
-  // 只有当AI无牌可出时才Pass
+  const prov=G.provisions[1];
+  // 无牌可出必 Pass
   if(!hasPlayableCard(1))return true;
+  // 局势判断:AI 落后 5+ 战力,且剩余粮草只够出低费牌 → 战略性 Pass 让 AI 把赢面留给下一局
+  if(aiP < plP - 5 && prov <= 4)return true;
+  // 双方都已 Pass 会进入结算,这里不必处理
   return false;
 }
 
