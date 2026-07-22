@@ -912,17 +912,165 @@ html, body {
 }
 
 /* 结算页 */
-.round-result,.game-result {
-    max-width: 520px;
-    margin: 40px auto;
-    padding: 32px 24px;
+
+
+/* ===== Round Result Page ===== */
+.round-result {
+    max-width: 720px;
+    margin: 60px auto;
+    padding: 48px 40px;
     text-align: center;
-    background: linear-gradient(160deg,#2A2018 0%,#1A1410 100%);
-    border: 1px solid rgba(212,168,64,.25);
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.5), 0 0 60px rgba(212,168,64,.05);
-    color: #F5F0E8;
+    background: linear-gradient(160deg, #2A2018 0%, #1E1812 50%, #1A1410 100%);
+    border: 2px solid rgba(212, 168, 64, .35);
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0,0,0,.6), 0 0 80px rgba(212,168,64,.08);
+    position: relative;
+    overflow: hidden;
 }
+
+.round-result::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #D4A840, #C41E3A, #D4A840, transparent);
+    opacity: .8;
+}
+
+.round-result h2 {
+    font-size: 2.8em;
+    color: #D4A840;
+    margin-bottom: 28px;
+    text-shadow: 0 0 20px rgba(212,168,64,.4), 0 4px 8px rgba(0,0,0,.5);
+    letter-spacing: 4px;
+    font-family: 'STKaiti','KaiTi','SimSun',serif;
+}
+
+.round-result .power-compare {
+    margin: 24px 0 28px;
+    padding: 28px 24px;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(212,168,64,.2);
+    border-radius: 12px;
+}
+
+.round-result .power-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+}
+
+.round-result .power-side {
+    flex: 1;
+    text-align: center;
+    padding: 16px;
+    border-radius: 10px;
+    transition: all .3s;
+}
+
+.round-result .power-side.win-side {
+    background: rgba(46,125,50,.12);
+    border: 1px solid rgba(46,125,50,.3);
+}
+
+.round-result .power-side.lose-side {
+    background: rgba(178,34,34,.1);
+    border: 1px solid rgba(178,34,34,.25);
+}
+
+.round-result .power-label {
+    color: #B8A070;
+    font-size: 1em;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+
+.round-result .power-val {
+    font-size: 3.5em;
+    font-weight: bold;
+    margin-bottom: 12px;
+    line-height: 1.1;
+}
+
+.round-result .power-val.win {
+    color: #66BB6A;
+    text-shadow: 0 0 20px rgba(102,187,106,.4);
+}
+
+.round-result .power-val.lose {
+    color: #E57373;
+    text-shadow: 0 0 20px rgba(229,115,115,.3);
+}
+
+.round-result .power-bar {
+    height: 6px;
+    border-radius: 3px;
+    margin: 0 auto;
+    max-width: 200px;
+    transition: width 1s ease-out;
+}
+
+.round-result .bar-win {
+    background: linear-gradient(90deg, #2E7D32, #66BB6A);
+}
+
+.round-result .bar-lose {
+    background: linear-gradient(90deg, #B71C1C, #E57373);
+}
+
+.round-result .power-vs {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #C8B898;
+    text-shadow: 0 0 12px rgba(200,184,152,.3);
+    flex: 0 0 auto;
+    padding: 0 12px;
+}
+
+.round-result .result-text {
+    font-size: 2em;
+    margin-bottom: 16px;
+    letter-spacing: 4px;
+    font-weight: bold;
+    font-family: 'STKaiti','KaiTi','SimSun',serif;
+}
+
+.round-result .result-win {
+    color: #D4A840;
+    text-shadow: 0 0 24px rgba(212,168,64,.5), 0 4px 8px rgba(0,0,0,.5);
+}
+
+.round-result .result-lose {
+    color: #E57373;
+    text-shadow: 0 0 16px rgba(229,115,115,.3);
+}
+
+.round-result .result-tie {
+    color: #C8B898;
+    text-shadow: 0 0 12px rgba(200,184,152,.3);
+}
+
+.round-result .result-score {
+    color: #8B7355;
+    font-size: 1.1em;
+    margin-bottom: 28px;
+    letter-spacing: 3px;
+}
+
+.btn-result {
+    font-size: 1.2em !important;
+    padding: 16px 48px !important;
+    min-width: 280px;
+    letter-spacing: 4px;
+    transition: all .3s ease;
+}
+
+.btn-result:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(212,168,64,.35);
+}
+
 .game-result .menu-seal {
     margin: 0 auto 24px;
     animation: victoryDrop 0.8s cubic-bezier(.34,1.56,.64,1) forwards, sealPulse 3s ease-in-out infinite 1s;
@@ -958,6 +1106,7 @@ html, body {
     0%,100% { text-shadow: 0 0 20px rgba(212,168,64,.4), 0 0 8px rgba(212,168,64,.2); }
     50% { text-shadow: 0 0 36px rgba(212,168,64,.7), 0 0 16px rgba(212,168,64,.4); }
 }
+.game-result h1.draw { color: #C8B898; text-shadow: 0 0 20px rgba(200,184,152,.4); }
 .game-result h1.defeat {
     color: #B22222;
 }
@@ -1046,39 +1195,14 @@ html, body {
     100% { opacity:0; transform: translate(-50%,-50%) scale(.9) }
 }
 
-.round-result {
-    text-align: center;
-    padding: 40px 20px;
-}
-.round-result h2 {
-    font-size: 2em;
-    color: #D4A840;
-    margin-bottom: 20px;
-    text-shadow: 0 0 12px rgba(212,168,64,.3);
-}
-.round-result .result-text {
-    font-size: 1.3em;
-    color: #F5F0E8;
-    margin-bottom: 10px;
-}
-.round-result .power-compare {
-    margin: 20px 0;
-    padding: 20px;
-    background: rgba(0,0,0,.25);
-    border: 1px solid rgba(212,168,64,.2);
-    border-radius: 8px;
-}
-.round-result .power-row {
-    display: flex;
-    justify-content: space-around;
-    margin: 10px 0;
-}
-.round-result .power-val {
-    font-size: 1.5em;
-    font-weight: bold;
-}
-.round-result .power-val.win { color: #66BB6A; }
-.round-result .power-val.lose { color: #E57373; }
+
+
+
+
+
+
+
+
 
 .game-result {
     text-align: center;

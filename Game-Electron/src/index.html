@@ -735,7 +735,7 @@ function checkGameEnd(){
   if(G.scores[0]>=2||G.scores[1]>=2||G.round>=3){
     G.phase='game_result';
     render();
-    const winText=G.scores[0]>G.scores[1]?'你赢得了天下！':'AI赢得了天下！';
+    const winText=G.scores[0]>G.scores[1]?'你赢得了天下！':G.scores[0]===G.scores[1]?'棋逢对手，不分胜负！':'AI赢得了天下！';
     showNotification(winText,3000);
   }else{
     G.phase='playing';
@@ -969,20 +969,12 @@ function confirmMulligan(){
     G.aiHand.splice(ri,1);
     drawCards(1,1);
   }
-  G.phase='playing';
-  G.round=1;
   G.mulliganSelected=new Set();
   G.currentTurn='player';
-  G.playerPassed=false;
-  G.aiPassed=false;
-  G.provisions=[8,8];
-  G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
-  addLog('换牌完成！第1局开始');
-  addLog(`你现有 ${G.playerHand.length} 张手牌，牌库剩余 ${G.playerDeck.length} 张`);
+  G.phase='playing';
+  addLog('换牌完成！');
   showNotification('换牌完成！');
-  render();
+  startRound();
 }
 
 function useLeaderAbility(playerIdx){
@@ -1206,36 +1198,39 @@ function renderRoundResult(el){
     <h2>第${G.round}局 结果</h2>
     <div class="power-compare">
       <div class="power-row">
-        <div>
-          <div style="color:#8B7355;font-size:.85em">你的战力</div>
+        <div class="power-side ${pWin?'win-side':'lose-side'}">
+          <div class="power-label">你的战力</div>
           <div class="power-val ${pWin?'win':'lose'}">${r.playerPower}</div>
+          <div class="power-bar ${pWin?'bar-win':'bar-lose'}" style="width:${Math.max(10,Math.round(r.playerPower/(r.playerPower+r.aiPower)*100))}%"></div>
         </div>
-        <div style="font-size:1.5em;color:#C8B898;align-self:center">VS</div>
-        <div>
-          <div style="color:#8B7355;font-size:.85em">AI战力</div>
+        <div class="power-vs">VS</div>
+        <div class="power-side ${aWin?'win-side':'lose-side'}">
+          <div class="power-label">AI战力</div>
           <div class="power-val ${aWin?'win':'lose'}">${r.aiPower}</div>
+          <div class="power-bar ${aWin?'bar-win':'bar-lose'}" style="width:${Math.max(10,Math.round(r.aiPower/(r.playerPower+r.aiPower)*100))}%"></div>
         </div>
       </div>
     </div>
-    <div class="result-text">${pWin?'你赢得了本局！':aWin?'AI赢得了本局！':'本局平局！'}</div>
-    <div style="color:#8B7355;margin-bottom:20px">当前比分：${G.scores[0]} : ${G.scores[1]}</div>
-    <button class="btn btn-primary" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续下一局'}</button>
+    <div class="result-text ${pWin?'result-win':aWin?'result-lose':'result-tie'}">${pWin?'你赢得了本局！':aWin?'AI赢得了本局！':'本局平局！'}</div>
+    <div class="result-score">当前比分：${G.scores[0]} : ${G.scores[1]}</div>
+    <button class="btn btn-primary btn-result" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续下一局'}</button>
   </div>`;
 }
 
 function renderGameResult(el){
   const playerWin=G.scores[0]>G.scores[1];
+  const isDraw=G.scores[0]===G.scores[1];
   el.innerHTML=`
   <div class="game-result">
-    <div class="menu-seal" style="margin:0 auto 30px">${playerWin?'胜利':'败北'}</div>
-    <h1 class="${playerWin?'victory':'defeat'}">${playerWin?'天下归一':'功败垂成'}</h1>
+    <div class="menu-seal" style="margin:0 auto 30px">${playerWin?'胜利':isDraw?'平局':'败北'}</div>
+    <h1 class="${playerWin?'victory':isDraw?'draw':'defeat'}">${playerWin?'天下归一':isDraw?'棋逢对手':'功败垂成'}</h1>
     <div class="final-score">${G.scores[0]} : ${G.scores[1]}</div>
     <div class="detail">
       ${G.playerLeader.name}（${FACTIONS[G.playerLeader.faction].name}）VS ${G.aiLeader.name}（${FACTIONS[G.aiLeader.faction].name}）
     </div>
     <div class="decorative-line" style="width:200px;margin:20px auto"></div>
     <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
-      ${playerWin?'运筹帷幄之中，决胜千里之外。':'胜败乃兵家常事，再接再厉。'}
+      ${playerWin?'运筹帷幄之中，决胜千里之外。':isDraw?'将遇良才，棋逢对手。':'胜败乃兵家常事，再接再厉。'}
     </p>
     <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
   </div>`;
