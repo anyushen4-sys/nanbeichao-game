@@ -755,6 +755,23 @@ function nextRoundOrGame(){
 
 function addLog(msg){G.logs.push(msg);if(G.logs.length>50)G.logs.shift()}
 
+// ===== Steam 集成 (可选,无 Steam 时静默失败) =====
+async function steamUnlock(achId){
+  if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
+  try{
+    const r=await electronAPI.steam.unlockAchievement(achId);
+    if(r.success)console.log('[Steam] Achievement unlocked:',achId);
+  }catch(e){console.log('[Steam] ach fail:',e.message)}
+}
+async function steamSetStat(statName,value){
+  if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
+  try{await electronAPI.steam.setStat(statName,value);}catch(e){}
+}
+async function steamCloudSave(data){
+  if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
+  try{await electronAPI.steam.storeCloudSave(data);}catch(e){console.log('[Steam] save fail:',e.message)}
+}
+
 function showNotification(text,dur=2500){
   const el=document.createElement('div');
   el.className='notification';
@@ -1226,6 +1243,22 @@ function renderRoundResult(el){
 function renderGameResult(el){
   const playerWin=G.scores[0]>G.scores[1];
   const isDraw=G.scores[0]===G.scores[1];
+  // ===== Steam 统计/成就触发 =====
+  (async()=>{
+    await steamSetStat('STAT_TOTAL_GAMES',(Number(localStorage.getItem('steam_total_games')||0))+1);
+    localStorage.setItem('steam_total_games',String(Number(localStorage.getItem('steam_total_games')||0)+1));
+    if(playerWin){
+      await steamSetStat('STAT_TOTAL_WINS',(Number(localStorage.getItem('steam_total_wins')||0))+1);
+      localStorage.setItem('steam_total_wins',String(Number(localStorage.getItem('steam_total_wins')||0)+1));
+      await steamUnlock('ACH_FIRST_WIN');
+    } else if(!isDraw){
+      await steamSetStat('STAT_TOTAL_LOSSES',(Number(localStorage.getItem('steam_total_losses')||0))+1));
+      localStorage.setItem('steam_total_losses',String(Number(localStorage.getItem('steam_total_losses')||0)+1));
+    }
+    if(G.scores[0]===2&&G.scores[1]===0)await steamUnlock('ACH_PERFECT_ROUND');
+    const total=Number(localStorage.getItem('steam_total_games')||0);
+    if(total>=10)await steamUnlock('ACH_VETERAN');
+  })();
   el.innerHTML=`
   <div class="game-result">
     <div class="menu-seal" style="margin:0 auto 30px">${playerWin?'胜利':isDraw?'平局':'败北'}</div>
