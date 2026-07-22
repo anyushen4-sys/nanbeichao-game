@@ -569,7 +569,7 @@ html, body {
     flex-wrap: wrap;
     min-height: 70px;
     padding: 4px;
-    align-items: flex-end;
+    align-items: flex-start;
 }
 .hand-cards.empty {
     color: #B8A88A;
@@ -710,6 +710,7 @@ html, body {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    min-height: 2.6em; /* ALWAYS 2 lines reserved for visual consistency */
 }
 .card .card-stats-bar {
     display: flex;

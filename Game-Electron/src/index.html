@@ -925,7 +925,7 @@ function renderMulligan(app){
     const rowName=ROW_NAMES[c.row];
     const desc=(c.desc||'')+(c.protectArmor?` 🛡${c.protectArmor}`:'');
     return`<div class="card ${isSelected?'selected':''}" onclick="onMulliganCardClick(${i})" title="${c.name} - ${c.desc}"
-      style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px);':''};width:96px;min-width:96px;max-width:96px;flex:0 0 96px">
+      style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px);':''}width:96px;min-width:96px;max-width:96px;flex:0 0 96px">
       <div class="card-cost">${cost}</div>
       <div class="card-illustration"><img src="${CARD_DATA_URIS[c.id]||`assets/cards/card_${c.id}.png`}" alt="${c.name}"/><div class="card-art-fallback" style="display:none!important">${c.name}</div></div>
             <div class="card-name">${c.name}</div>
@@ -1117,7 +1117,7 @@ function renderGame(el,lastUid,lastBy){
   <div class="log-area">
     ${G.logs.slice(-3).map(l=>`<div class="log-entry">${l}</div>`).join('')}
   </div>`;
-if(la)la.scrollTop=la.scrollHeight;
+const logsEl=document.getElementById('logs');if(logsEl)logsEl.scrollTop=logsEl.scrollHeight;
 }
 
 function renderPips(current,max,playerClass){
