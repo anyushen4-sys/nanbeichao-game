@@ -1,6 +1,6 @@
 # Daily Triage Report
 
-**Generated:** 2026-07-21T10:56:19Z
+**Generated:** 2026-07-22T10:58:39Z
 
 ## 1. High-Priority Items (act on these)
 
@@ -16,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: 76e5ca5 | fix: card 29/26/112 重做 + timestamp cache-bust 1784623193 | 2026-07-21T08:39:57Z
-- Next triage: 2026-07-22T10:56:19Z
+- Latest commit: 434c2dd | fix: 移除 .card:hover scale(1.08) - 真正修复大小不一 | 2026-07-22T01:04:37Z
+- Next triage: 2026-07-23T10:58:39Z
