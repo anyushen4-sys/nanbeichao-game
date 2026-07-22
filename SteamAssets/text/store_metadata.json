@@ -1,0 +1,81 @@
+{
+  "short_description": "南北朝·天下对弈 (Nan-Bei Chao: War of Dynasties) — 单机策略卡牌游戏。以中国南北朝时代为背景，九位历史领袖、63 位史实武将，水墨古风画境。/ Single-player strategy card game set in China's Northern and Southern Dynasties. 9 rulers, 63 generals, ink-wash aesthetics.",
+
+  "tags": [
+    "Strategy",
+    "Card Game",
+    "Historical",
+    "Single Player",
+    "Turn-Based",
+    "Indie",
+    "2D",
+    "Tabletop"
+  ],
+
+  "categories": [
+    "Strategy",
+    "Card Game",
+    "Turn-Based Tactics",
+    "Historical"
+  ],
+
+  "primary_genre": "Strategy",
+  "sub_genre": "Card Game",
+
+  "system_requirements": {
+    "minimum": {
+      "os": "Windows 10 (64-bit)",
+      "processor": "Dual-core 1.6 GHz",
+      "memory": "4 GB RAM",
+      "graphics": "Intel HD 4000 or equivalent",
+      "directx": "Version 11",
+      "storage": "200 MB available space",
+      "sound_card": "DirectX compatible",
+      "additional_notes": "Mouse + Keyboard required"
+    },
+    "recommended": {
+      "os": "Windows 10/11 (64-bit)",
+      "processor": "Quad-core 2.0 GHz or higher",
+      "memory": "8 GB RAM",
+      "graphics": "Dedicated GPU",
+      "directx": "Version 11",
+      "storage": "500 MB available space",
+      "sound_card": "DirectX compatible",
+      "additional_notes": "Mouse + Keyboard required"
+    }
+  },
+
+  "pricing": {
+    "currency": "USD",
+    "tier": "discount-eligible",
+    "base_price_options": {
+      "trial_USD": 0.99,
+      "intro_USD": 4.99,
+      "indie_USD": 9.99,
+      "premium_USD": 14.99
+    },
+    "recommended_launch_price_USD": 4.99,
+    "rationale": "T1 research recommendation for first-time indie release: USD 4.99 anchors to 'indie/AA historic strategy' segment (Hegemony III $9.99, Age of Civilizations II $9.99, Romance of the Three Kingdoms VIII $29.99, Sengoku Jidai $19.99). Discount-eligible from day one signals long-tail updates. Launch discount 10% off to USD 4.49 for first 2 weeks."
+  },
+
+  "languages": {
+    "interface": ["Simplified Chinese", "English"],
+    "subtitles": ["Simplified Chinese", "English"],
+    "full_audio": ["None (ambient only)"]
+  },
+
+  "playtest_preference": "yes_if_eligible",
+  "playtest_max_participants": 1000,
+  "playtest_geography": "Worldwide",
+
+  "release_readiness_checklist": {
+    "app_id": "(granted by Valve after Steamworks partner registration)",
+    "build_artifacts": [
+      "dist/南北朝天下对弈 Setup 1.0.0.exe",
+      "dist/win-unpacked/南北朝天下对弈.exe"
+    ],
+    "achievement_implementation": "greenlight test only — 16 achievements config prepared, requires user (developer) to upload via Steamworks after App ID granted",
+    "cloud_save_implementation": "config prepared (SteamIntegration.md), requires App ID + encrypted user ticket",
+    "controller_support": "no — keyboard + mouse only"
+  }
+}

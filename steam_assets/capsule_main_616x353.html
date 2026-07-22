@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Capsule Main 616×353</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1410;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.capsule{width:616px;height:353px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#2a2018 0%,#1e1812 40%,#3a2818 70%,#2a2018 100%);
+  font-family:'Noto Serif SC','SimSun','STSong',serif}
+/* Ink-wash texture overlay */
+.capsule::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 70% 30%,rgba(212,168,64,0.08) 0%,transparent 60%),
+    radial-gradient(ellipse at 20% 70%,rgba(42,32,24,0.6) 0%,transparent 50%),
+    repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,0.03) 4px,rgba(0,0,0,0.03) 5px);
+  pointer-events:none}
+
+/* Ink splash decoration */
+.splash{position:absolute;pointer-events:none}
+.splash-1{width:280px;height:280px;top:-80px;right:-40px;
+  background:radial-gradient(circle,rgba(212,168,64,0.12) 0%,rgba(212,168,64,0.04) 40%,transparent 70%);
+  border-radius:50%}
+.splash-2{width:200px;height:200px;bottom:-60px;left:-60px;
+  background:radial-gradient(circle,rgba(180,120,40,0.1) 0%,transparent 60%);
+  border-radius:50%}
+
+/* Left side - cavalry charge silhouette */
+.battle-scene{position:absolute;right:0;top:0;width:55%;height:100%;overflow:hidden}
+.battle-scene svg{width:100%;height:100%}
+
+/* Title area */
+.title-area{position:absolute;left:30px;top:55px;z-index:10}
+.title-main{font-size:36px;color:#d4a840;letter-spacing:8px;text-shadow:0 2px 8px rgba(0,0,0,0.5);font-weight:bold;line-height:1.2}
+.title-sub{font-size:12px;color:#b8955a;letter-spacing:4px;margin-top:8px;opacity:0.8}
+.title-en{font-size:10px;color:#8a7a5a;letter-spacing:1px;margin-top:4px;font-family:'Georgia','Times New Roman',serif}
+
+/* Bottom tagline */
+.tagline{position:absolute;left:30px;bottom:30px;z-index:10}
+.tagline-text{font-size:13px;color:#c4a860;letter-spacing:2px;
+  border-left:2px solid #d4a840;padding-left:12px;opacity:0.85}
+
+/* Seal stamp */
+.seal{position:absolute;left:25px;top:20px;width:42px;height:42px;
+  border:2px solid #d4a840;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#d4a840;transform:rotate(-3deg);font-weight:bold;opacity:0.7}
+.seal-inner{line-height:1;text-align:center;font-size:14px}
+.seal-inner small{display:block;font-size:7px;letter-spacing:1px}
+
+/* Gold border accent */
+.gold-border{position:absolute;inset:4px;border:1px solid rgba(212,168,64,0.3);pointer-events:none}
+.gold-corner{position:absolute;width:20px;height:20px;border-color:#d4a840;border-style:solid;pointer-events:none}
+.gold-corner-tl{top:3px;left:3px;border-width:1px 0 0 1px}
+.gold-corner-tr{top:3px;right:3px;border-width:1px 1px 0 0}
+.gold-corner-bl{bottom:3px;left:3px;border-width:0 0 1px 1px}
+.gold-corner-br{bottom:3px;right:3px;border-width:0 1px 1px 0}
+</style>
+</head>
+<body>
+<div class="capsule">
+  <div class="gold-border"></div>
+  <div class="gold-corner gold-corner-tl"></div>
+  <div class="gold-corner gold-corner-tr"></div>
+  <div class="gold-corner gold-corner-bl"></div>
+  <div class="gold-corner gold-corner-br"></div>
+  
+  <div class="splash splash-1"></div>
+  <div class="splash splash-2"></div>
+  
+  <div class="seal">
+    <div class="seal-inner"><small>策略</small>卡牌</div>
+  </div>
+  
+  <div class="title-area">
+    <div class="title-main">南北朝 · 天下对弈</div>
+    <div class="title-sub">卡牌策略 · 南北对决</div>
+    <div class="title-en">NAN-BEI CHAO: WAR OF DYNASTIES</div>
+  </div>
+  
+  <div class="tagline">
+    <div class="tagline-text">一局南北，半部中国史</div>
+  </div>
+  
+  <!-- Cavalry charge silhouette -->
+  <div class="battle-scene">
+    <svg viewBox="0 0 340 353" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Distant mountains -->
+      <path d="M0 280 Q40 220 80 250 Q120 190 160 230 Q200 180 240 220 Q280 200 340 240 L340 353 L0 353Z" fill="#2a2018" opacity="0.6"/>
+      <!-- Dust / smoke clouds -->
+      <ellipse cx="220" cy="250" rx="80" ry="25" fill="#3a2818" opacity="0.3"/>
+      <ellipse cx="260" cy="260" rx="60" ry="20" fill="#4a3828" opacity="0.2"/>
+      <!-- Cavalry rider silhouette 1 -->
+      <g transform="translate(180,190)">
+        <path d="M0 0 Q5 -15 15 -18 Q25 -15 28 -5 L30 -2 L25 0 L20 -5 Q15 0 10 0Z" fill="#1e1812"/>
+        <rect x="-2" y="-2" width="4" height="12" rx="1" fill="#1e1812"/>
+        <rect x="22" y="-2" width="4" height="10" rx="1" fill="#1e1812"/>
+        <ellipse cx="12" cy="-18" rx="5" ry="4" fill="#1e1812"/>
+        <!-- Spear -->
+        <line x1="28" y1="-5" x2="50" y2="-30" stroke="#1e1812" stroke-width="1.5"/>
+        <!-- Spear tip -->
+        <polygon points="50,-30 48,-26 52,-26" fill="#d4a840" opacity="0.6"/>
+      </g>
+      <!-- Cavalry rider silhouette 2 -->
+      <g transform="translate(230,200)">
+        <path d="M0 0 Q5 -12 12 -15 Q20 -12 22 -3 L24 0 L20 0 L16 -4 Q12 0 8 0Z" fill="#1e1812" opacity="0.7"/>
+        <rect x="-1" y="-1" width="3" height="10" rx="1" fill="#1e1812" opacity="0.7"/>
+        <rect x="18" y="-1" width="3" height="8" rx="1" fill="#1e1812" opacity="0.7"/>
+        <ellipse cx="10" cy="-15" rx="4" ry="3" fill="#1e1812" opacity="0.7"/>
+      </g>
+      <!-- Cavalry rider silhouette 3 (smaller, distant) -->
+      <g transform="translate(270,215)" opacity="0.5">
+        <path d="M0 0 Q3 -8 8 -10 Q12 -8 14 -2 L15 0 L12 0 L10 -3 Q7 0 5 0Z" fill="#1e1812"/>
+        <rect x="0" y="-1" width="2" height="6" rx="1" fill="#1e1812"/>
+        <rect x="12" y="-1" width="2" height="5" rx="1" fill="#1e1812"/>
+        <ellipse cx="7" cy="-10" rx="3" ry="2" fill="#1e1812"/>
+      </g>
+      <!-- Ground line -->
+      <path d="M0 260 Q100 255 200 258 Q280 262 340 255" stroke="#1e1812" stroke-width="2" fill="none" opacity="0.5"/>
+      <!-- Ink drip decoration -->
+      <path d="M300 0 Q310 20 305 40 Q300 50 310 60" stroke="#d4a840" stroke-width="0.5" fill="none" opacity="0.15"/>
+      <path d="M320 0 Q315 30 325 50" stroke="#d4a840" stroke-width="0.5" fill="none" opacity="0.1"/>
+    </svg>
+  </div>
+</div>
+</body>
+</html>
