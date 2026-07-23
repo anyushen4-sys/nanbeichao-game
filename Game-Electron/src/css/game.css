@@ -983,8 +983,9 @@ html, body {
 
 .round-result .power-side {
     flex: 1;
+    min-width: 200px;
     text-align: center;
-    padding: 16px;
+    padding: 20px 16px;
     border-radius: 10px;
     transition: all .3s;
 }
@@ -1023,29 +1024,53 @@ html, body {
     text-shadow: 0 0 20px rgba(229,115,115,.3);
 }
 
-.round-result .power-bar {
-    height: 6px;
-    border-radius: 3px;
-    margin: 0 auto;
-    max-width: 200px;
-    transition: width 1s ease-out;
-}
-
-.round-result .bar-win {
-    background: linear-gradient(90deg, #2E7D32, #66BB6A);
-}
-
-.round-result .bar-lose {
-    background: linear-gradient(90deg, #B71C1C, #E57373);
+.round-result .power-vs-wrap {
+    flex: 0 0 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .round-result .power-vs {
-    font-size: 1.8em;
+    font-size: 1.5em;
     font-weight: bold;
     color: #C8B898;
     text-shadow: 0 0 12px rgba(200,184,152,.3);
-    flex: 0 0 auto;
-    padding: 0 12px;
+}
+
+/* 合并战力条：两个框下方一条统一的条 */
+.round-result .power-bar-bg {
+    height: 8px;
+    background: rgba(255,255,255,.08);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.round-result .power-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease-out;
+}
+
+.round-result .power-bar-fill.bar-win {
+    background: linear-gradient(90deg, #2E7D32, #66BB6A);
+}
+
+.round-result .power-bar-fill.bar-lose {
+    background: linear-gradient(90deg, #B71C1C, #E57373);
+}
+
+.round-result .power-bar-divider {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    left: 50%;
+    width: 3px;
+    background: #C8B898;
+    border-radius: 1.5px;
+    box-shadow: 0 0 6px rgba(200,184,152,.4);
 }
 
 .round-result .result-text {
