@@ -219,7 +219,10 @@ function applyLeaderAbilityForRound(leader,playerIdx){
   }
 }
 
-function getHand(p){return p===0?G.playerHand:G.aiHand}
+function getHand(p){
+  const hand=p===0?G.playerHand:G.aiHand;
+  return hand.filter(c=>c&&typeof c==='object');
+}
 function getDeck(p){return p===0?G.playerDeck:G.aiDeck}
 function getBoard(p){return p===0?G.playerBoard:G.aiBoard}
 
@@ -966,7 +969,8 @@ function confirmLeader(){
 function renderMulligan(app){
   const f=FACTIONS[G.playerLeader.faction];
   const sel=G.mulliganSelected;
-  const cardsHtml=G.playerHand.map((c,i)=>{
+  const hand=(G.playerHand||[]).filter(c=>c&&typeof c==='object');
+  const cardsHtml=hand.map((c,i)=>{
     const cf=FACTIONS[c.faction];
     const isSelected=sel.has(i);
     const cost=getCardCost(c.strength);
@@ -1146,7 +1150,7 @@ function renderGame(el,lastUid,lastBy){
   <div class="hand-area">
     <div class="hand-label">— 你的手牌 (${G.playerHand.length}张) —</div>
     <div class="hand-cards ${G.playerHand.length===0?'empty':''}${G.playerHand.length>=5?' many-cards':''}${G.playerHand.length>=7?' overflow-cards':''}">
-      ${G.playerHand.length===0?'无手牌':G.playerHand.map((c,i)=>renderHandCard(c,i)).join('')}
+      ${(G.playerHand||[]).filter(c=>c&&typeof c==='object').length===0?'无手牌':G.playerHand.filter(c=>c&&typeof c==='object').map((c,i)=>renderHandCard(c,i)).join('')}
     </div>
   </div>
   <div class="action-bar">
