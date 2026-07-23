@@ -540,7 +540,11 @@ function playerPlayCard(handIdx,row){
 }
 
 function playerPass(){
-  if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
+  if(G.phase!=='playing')return;
+  if(G.playerPassed)return;
+  // 允许在 AI 已 Pass 的情况下也允许玩家 Pass（锁住胜利）
+  // 但仍需 currentTurn 是 player（如果 AI 正在 setTimeout 出牌，不允许打断）
+  if(G.currentTurn!=='player')return;
   // 直接放弃：去掉确认弹窗(防止误以为 Pass 没生效),改为 toast 提示
   G.playerPassed=true;
   G.selectedCard=null;
