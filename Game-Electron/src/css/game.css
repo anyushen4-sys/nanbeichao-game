@@ -1413,6 +1413,276 @@ html, body {
     animation: aiFlip .6s ease-out;
 }
 
+/* ===== 出牌特效层 ===== */
+.effect-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 900;
+    overflow: hidden;
+}
+
+/* 通用出牌冲击波 - 任何出牌都有 */
+.card-arc-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--card-color, #D4A840);
+    box-shadow: 0 0 8px var(--card-color, #D4A840), 0 0 16px var(--card-color, #D4A840);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: cardArc 0.7s cubic-bezier(.2,.8,.4,1) forwards;
+    opacity: 0;
+}
+@keyframes cardArc {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translate(var(--end-x), var(--end-y)) scale(1.2); opacity: 0; }
+}
+
+/* 抽牌 - 符纸 */
+.draw-talisman {
+    position: absolute;
+    width: 24px;
+    height: 32px;
+    background: linear-gradient(135deg, #FFE4A0, #D4A840);
+    border: 1.5px solid #8B6914;
+    box-shadow: 0 0 12px #D4A840, 0 0 24px rgba(212,168,64,.4);
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+    pointer-events: none;
+    animation: talisman 1.2s ease-out forwards;
+    opacity: 0;
+}
+.draw-talisman::before {
+    content: '符';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5C3A00;
+    font-weight: bold;
+    font-family: 'STKaiti','KaiTi',serif;
+    font-size: 18px;
+}
+@keyframes talisman {
+    0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.5); opacity: 0; }
+    15% { opacity: 1; transform: translate(-30%, -30%) rotate(45deg) scale(1); }
+    85% { opacity: 1; transform: translate(-70%, -70%) rotate(180deg) scale(1); }
+    100% { opacity: 0; transform: translate(-100%, -100%) rotate(360deg) scale(0.8); }
+}
+
+/* 加行 - 粒子箭矢 */
+.row-arrow {
+    position: absolute;
+    width: 12px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--arrow-color, #66BB6A), var(--arrow-color, #66BB6A));
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px var(--arrow-color, #66BB6A);
+    pointer-events: none;
+    animation: rowArrow 0.8s ease-out forwards;
+    opacity: 0;
+}
+@keyframes rowArrow {
+    0% { transform: translate(-50%, -50%) scaleX(0.2); opacity: 0; }
+    30% { opacity: 1; transform: translate(-50%, -50%) scaleX(1); }
+    100% { transform: translate(var(--end-x), var(--end-y)) scaleX(1.5); opacity: 0; }
+}
+
+/* 消灭 - 黑色漩涡 */
+.destroy-vortex {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 35%, rgba(0,0,0,.5) 50%, rgba(0,0,0,.8) 70%, transparent 100%);
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: destroyVortex 0.7s ease-in forwards;
+    mix-blend-mode: multiply;
+}
+.destroy-vortex::before {
+    content: '';
+    position: absolute;
+    inset: 30%;
+    border: 2px solid rgba(0,0,0,.6);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: destroySpin 0.5s linear;
+}
+@keyframes destroyVortex {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; }
+    30% { opacity: 1; }
+    60% { transform: translate(-50%, -50%) scale(1.5) rotate(180deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.3) rotate(360deg); opacity: 0; }
+}
+@keyframes destroySpin {
+    to { transform: rotate(360deg); }
+}
+
+/* 护盾 - 金色六边形 */
+.shield-hex {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: shieldPulse 0.8s ease-out forwards;
+}
+.shield-hex svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 12px #D4A840);
+    animation: shieldRotate 0.8s linear;
+}
+@keyframes shieldPulse {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+@keyframes shieldRotate {
+    to { transform: rotate(360deg); }
+}
+
+/* 抽牌数爆炸 (draw_extra) */
+.draw-extra-burst {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #C9A0FF 0%, #6A1B9A 100%);
+    box-shadow: 0 0 10px #C9A0FF;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: drawBurst 0.9s ease-out forwards;
+    opacity: 0;
+}
+@keyframes drawBurst {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translate(var(--end-x), var(--end-y)) scale(1); opacity: 0; }
+}
+
+/* 粮草增加 - 粮袋 */
+.provisions-bag {
+    position: absolute;
+    width: 18px;
+    height: 22px;
+    background: linear-gradient(135deg, #D4A574, #8B6F3A);
+    border: 1.5px solid #5C3A00;
+    border-radius: 0 0 50% 50%;
+    box-shadow: 0 0 8px rgba(212,165,116,.6);
+    transform: translate(-50%, -50%) rotate(-15deg);
+    pointer-events: none;
+    animation: bagFall 1s cubic-bezier(.4,.0,.7,1) forwards;
+    opacity: 0;
+}
+@keyframes bagFall {
+    0% { transform: translate(-50%, -200%) rotate(-15deg); opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; transform: translate(-50%, 0%) rotate(5deg); }
+    100% { opacity: 0; transform: translate(-50%, 50%) rotate(15deg) scale(0.7); }
+}
+
+/* 水军 - 巨浪 */
+.navy-wave {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle, rgba(74,144,217,.7) 30%, rgba(74,144,217,0) 100%);
+    border: 2px solid rgba(74,144,217,.8);
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(74,144,217,.5);
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: waveExpand 0.7s ease-out forwards;
+    opacity: 0;
+}
+@keyframes waveExpand {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+/* 步兵突袭 */
+.ambush-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #6B4F2A;
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 0 4px #6B4F2A;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: ambushJump 0.7s ease-out forwards;
+    opacity: 0;
+}
+@keyframes ambushJump {
+    0% { transform: translate(-50%, -50%) scale(0.5) translateY(20px); opacity: 0; }
+    30% { opacity: 1; }
+    60% { transform: translate(var(--end-x), var(--end-y)) scale(1) translateY(-15px); opacity: 1; }
+    100% { transform: translate(var(--end-x), var(--end-y)) scale(1) translateY(0); opacity: 0; }
+}
+
+/* 暴击 - 暴击星 */
+.crit-star {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    font-size: 36px;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 0 0 12px #FF6B00, 0 0 24px #FFD700;
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: critStar 0.7s cubic-bezier(.34,1.56,.64,1) forwards;
+    opacity: 0;
+}
+@keyframes critStar {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; }
+    30% { opacity: 1; transform: translate(-50%, -50%) scale(1.5) rotate(180deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(360deg); }
+}
+
+/* 狂攻 - 血色 */
+.berserk-flash {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(229,57,53,.8) 30%, rgba(229,57,53,0) 100%);
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: berserkFlash 0.6s ease-out forwards;
+    opacity: 0;
+}
+@keyframes berserkFlash {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+/* 复活 - 墓碑光柱 */
+.resurrect-beam {
+    position: absolute;
+    width: 4px;
+    height: 100px;
+    background: linear-gradient(180deg, transparent, #C9A0FF 30%, #6A1B9A 100%);
+    box-shadow: 0 0 12px #C9A0FF, 0 0 24px #6A1B9A;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: resurrectBeam 0.9s ease-out forwards;
+    opacity: 0;
+}
+@keyframes resurrectBeam {
+    0% { height: 0; opacity: 0; }
+    50% { height: 100px; opacity: 1; }
+    100% { height: 100px; opacity: 0; }
+}
+
 /* 全局过渡增强 */
 * { transition-property: none }
 .btn,.card,.card-mini,.leader-card,.row,.hand-cards,.action-bar button,.row-power .val {
@@ -2147,3 +2417,97 @@ html, body {
     0% { opacity: 0; transform: translateY(30px) scale(.95); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* 弃牌 - 锁链 */
+.discard-chain {
+    position: absolute; width: 4px; height: 60px;
+    background: linear-gradient(180deg, transparent, #8B7355, #5C4E3A);
+    box-shadow: 0 0 6px rgba(139,115,85,.6);
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+    pointer-events: none;
+    animation: chainSweep .6s ease-out forwards; opacity: 0;
+}
+.discard-chain::before { content: '⚡'; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #B8A070; }
+@keyframes chainSweep { 0% { height: 0; opacity: 0; } 40% { height: 60px; opacity: 1; } 100% { height: 60px; opacity: 0; } }
+
+/* 遭遇战 - 眩晕星环 */
+.skirmish-ring {
+    position: absolute; width: 60px; height: 60px; border-radius: 50%;
+    border: 3px dashed #FFD700;
+    box-shadow: 0 0 16px rgba(255,215,0,.5), inset 0 0 16px rgba(255,215,0,.2);
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: skirmishRing .8s ease-out forwards; opacity: 0;
+}
+@keyframes skirmishRing { 0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.5) rotate(360deg); opacity: 0; } }
+
+/* 削弱 - 暗影 */
+.weaken-shadow {
+    position: absolute; width: 50px; height: 50px;
+    background: radial-gradient(circle, rgba(0,0,0,.6) 30%, transparent 70%);
+    filter: blur(4px); transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: weakenShadow .7s ease-in forwards; opacity: 0;
+}
+@keyframes weakenShadow { 0% { transform: scale(0); opacity: 0; } 40% { opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
+/* 指挥 - 帅旗 */
+.command-banner {
+    position: absolute; width: 30px; height: 40px;
+    background: linear-gradient(180deg, #C41E3A, #8B2500);
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+    box-shadow: 0 0 12px rgba(196,30,58,.6);
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    animation: commandBanner .8s cubic-bezier(.34,1.56,.64,1) forwards; opacity: 0;
+}
+@keyframes commandBanner { 0% { transform: scale(0) rotate(-30deg); opacity: 0; } 40% { opacity: 1; transform: scale(1.2) rotate(5deg); } 100% { transform: scale(1); opacity: 0; } }
+
+/* 吸收 - 触须 */
+.assimilate-tentacle { position: absolute; width: 6px; height: 40px; background: linear-gradient(180deg, #6A1B9A, #C9A0FF); border-radius: 3px; box-shadow: 0 0 8px rgba(106,27,154,.6); transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); transform-origin: bottom center; pointer-events: none; animation: tentacle .7s ease-out forwards; opacity: 0; }
+@keyframes tentacle { 0% { height: 0; opacity: 0; } 50% { height: 40px; opacity: 1; } 100% { opacity: 0; } }
+
+/* 间谍 - 烟雾 */
+.spy-smoke { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle, rgba(180,180,180,.5), rgba(200,200,200,.2) 50%, transparent 70%); filter: blur(6px); transform: translate(-50%, -50%) scale(0); pointer-events: none; animation: spySmoke 1s ease-out forwards; opacity: 0; }
+@keyframes spySmoke { 0% { transform: scale(0); opacity: 0; } 30% { opacity: .7; } 100% { transform: translate(var(--end-x),var(--end-y)) scale(3); opacity: 0; } }
+
+/* 控制 - 锁链 */
+.control-chain { position: absolute; width: 3px; height: 60px; background: #8B7355; box-shadow: 0 0 4px rgba(139,115,85,.5); transform: translate(-50%,-50%) rotate(var(--rot,0deg)); transform-origin: bottom center; pointer-events: none; animation: controlChain .8s ease-in-out forwards; opacity: 0; }
+@keyframes controlChain { 0% { height: 0; opacity: 0; } 50% { height: 60px; opacity: 1; } 100% { height: 20px; opacity: 0; } }
+
+/* 强化 - 砖石 */
+.fortify-block { position: absolute; width: 20px; height: 14px; background: linear-gradient(135deg, #8B7355, #6B5B47); border: 1px solid #5C4E3A; box-shadow: 0 0 4px rgba(139,115,85,.4); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: fortifyBlock .6s cubic-bezier(.34,1.56,.64,1) forwards; opacity: 0; }
+@keyframes fortifyBlock { 0% { transform: scale(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+/* 攻城 - 投石 */
+.siege-rock { position: absolute; width: 14px; height: 14px; background: radial-gradient(circle at 30% 30%, #8B7355, #5C4E3A); border-radius: 50%; box-shadow: 0 0 6px rgba(139,115,85,.5); transform: translate(-50%,-50%); pointer-events: none; animation: siegeRock .8s cubic-bezier(.4,0,.7,1) forwards; opacity: 0; }
+@keyframes siegeRock { 0% { transform: translate(0,0) scale(.5); opacity: 0; } 20% { opacity: 1; } 60% { transform: translate(var(--end-x),var(--end-y)) scale(1); opacity: 1; } 100% { transform: translate(var(--end-x),var(--end-y)) scale(.3); opacity: 0; } }
+
+/* 屯田 - 麦穗 */
+.farm-grain { position: absolute; width: 6px; height: 14px; background: linear-gradient(180deg, #D4A840, #8B6914); border-radius: 3px 3px 0 0; box-shadow: 0 0 4px rgba(212,168,64,.5); transform: translate(-50%,-50%) rotate(var(--rot,0deg)); pointer-events: none; animation: farmGrain 1s ease-out forwards; opacity: 0; }
+@keyframes farmGrain { 0% { transform: translateY(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(var(--end-x),var(--end-y)); opacity: 0; } }
+
+/* 统一 - 五色汇聚 */
+.unify-orb { position: absolute; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 10px var(--unify-color,#D4A840); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: unifyOrb .9s ease-out forwards; opacity: 0; }
+@keyframes unifyOrb { 0% { transform: scale(0); opacity: 0; } 30% { opacity: 1; transform: scale(1.5); } 60% { transform: translate(var(--end-x),var(--end-y)) scale(1); } 100% { opacity: 0; transform: scale(.3); } }
+
+/* 灵活 - 双面旋转 */
+.flex-flip { position: absolute; width: 40px; height: 40px; border: 2px solid #4A90D9; border-radius: 50%; box-shadow: 0 0 12px rgba(74,144,217,.5); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: flexFlip .7s cubic-bezier(.34,1.56,.64,1) forwards; opacity: 0; }
+.flex-flip::before { content: '⇄'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #4A90D9; }
+@keyframes flexFlip { 0% { transform: scale(0) rotateY(0deg); opacity: 0; } 40% { opacity: 1; transform: scale(1.3) rotateY(180deg); } 100% { transform: scale(1) rotateY(360deg); opacity: 0; } }
+
+/* 反南方 - 火焰 */
+.anti-fire { position: absolute; width: 30px; height: 40px; background: radial-gradient(circle at 50% 100%, #FF6B00, #C41E3A 50%, transparent 70%); filter: blur(2px); box-shadow: 0 0 20px rgba(255,107,0,.6); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: antiFire .8s ease-out forwards; opacity: 0; }
+@keyframes antiFire { 0% { transform: scale(0); opacity: 0; } 30% { opacity: .9; } 100% { transform: scale(2) rotate(30deg); opacity: 0; } }
+
+/* 埋伏 - 草丛 */
+.ambush-grass { position: absolute; width: 40px; height: 30px; background: radial-gradient(ellipse at 50% 100%, #4A7C2E, transparent 70%); filter: blur(3px); box-shadow: 0 0 8px rgba(74,124,46,.5); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: grassGrow .7s ease-out forwards; opacity: 0; }
+@keyframes grassGrow { 0% { transform: scaleY(0); opacity: 0; } 40% { opacity: 1; } 100% { transform: scaleY(1.5); opacity: 0; } }
+
+/* 协同 - 连线 */
+.coordinate-line { position: absolute; height: 2px; background: linear-gradient(90deg, var(--coord-color,#D4A840), transparent); box-shadow: 0 0 6px var(--coord-color,#D4A840); transform: translate(0,-50%) scaleX(0); transform-origin: left center; pointer-events: none; animation: coordLine .5s ease-out forwards; opacity: 0; }
+@keyframes coordLine { 0% { transform: scaleX(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+
+/* 铠甲 */
+.armor-plate { position: absolute; width: 24px; height: 24px; border: 2px solid #8B7355; background: linear-gradient(135deg, #A09070, #6B5B47); border-radius: 2px; box-shadow: 0 0 6px rgba(139,115,85,.5), inset 0 0 4px rgba(160,144,112,.3); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: armorPlate .6s ease-out forwards; opacity: 0; }
+@keyframes armorPlate { 0% { transform: scale(0); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(1.2) rotate(15deg); } }

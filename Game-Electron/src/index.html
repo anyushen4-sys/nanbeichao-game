@@ -231,6 +231,11 @@ function getHandSafe(p){
 }
 function getDeck(p){return p===0?G.playerDeck:G.aiDeck}
 function getBoard(p){return p===0?G.playerBoard:G.aiBoard}
+function getBoardSafe(p){
+  const b=getBoard(p);
+  const clean=r=>Array.isArray(r)?r.filter(c=>c&&typeof c==='object'):[];
+  return{infantry:clean(b.infantry),cavalry:clean(b.cavalry),navy:clean(b.navy),strategy:clean(b.strategy)};
+}
 
 function drawCards(playerIdx,count){
   // 不能用 getHand() 因为它返回 .filter() 的新数组, push 会失败
@@ -508,6 +513,11 @@ function playCard(playerIdx,handIdx,row){
   G._lastPlayedBy=playerIdx;
   const name=playerIdx===0?'你':'AI';
   addLog(`${name}打出了 ${card.name}（${ROW_NAMES[row]} ${card.strength}）`);
+  setTimeout(()=>{
+    const rowEl=document.querySelector('.row[data-row="'+row+'"]')||document.querySelectorAll('.row')[getRowIdx(row)];
+    const cardEl=card.uid?getCardEl(card.uid):null;
+    try{playCardEffect(card,rowEl,{cardEl});}catch(e){}
+  },50);
   if(playerIdx===1){
     setTimeout(()=>triggerAbilityWithFlash(card,playerIdx,row),650);
   }else{
@@ -789,6 +799,89 @@ if(!document.getElementById('toast-keyframes')){
   const s=document.createElement('style');s.id='toast-keyframes';
   s.textContent='@keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(10px)}10%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}';
   document.head.appendChild(s);
+}
+
+
+// ===== 出牌特效引擎 (Phase 1+2) =====
+function getEffectLayer(){
+  let layer=document.getElementById('effect-layer');
+  if(!layer){
+    layer=document.createElement('div');
+    layer.id='effect-layer';
+    layer.className='effect-layer';
+    document.body.appendChild(layer);
+  }
+  return layer;
+}
+function getCardElColor(card){try{return FACTIONS[card.faction].color;}catch(e){return '#D4A840';}}
+function getRowIdx(rowName){const m={infantry:0,cavalry:1,navy:2,strategy:3};return m[rowName]||0;}
+function getCardEl(uid){const els=document.querySelectorAll('.card-mini');for(const el of els){if(parseInt(el.dataset.uid||'0',10)===uid)return el;}return null;}
+function getRectCenter(el){if(!el)return null;const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2};}
+function playArcParticles(sx,sy,ex,ey,color,c=8){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='card-arc-particle';p.style.setProperty('--card-color',color);p.style.left=sx+'px';p.style.top=sy+'px';p.style.setProperty('--end-x',(ex-sx)+'px');p.style.setProperty('--end-y',(ey-sy)+'px');p.style.animationDelay=(i*40)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),1200+i*40);}}
+function playDrawTalismans(sx,sy,ex,ey,c=3){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='draw-talisman';p.style.left=sx+'px';p.style.top=sy+'px';p.style.setProperty('--rot',((i-1)*30)+'deg');p.style.animationDelay=(i*150)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),1500+i*150);}}
+function playRowArrows(sx,sy,ex,ey,color,c=8){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='row-arrow';p.style.setProperty('--arrow-color',color);p.style.left=sx+'px';p.style.top=sy+'px';p.style.setProperty('--end-x',(ex-sx)+'px');p.style.setProperty('--end-y',(ey-sy)+'px');p.style.animationDelay=(i*50)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),900+i*50);}}
+function playDestroyVortex(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='destroy-vortex';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),800);}
+function playShield(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='shield-hex';p.style.left=x+'px';p.style.top=y+'px';p.innerHTML='<svg viewBox="0 0 60 60"><polygon points="30,2 55,17 55,43 30,58 5,43 5,17" fill="none" stroke="#D4A840" stroke-width="2.5"/><polygon points="30,10 47,21 47,39 30,50 13,39 13,21" fill="rgba(212,168,64,.2)" stroke="#D4A840" stroke-width="1.5"/></svg>';l.appendChild(p);setTimeout(()=>p.remove(),900);}
+function playDrawBurst(sx,sy,ex,ey,c=12){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='draw-extra-burst';p.style.left=sx+'px';p.style.top=sy+'px';p.style.setProperty('--end-x',((ex-sx)+(Math.random()-.5)*60)+'px');p.style.setProperty('--end-y',((ey-sy)+(Math.random()-.5)*60)+'px');p.style.animationDelay=(i*30)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),1000+i*30);}}
+function playProvisionsBag(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='provisions-bag';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),1100);}
+function playNavyWave(x,y){const l=getEffectLayer();for(let i=0;i<3;i++){const p=document.createElement('div');p.className='navy-wave';p.style.left=x+'px';p.style.top=y+'px';p.style.animationDelay=(i*100)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),800+i*100);}}
+function playAmbushParticles(sx,sy,ex,ey,c=6){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='ambush-particle';p.style.left=sx+'px';p.style.top=sy+'px';p.style.setProperty('--end-x',((ex-sx)+(Math.random()-.5)*30)+'px');p.style.setProperty('--end-y',((ey-sy)+(Math.random()-.5)*30)+'px');p.style.animationDelay=(i*40)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),900+i*40);}}
+function playCritStar(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='crit-star';p.style.left=x+'px';p.style.top=y+'px';p.textContent='\u2605';l.appendChild(p);setTimeout(()=>p.remove(),800);}
+function playBerserkFlash(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='berserk-flash';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),700);}
+function playResurrectBeam(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='resurrect-beam';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),1000);}
+function playDiscardChains(sx,sy,ex,ey,c=3){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='discard-chain';p.style.left=ex+'px';p.style.top=ey+'px';p.style.setProperty('--rot',((i-1)*30)+'deg');p.style.animationDelay=(i*100)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),700+i*100);}}
+function playSkirmishRing(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='skirmish-ring';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),900);}
+function playWeakenShadow(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='weaken-shadow';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),800);}
+function playCommandBanner(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='command-banner';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),900);}
+function playAssimilateTentacles(x,y,c=3){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='assimilate-tentacle';p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--rot',((i-1)*45)+'deg');p.style.animationDelay=(i*100)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),800+i*100);}}
+function playSpySmoke(x,y){const l=getEffectLayer();for(let i=0;i<4;i++){const p=document.createElement('div');p.className='spy-smoke';p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--end-x',((Math.random()-.5)*60)+'px');p.style.setProperty('--end-y',((Math.random()-.5)*60-20)+'px');p.style.animationDelay=(i*100)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),1100+i*100);}}
+function playControlChain(x,y){const l=getEffectLayer();for(let i=0;i<3;i++){const p=document.createElement('div');p.className='control-chain';p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--rot',((i-1)*40)+'deg');p.style.animationDelay=(i*150)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),900+i*150);}}
+function playFortifyBlocks(x,y,c=4){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='fortify-block';p.style.left=x+(i%2===0?-15:15)+'px';p.style.top=y+(i<2?-15:15)+'px';p.style.animationDelay=(i*100)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),700+i*100);}}
+function playSiegeRocks(sx,sy,ex,ey,c=5){const l=getEffectLayer();const f=document.createElement('div');f.className='siege-frame';f.style.left=sx+'px';f.style.top=sy+'px';l.appendChild(f);setTimeout(()=>f.remove(),900);for(let i=0;i<c;i++){const p=document.createElement('div');p.className='siege-rock';p.style.left=sx+'px';p.style.top=sy+'px';p.style.setProperty('--end-x',((ex-sx)+(Math.random()-.5)*40)+'px');p.style.setProperty('--end-y',((ey-sy)+(Math.random()-.5)*40)+'px');p.style.animationDelay=(i*60)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),900+i*60);}}
+function playFarmGrains(x,y,c=6){const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='farm-grain';p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--rot',(Math.random()*60-30)+'deg');p.style.setProperty('--end-x',((Math.random()-.5)*40)+'px');p.style.setProperty('--end-y',(-10-Math.random()*20)+'px');p.style.animationDelay=(i*80)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),1100+i*80);}}
+function playUnifyOrbs(x,y,c=5){const l=getEffectLayer();const cs=['#C41E3A','#4A90D9','#66BB6A','#D4A840','#C9A0FF'];for(let i=0;i<c;i++){const p=document.createElement('div');p.className='unify-orb';p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--unify-color',cs[i]);p.style.background='radial-gradient(circle,'+cs[i]+',transparent 70%)';p.style.setProperty('--end-x',((Math.random()-.5)*60)+'px');p.style.setProperty('--end-y',((Math.random()-.5)*60)+'px');p.style.animationDelay=(i*120)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),1000+i*120);}}
+function playFlexFlip(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='flex-flip';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),800);}
+function playAntiFire(x,y){const l=getEffectLayer();for(let i=0;i<4;i++){const p=document.createElement('div');p.className='anti-fire';p.style.left=x+(Math.random()-.5)*20+'px';p.style.top=y+(Math.random()-.5)*20+'px';p.style.animationDelay=(i*120)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),900+i*120);}}
+function playAmbushGrass(x,y){const l=getEffectLayer();const p=document.createElement('div');p.className='ambush-grass';p.style.left=x+'px';p.style.top=y+'px';l.appendChild(p);setTimeout(()=>p.remove(),800);}
+function playCoordinateLines(sx,sy,ex,ey,color){const l=getEffectLayer();const p=document.createElement('div');p.className='coordinate-line';p.style.left=sx+'px';p.style.top=sy+'px';p.style.setProperty('--coord-color',color);p.style.width=Math.abs(ex-sx)+'px';l.appendChild(p);setTimeout(()=>p.remove(),600);playRowArrows(sx,sy,ex,ey,color,4);}
+function playArmorPlates(x,y,c){c=c||parseInt((G.lastAbility||'0').split(':')[1]||'1',10);const l=getEffectLayer();for(let i=0;i<c;i++){const p=document.createElement('div');p.className='armor-plate';p.style.left=(x+(Math.random()-.5)*20)+'px';p.style.top=(y+(Math.random()-.5)*20)+'px';p.style.animationDelay=(i*150)+'ms';l.appendChild(p);setTimeout(()=>p.remove(),700+i*150);}}
+function playCardEffect(card,rowEl,opts={}){
+  const color=getCardElColor(card);
+  const cardEl=opts.cardEl||null;
+  const start=cardEl?getRectCenter(cardEl):{x:window.innerWidth/2,y:window.innerHeight-100};
+  const end=rowEl?getRectCenter(rowEl):{x:window.innerWidth/2,y:window.innerHeight/2};
+  if(!start||!end)return;
+  playArcParticles(start.x,start.y,end.x,end.y,color,8);
+  if(card.row==='navy')playNavyWave(end.x,end.y);
+  const ab=card.ability||'';const abType=ab.split(':')[0];
+  switch(abType){
+    case'draw':{const ha=document.querySelector('.hand-area');if(ha){const r=ha.getBoundingClientRect();playDrawTalismans(start.x,start.y,r.left+r.width/2,r.top+30,Math.min(parseInt(ab.split(':')[1]||'1',10)*2,6));}break;}
+    case'draw_extra':{const ha=document.querySelector('.hand-area');if(ha){const r=ha.getBoundingClientRect();playDrawBurst(start.x,start.y,r.left+r.width/2,r.top+30,12);}break;}
+    case'boost_row':case'navy_boost':case'combo_boost':{playRowArrows(start.x,start.y,end.x,end.y,color,8);break;}
+    case'destroy':{playDestroyVortex(end.x,end.y);break;}
+    case'shield':case'protect':{playShield(end.x,end.y);break;}
+    case'gain_provisions':{const n=parseInt(ab.split(':')[1]||'1',10);for(let i=0;i<n;i++)setTimeout(()=>playProvisionsBag(start.x+10*(i%3-1),start.y+5*(i-Math.floor(n/2))),i*200);break;}
+    case'ambush':{playAmbushParticles(start.x,start.y,end.x,end.y,6);break;}
+    case'crit':{playCritStar(end.x,end.y);break;}
+    case'berserk':{playBerserkFlash(end.x,end.y);break;}
+    case'resurrect':{playResurrectBeam(end.x,end.y);break;}
+    case'discard':{playDiscardChains(start.x,start.y,end.x,end.y,3);break;}
+    case'skirmish':{playSkirmishRing(end.x,end.y);break;}
+    case'weaken_row':{playWeakenShadow(end.x,end.y);break;}
+    case'command':{playCommandBanner(end.x,end.y);break;}
+    case'assimilate':{playAssimilateTentacles(end.x,end.y,3);break;}
+    case'spy':{playSpySmoke(end.x,end.y);break;}
+    case'control':{playControlChain(end.x,end.y);break;}
+    case'fortify':{playFortifyBlocks(end.x,end.y);break;}
+    case'siege':{playSiegeRocks(start.x,start.y,end.x,end.y);break;}
+    case'farm':{playFarmGrains(end.x,end.y);break;}
+    case'unify':{playUnifyOrbs(end.x,end.y);break;}
+    case'flex':{playFlexFlip(end.x,end.y);break;}
+    case'anti_south':{playAntiFire(end.x,end.y);break;}
+    case'ambush_card':{playAmbushGrass(end.x,end.y);break;}
+    case'coordinate':{playCoordinateLines(start.x,start.y,end.x,end.y,color);break;}
+    case'armor':{playArmorPlates(end.x,end.y);break;}
+  }
 }
 
 // ===== Steam 集成 (可选,无 Steam 时静默失败) =====
