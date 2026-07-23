@@ -280,6 +280,21 @@ html, body {
 #game-screen {
     height: 100vh;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#game-screen .game-content {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+}
+
+#game-screen .hand-area,
+#game-screen .action-bar,
+#game-screen .log-area {
+    flex: 0 0 auto;
 }
 
 #game-header {
@@ -404,8 +419,13 @@ html, body {
     opacity: .35;
     filter: saturate(.6) brightness(.85);
 }
+.battlefield {
+    margin: 4px 0;
+    position: relative;
+}
+
 .board-section {
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     position: relative;
     z-index: 1;
 }
@@ -424,11 +444,11 @@ html, body {
 .row {
     display: flex;
     align-items: center;
-    padding: 6px 8px;
-    min-height: 56px;
+    padding: 4px 8px;
+    min-height: 44px;
     border: 1px solid rgba(139,115,85,.25);
     border-radius: 4px;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     background: rgba(42,32,24,.6);
     position: relative;
     z-index: 1;

@@ -542,8 +542,6 @@ function playerPlayCard(handIdx,row){
 function playerPass(){
   if(G.phase!=='playing')return;
   if(G.playerPassed)return;
-  // 允许在 AI 已 Pass 的情况下也允许玩家 Pass（锁住胜利）
-  // 但仍需 currentTurn 是 player（如果 AI 正在 setTimeout 出牌，不允许打断）
   if(G.currentTurn!=='player')return;
   // 直接放弃：去掉确认弹窗(防止误以为 Pass 没生效),改为 toast 提示
   G.playerPassed=true;
@@ -758,6 +756,29 @@ function nextRoundOrGame(){
 }
 
 function addLog(msg){G.logs.push(msg);if(G.logs.length>50)G.logs.shift()}
+
+// 轻量 toast 提示（短时浮动通知，非阻塞）
+function showToast(text,dur=2000){
+  const el=document.createElement('div');
+  el.className='toast-notification';
+  el.textContent=text;
+  Object.assign(el.style,{
+    position:'fixed',bottom:'60px',left:'50%',transform:'translateX(-50%)',
+    background:'rgba(44,44,44,.92)',color:'#F5F0E8',padding:'12px 28px',
+    borderRadius:'6px',fontSize:'1em',zIndex:'1050',letterSpacing:'2px',
+    textAlign:'center',pointerEvents:'none',border:'1px solid rgba(139,105,20,.3)',
+    boxShadow:'0 0 20px rgba(0,0,0,.3)',
+    animation:'toastAnim '+(dur/1000)+'s ease-in-out forwards'
+  });
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),dur+500);
+}
+// 插入 toast 动画 keyframes（如果还没注入）
+if(!document.getElementById('toast-keyframes')){
+  const s=document.createElement('style');s.id='toast-keyframes';
+  s.textContent='@keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(10px)}10%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}';
+  document.head.appendChild(s);
+}
 
 // ===== Steam 集成 (可选,无 Steam 时静默失败) =====
 async function steamUnlock(achId){
@@ -1098,7 +1119,7 @@ function renderGame(el,lastUid,lastBy){
       </div>
     </div>
   </div>
-  <div class="battlefield-wrap">
+  <div class="battlefield-wrap game-content">
     <div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>
     <div class="battlefield">
     <div class="board-section ai-rows">
@@ -1228,14 +1249,18 @@ function renderRoundResult(el){
         <div class="power-side ${pWin?'win-side':'lose-side'}">
           <div class="power-label">你的战力</div>
           <div class="power-val ${pWin?'win':'lose'}">${r.playerPower}</div>
-          <div class="power-bar ${pWin?'bar-win':'bar-lose'}" style="width:${Math.max(10,Math.round(r.playerPower/(r.playerPower+r.aiPower)*100))}%"></div>
         </div>
-        <div class="power-vs">VS</div>
+        <div class="power-vs-wrap">
+          <div class="power-vs">VS</div>
+        </div>
         <div class="power-side ${aWin?'win-side':'lose-side'}">
           <div class="power-label">AI战力</div>
           <div class="power-val ${aWin?'win':'lose'}">${r.aiPower}</div>
-          <div class="power-bar ${aWin?'bar-win':'bar-lose'}" style="width:${Math.max(10,Math.round(r.aiPower/(r.playerPower+r.aiPower)*100))}%"></div>
         </div>
+      </div>
+      <div class="power-bar-bg">
+        <div class="power-bar-fill ${pWin?'bar-win':aWin?'bar-lose':''}" style="width:${pWin?'100%':'0%'}"></div>
+        <div class="power-bar-divider"></div>
       </div>
     </div>
     <div class="result-text ${pWin?'result-win':aWin?'result-lose':'result-tie'}">${pWin?'你赢得了本局！':aWin?'AI赢得了本局！':'本局平局！'}</div>
