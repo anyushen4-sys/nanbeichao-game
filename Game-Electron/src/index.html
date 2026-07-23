@@ -220,16 +220,24 @@ function applyLeaderAbilityForRound(leader,playerIdx){
 }
 
 function getHand(p){
-  const hand=p===0?G.playerHand:G.aiHand;
-  return hand.filter(c=>c&&typeof c==='object');
+  // 返回原始数组引用 - 调用者必须自己处理 undefined
+  // (历史原因: 此函数曾加 filter 但破坏了 drawCards 的 push)
+  return p===0?G.playerHand:G.aiHand;
+}
+
+function getHandSafe(p){
+  // 只读操作, 过滤掉 undefined
+  return getHand(p).filter(c=>c&&typeof c==='object');
 }
 function getDeck(p){return p===0?G.playerDeck:G.aiDeck}
 function getBoard(p){return p===0?G.playerBoard:G.aiBoard}
 
 function drawCards(playerIdx,count){
-  const hand=getHand(playerIdx);
-  const deck=getDeck(playerIdx);
-  for(let i=0;i<count&&hand.length<10&&deck.length>0;i++) hand.push(deck.shift());
+  // 不能用 getHand() 因为它返回 .filter() 的新数组, push 会失败
+  // 必须直接引用 G.playerHand/G.aiHand 数组
+  const realHand=playerIdx===0?G.playerHand:G.aiHand;
+  const deck=playerIdx===0?G.playerDeck:G.aiDeck;
+  for(let i=0;i<count&&realHand.length<10&&deck.length>0;i++) realHand.push(deck.shift());
 }
 
 function getRowPower(cards,playerIdx){
@@ -345,7 +353,7 @@ function triggerAbility(card,playerIdx){
       });
       if(aMinCard){
         oppBoard[aMinRow]=oppBoard[aMinRow].filter(c=>c.uid!==aMinCard.uid);
-        getHand(playerIdx).push(aMinCard);
+        getHandSafe(playerIdx).push(aMinCard);
         addLog(`${card.name}的效果：吸收了${opp===0?'你':'AI'}的${aMinCard.name}`);
       }
       break;}
@@ -429,7 +437,7 @@ function triggerAbility(card,playerIdx){
       for(let i=0;i<n&&G.graveyard.length>0;i++){
         const ri=Math.floor(Math.random()*G.graveyard.length);
         const card2=G.graveyard.splice(ri,1)[0];
-        getHand(playerIdx).push(card2);
+        getHandSafe(playerIdx).push(card2);
         addLog(`${card.name}的效果：从墓地回收了${card2.name}`);
       }
       break;}
