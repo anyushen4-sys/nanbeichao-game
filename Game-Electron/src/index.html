@@ -20,6 +20,13 @@
 <body>
 <div id="app"></div>
 <script src="js/card_data_uris.js"></script>
+<!--
+  [架构说明 2026-07-22 cron 接管修复]
+  本游戏当前采用 INLINE 模式:所有游戏逻辑(渲染/AI/规则/UI)都在本 index.html 内联。
+  js/ 目录下的 cards.js / game.js / rules.js / ui.js / ai.js 是历史遗留的 dead code,
+  在此模式下不会被加载。如果未来需要重构为模块化,请先把这些 .js 文件恢复,
+  再把 inline 代码迁移过去。当前为最小风险,保留 inline 不动。
+-->
 <script>
 const ROW_NAMES={infantry:'步兵',cavalry:'骑兵',navy:'水军',strategy:'谋略'};
 
@@ -212,21 +219,32 @@ function applyLeaderAbilityForRound(leader,playerIdx){
   }
 }
 
-function getHand(p){return p===0?G.playerHand:G.aiHand}
+function getHand(p){
+  // 返回原始数组引用 - 调用者必须自己处理 undefined
+  // (历史原因: 此函数曾加 filter 但破坏了 drawCards 的 push)
+  return p===0?G.playerHand:G.aiHand;
+}
+
+function getHandSafe(p){
+  // 只读操作, 过滤掉 undefined
+  return getHand(p).filter(c=>c&&typeof c==='object');
+}
 function getDeck(p){return p===0?G.playerDeck:G.aiDeck}
 function getBoard(p){return p===0?G.playerBoard:G.aiBoard}
 
 function drawCards(playerIdx,count){
-  const hand=getHand(playerIdx);
-  const deck=getDeck(playerIdx);
-  for(let i=0;i<count&&hand.length<10&&deck.length>0;i++) hand.push(deck.shift());
+  // 不能用 getHand() 因为它返回 .filter() 的新数组, push 会失败
+  // 必须直接引用 G.playerHand/G.aiHand 数组
+  const realHand=playerIdx===0?G.playerHand:G.aiHand;
+  const deck=playerIdx===0?G.playerDeck:G.aiDeck;
+  for(let i=0;i<count&&realHand.length<10&&deck.length>0;i++) realHand.push(deck.shift());
 }
 
 function getRowPower(cards,playerIdx){
   const buffs=G.globalBuffs;
   const armor=playerIdx===0?buffs.playerArmor:buffs.aiArmor;
   const unify=playerIdx===0?buffs.playerUnify:buffs.aiUnify;
-  return cards.reduce((s,c)=>s+Math.max(1,c.strength+armor+Math.floor(unify*0.5)),0);
+  return cards.reduce((s,c)=>s+(c?Math.max(1,c.strength+armor+Math.floor(unify*0.5)):0),0);
 }
 function getBoardPower(board,playerIdx){return getRowPower(board.infantry,playerIdx)+getRowPower(board.cavalry,playerIdx)+getRowPower(board.navy,playerIdx)+getRowPower(board.strategy,playerIdx)}
 
@@ -335,7 +353,7 @@ function triggerAbility(card,playerIdx){
       });
       if(aMinCard){
         oppBoard[aMinRow]=oppBoard[aMinRow].filter(c=>c.uid!==aMinCard.uid);
-        getHand(playerIdx).push(aMinCard);
+        getHandSafe(playerIdx).push(aMinCard);
         addLog(`${card.name}的效果：吸收了${opp===0?'你':'AI'}的${aMinCard.name}`);
       }
       break;}
@@ -419,7 +437,7 @@ function triggerAbility(card,playerIdx){
       for(let i=0;i<n&&G.graveyard.length>0;i++){
         const ri=Math.floor(Math.random()*G.graveyard.length);
         const card2=G.graveyard.splice(ri,1)[0];
-        getHand(playerIdx).push(card2);
+        getHandSafe(playerIdx).push(card2);
         addLog(`${card.name}的效果：从墓地回收了${card2.name}`);
       }
       break;}
@@ -533,22 +551,18 @@ function playerPlayCard(handIdx,row){
 }
 
 function playerPass(){
-  if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
-  // 包装：先弹确认弹窗，确认后才真正放弃
-  showConfirmModal(
-    '放弃本局？',
-    '放弃后本局不能再出牌，双方都放弃时结算本局。',
-    () => {
-      if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
-      G.playerPassed=true;
-      G.selectedCard=null;
-      addLog('你放弃了本局');
-      if(G.aiPassed){endRound();return}
-      G.currentTurn='ai';
-      render();
-      setTimeout(aiTurn,800);
-    }
-  );
+  if(G.phase!=='playing')return;
+  if(G.playerPassed)return;
+  if(G.currentTurn!=='player')return;
+  // 直接放弃：去掉确认弹窗(防止误以为 Pass 没生效),改为 toast 提示
+  G.playerPassed=true;
+  G.selectedCard=null;
+  addLog('你放弃了本局');
+  showToast('已放弃本局,等待 AI');
+  if(G.aiPassed){endRound();return}
+  G.currentTurn='ai';
+  render();
+  setTimeout(aiTurn,800);
 }
 
 function afterPlayerTurn(){
@@ -583,7 +597,7 @@ function afterPlayerTurn(){
 function hasPlayableCard(p){
   const hand=getHand(p);
   const prov=G.provisions[p];
-  return hand.some(c=>getCardCost(c.strength)<=prov);
+  return hand.some(c=>c&&getCardCost(c.strength)<=prov);
 }
 
 function aiTurn(){
@@ -651,11 +665,16 @@ function aiTurn(){
 }
 
 function aiShouldPass(){
+  // 早期几轮不让 AI 主动放弃(避免一上来就 Pass 太弱)
   if(G.turnCount<3)return false;
   const aiP=getBoardPower(G.aiBoard,1);
   const plP=getBoardPower(G.playerBoard,0);
-  // 只有当AI无牌可出时才Pass
+  const prov=G.provisions[1];
+  // 无牌可出必 Pass
   if(!hasPlayableCard(1))return true;
+  // 局势判断:AI 落后 5+ 战力,且剩余粮草只够出低费牌 → 战略性 Pass 让 AI 把赢面留给下一局
+  if(aiP < plP - 5 && prov <= 4)return true;
+  // 双方都已 Pass 会进入结算,这里不必处理
   return false;
 }
 
@@ -735,7 +754,7 @@ function checkGameEnd(){
   if(G.scores[0]>=2||G.scores[1]>=2||G.round>=3){
     G.phase='game_result';
     render();
-    const winText=G.scores[0]>G.scores[1]?'你赢得了天下！':'AI赢得了天下！';
+    const winText=G.scores[0]>G.scores[1]?'你赢得了天下！':G.scores[0]===G.scores[1]?'棋逢对手，不分胜负！':'AI赢得了天下！';
     showNotification(winText,3000);
   }else{
     G.phase='playing';
@@ -748,6 +767,46 @@ function nextRoundOrGame(){
 }
 
 function addLog(msg){G.logs.push(msg);if(G.logs.length>50)G.logs.shift()}
+
+// 轻量 toast 提示（短时浮动通知，非阻塞）
+function showToast(text,dur=2000){
+  const el=document.createElement('div');
+  el.className='toast-notification';
+  el.textContent=text;
+  Object.assign(el.style,{
+    position:'fixed',bottom:'60px',left:'50%',transform:'translateX(-50%)',
+    background:'rgba(44,44,44,.92)',color:'#F5F0E8',padding:'12px 28px',
+    borderRadius:'6px',fontSize:'1em',zIndex:'1050',letterSpacing:'2px',
+    textAlign:'center',pointerEvents:'none',border:'1px solid rgba(139,105,20,.3)',
+    boxShadow:'0 0 20px rgba(0,0,0,.3)',
+    animation:'toastAnim '+(dur/1000)+'s ease-in-out forwards'
+  });
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),dur+500);
+}
+// 插入 toast 动画 keyframes（如果还没注入）
+if(!document.getElementById('toast-keyframes')){
+  const s=document.createElement('style');s.id='toast-keyframes';
+  s.textContent='@keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(10px)}10%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}';
+  document.head.appendChild(s);
+}
+
+// ===== Steam 集成 (可选,无 Steam 时静默失败) =====
+async function steamUnlock(achId){
+  if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
+  try{
+    const r=await electronAPI.steam.unlockAchievement(achId);
+    if(r.success)console.log('[Steam] Achievement unlocked:',achId);
+  }catch(e){console.log('[Steam] ach fail:',e.message)}
+}
+async function steamSetStat(statName,value){
+  if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
+  try{await electronAPI.steam.setStat(statName,value);}catch(e){}
+}
+async function steamCloudSave(data){
+  if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
+  try{await electronAPI.steam.storeCloudSave(data);}catch(e){console.log('[Steam] save fail:',e.message)}
+}
 
 function showNotification(text,dur=2500){
   const el=document.createElement('div');
@@ -918,7 +977,8 @@ function confirmLeader(){
 function renderMulligan(app){
   const f=FACTIONS[G.playerLeader.faction];
   const sel=G.mulliganSelected;
-  const cardsHtml=G.playerHand.map((c,i)=>{
+  const hand=(G.playerHand||[]).filter(c=>c&&typeof c==='object');
+  const cardsHtml=hand.map((c,i)=>{
     const cf=FACTIONS[c.faction];
     const isSelected=sel.has(i);
     const cost=getCardCost(c.strength);
@@ -969,20 +1029,12 @@ function confirmMulligan(){
     G.aiHand.splice(ri,1);
     drawCards(1,1);
   }
-  G.phase='playing';
-  G.round=1;
   G.mulliganSelected=new Set();
   G.currentTurn='player';
-  G.playerPassed=false;
-  G.aiPassed=false;
-  G.provisions=[8,8];
-  G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
-  addLog('换牌完成！第1局开始');
-  addLog(`你现有 ${G.playerHand.length} 张手牌，牌库剩余 ${G.playerDeck.length} 张`);
+  G.phase='playing';
+  addLog('换牌完成！');
   showNotification('换牌完成！');
-  render();
+  startRound();
 }
 
 function useLeaderAbility(playerIdx){
@@ -1079,7 +1131,7 @@ function renderGame(el,lastUid,lastBy){
       </div>
     </div>
   </div>
-  <div class="battlefield-wrap">
+  <div class="battlefield-wrap game-content">
     <div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>
     <div class="battlefield">
     <div class="board-section ai-rows">
@@ -1106,7 +1158,7 @@ function renderGame(el,lastUid,lastBy){
   <div class="hand-area">
     <div class="hand-label">— 你的手牌 (${G.playerHand.length}张) —</div>
     <div class="hand-cards ${G.playerHand.length===0?'empty':''}${G.playerHand.length>=5?' many-cards':''}${G.playerHand.length>=7?' overflow-cards':''}">
-      ${G.playerHand.length===0?'无手牌':G.playerHand.map((c,i)=>renderHandCard(c,i)).join('')}
+      ${(G.playerHand||[]).filter(c=>c&&typeof c==='object').length===0?'无手牌':G.playerHand.filter(c=>c&&typeof c==='object').map((c,i)=>renderHandCard(c,i)).join('')}
     </div>
   </div>
   <div class="action-bar">
@@ -1206,36 +1258,59 @@ function renderRoundResult(el){
     <h2>第${G.round}局 结果</h2>
     <div class="power-compare">
       <div class="power-row">
-        <div>
-          <div style="color:#8B7355;font-size:.85em">你的战力</div>
+        <div class="power-side ${pWin?'win-side':'lose-side'}">
+          <div class="power-label">你的战力</div>
           <div class="power-val ${pWin?'win':'lose'}">${r.playerPower}</div>
         </div>
-        <div style="font-size:1.5em;color:#C8B898;align-self:center">VS</div>
-        <div>
-          <div style="color:#8B7355;font-size:.85em">AI战力</div>
+        <div class="power-vs-wrap">
+          <div class="power-vs">VS</div>
+        </div>
+        <div class="power-side ${aWin?'win-side':'lose-side'}">
+          <div class="power-label">AI战力</div>
           <div class="power-val ${aWin?'win':'lose'}">${r.aiPower}</div>
         </div>
       </div>
+      <div class="power-bar-bg">
+        <div class="power-bar-fill ${pWin?'bar-win':aWin?'bar-lose':''}" style="width:${pWin?'100%':'0%'}"></div>
+        <div class="power-bar-divider"></div>
+      </div>
     </div>
-    <div class="result-text">${pWin?'你赢得了本局！':aWin?'AI赢得了本局！':'本局平局！'}</div>
-    <div style="color:#8B7355;margin-bottom:20px">当前比分：${G.scores[0]} : ${G.scores[1]}</div>
-    <button class="btn btn-primary" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续下一局'}</button>
+    <div class="result-text ${pWin?'result-win':aWin?'result-lose':'result-tie'}">${pWin?'你赢得了本局！':aWin?'AI赢得了本局！':'本局平局！'}</div>
+    <div class="result-score">当前比分：${G.scores[0]} : ${G.scores[1]}</div>
+    <button class="btn btn-primary btn-result" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续下一局'}</button>
   </div>`;
 }
 
 function renderGameResult(el){
   const playerWin=G.scores[0]>G.scores[1];
+  const isDraw=G.scores[0]===G.scores[1];
+  // ===== Steam 统计/成就触发 =====
+  (async()=>{
+    await steamSetStat('STAT_TOTAL_GAMES',(Number(localStorage.getItem('steam_total_games')||0))+1);
+    localStorage.setItem('steam_total_games',String(Number(localStorage.getItem('steam_total_games')||0)+1));
+    if(playerWin){
+      await steamSetStat('STAT_TOTAL_WINS',(Number(localStorage.getItem('steam_total_wins')||0))+1);
+      localStorage.setItem('steam_total_wins',String(Number(localStorage.getItem('steam_total_wins')||0)+1));
+      await steamUnlock('ACH_FIRST_WIN');
+    } else if(!isDraw){
+      await steamSetStat('STAT_TOTAL_LOSSES',(Number(localStorage.getItem('steam_total_losses')||0))+1);
+      localStorage.setItem('steam_total_losses',String(Number(localStorage.getItem('steam_total_losses')||0)+1));
+    }
+    if(G.scores[0]===2&&G.scores[1]===0)await steamUnlock('ACH_PERFECT_ROUND');
+    const total=Number(localStorage.getItem('steam_total_games')||0);
+    if(total>=10)await steamUnlock('ACH_VETERAN');
+  })();
   el.innerHTML=`
   <div class="game-result">
-    <div class="menu-seal" style="margin:0 auto 30px">${playerWin?'胜利':'败北'}</div>
-    <h1 class="${playerWin?'victory':'defeat'}">${playerWin?'天下归一':'功败垂成'}</h1>
+    <div class="menu-seal" style="margin:0 auto 30px">${playerWin?'胜利':isDraw?'平局':'败北'}</div>
+    <h1 class="${playerWin?'victory':isDraw?'draw':'defeat'}">${playerWin?'天下归一':isDraw?'棋逢对手':'功败垂成'}</h1>
     <div class="final-score">${G.scores[0]} : ${G.scores[1]}</div>
     <div class="detail">
       ${G.playerLeader.name}（${FACTIONS[G.playerLeader.faction].name}）VS ${G.aiLeader.name}（${FACTIONS[G.aiLeader.faction].name}）
     </div>
     <div class="decorative-line" style="width:200px;margin:20px auto"></div>
     <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
-      ${playerWin?'运筹帷幄之中，决胜千里之外。':'胜败乃兵家常事，再接再厉。'}
+      ${playerWin?'运筹帷幄之中，决胜千里之外。':isDraw?'将遇良才，棋逢对手。':'胜败乃兵家常事，再接再厉。'}
     </p>
     <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
   </div>`;

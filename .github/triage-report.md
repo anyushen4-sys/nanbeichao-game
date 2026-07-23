@@ -1,6 +1,6 @@
 # Daily Triage Report
 
-**Generated:** 2026-07-21T10:56:19Z
+**Generated:** 2026-07-23T11:00:44Z
 
 ## 1. High-Priority Items (act on these)
 
@@ -16,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: 76e5ca5 | fix: card 29/26/112 重做 + timestamp cache-bust 1784623193 | 2026-07-21T08:39:57Z
-- Next triage: 2026-07-22T10:56:19Z
+- Latest commit: d9f069f | fix(cron): 补完空卡槽防御 - getHand / renderMulligan / renderGame 跳过 null | 2026-07-23T03:07:02Z
+- Next triage: 2026-07-24T11:00:44Z
