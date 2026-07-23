@@ -1,6 +1,6 @@
 # Daily Triage Report
 
-**Generated:** 2026-07-22T10:58:39Z
+**Generated:** 2026-07-23T11:00:44Z
 
 ## 1. High-Priority Items (act on these)
 
@@ -16,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: 434c2dd | fix: 移除 .card:hover scale(1.08) - 真正修复大小不一 | 2026-07-22T01:04:37Z
-- Next triage: 2026-07-23T10:58:39Z
+- Latest commit: d9f069f | fix(cron): 补完空卡槽防御 - getHand / renderMulligan / renderGame 跳过 null | 2026-07-23T03:07:02Z
+- Next triage: 2026-07-24T11:00:44Z
