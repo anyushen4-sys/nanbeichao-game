@@ -1252,7 +1252,7 @@ function renderGameResult(el){
       localStorage.setItem('steam_total_wins',String(Number(localStorage.getItem('steam_total_wins')||0)+1));
       await steamUnlock('ACH_FIRST_WIN');
     } else if(!isDraw){
-      await steamSetStat('STAT_TOTAL_LOSSES',(Number(localStorage.getItem('steam_total_losses')||0))+1));
+      await steamSetStat('STAT_TOTAL_LOSSES',(Number(localStorage.getItem('steam_total_losses')||0))+1);
       localStorage.setItem('steam_total_losses',String(Number(localStorage.getItem('steam_total_losses')||0)+1));
     }
     if(G.scores[0]===2&&G.scores[1]===0)await steamUnlock('ACH_PERFECT_ROUND');
