@@ -1,6 +1,6 @@
 # Daily Triage Report
 
-**Generated:** 2026-07-24T10:54:10Z
+**Generated:** 2026-07-27T12:11:55Z
 
 ## 1. High-Priority Items (act on these)
 
@@ -16,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: 7d2d5f7 | feat(cron): 出牌特效引擎 - 牌面飞行/符纸/箭矢/漩涡等20+特效 + getBoardSafe 防御 | 2026-07-23T13:34:33Z
-- Next triage: 2026-07-25T10:54:10Z
+- Latest commit: 8f1cd47 | feat(T7-cron): ipc-bridge — 7 个 multiplayer.* IPC channels (main.js + preload.js) | 2026-07-27T11:04:12Z
+- Next triage: 2026-07-28T12:11:55Z
