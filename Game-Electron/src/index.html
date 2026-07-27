@@ -239,8 +239,8 @@ function applyLeaderDeckAbility(leader,deck){
 }
 
 function applyRoundStartAbilities(){
-  applyLeaderAbilityForRound(G.playerLeader,0);
-  applyLeaderAbilityForRound(G.aiLeader,1);
+  applyLeaderAbilityForRound(G.players[0].leader,0);
+  applyLeaderAbilityForRound(G.players[1].leader,1);
 }
 
 function applyLeaderAbilityForRound(leader,playerIdx){
@@ -374,8 +374,8 @@ function triggerAbility(card,playerIdx){
       addLog(`${card.name}的效果：离间计！${opp===0?'你':'AI'}${ROW_NAMES[ctrlMaxRow]}行-1`);
       break;}
     case'skirmish':
-      if(playerIdx===0) G.aiPassed=true;
-      else G.playerPassed=true;
+      if(playerIdx===0) G.players[1].passed=true;
+      else G.players[0].passed=true;
       addLog(`${card.name}的效果：${opp===0?'你':'AI'}被迫跳过`);
       break;
     case'shield':
@@ -468,7 +468,7 @@ function triggerAbility(card,playerIdx){
       break;
     case'anti_south':{
       const southFactions=['song','qi','liang','chen'];
-      const oppLeaderFaction=(playerIdx===0?G.aiLeader:G.playerLeader)?.faction||'';
+      const oppLeaderFaction=(playerIdx===0?G.players[1].leader:G.players[0].leader)?.faction||'';
       if(southFactions.includes(oppLeaderFaction)){
         card.strength+=n;
         addLog(`${card.name}的效果：灭${oppLeaderFaction}！战力+${n}`);
@@ -580,13 +580,13 @@ function playCard(playerIdx,handIdx,row){
 
 function startRound(){
   G.round++;
-  G.playerPassed=false;
-  G.aiPassed=false;
+  G.players[0].passed=false;
+  G.players[1].passed=false;
   G.selectedCard=null;
   G.turnCount=0;
   // 粮草不再重置——开局30跨局共享（仅 confirmLeader/resetGame 初始化）
-  G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
   G.graveyard=[];
   G.logs=[];
@@ -604,8 +604,8 @@ function startRound(){
 }
 
 function playerPlayCard(handIdx,row){
-  if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
-  const card=G.playerHand[handIdx];
+  if(G.phase!=='playing'||G.currentTurn!=='player'||G.players[0].passed)return;
+  const card=G.players[0].hand[handIdx];
   if(!card)return;  // 防御：手牌可能已被 splice
   if(getCardCost(card.strength)>G.provisions[0])return;
   playCard(0,handIdx,row);
@@ -616,14 +616,14 @@ function playerPlayCard(handIdx,row){
 
 function playerPass(){
   if(G.phase!=='playing')return;
-  if(G.playerPassed)return;
+  if(G.players[0].passed)return;
   if(G.currentTurn!=='player')return;
   // 直接放弃：去掉确认弹窗(防止误以为 Pass 没生效),改为 toast 提示
-  G.playerPassed=true;
+  G.players[0].passed=true;
   G.selectedCard=null;
   addLog('你放弃了本局');
   showToast('已放弃本局,等待 AI');
-  if(G.aiPassed){endRound();return}
+  if(G.players[1].passed){endRound();return}
   G.currentTurn='ai';
   render();
   setTimeout(aiTurn,800);
@@ -633,16 +633,16 @@ function afterPlayerTurn(){
   // 如果玩家没有可出的牌，自动Pass
   if(!hasPlayableCard(0)){
     addLog('你没有可出的牌了');
-    G.playerPassed=true;
+    G.players[0].passed=true;
     G.selectedCard=null;
-    if(G.aiPassed){endRound();return}
+    if(G.players[1].passed){endRound();return}
     G.currentTurn='ai';
     render();
     setTimeout(aiTurn,600);
     return;
   }
-  if(G.aiPassed){
-    if(G.playerPassed){
+  if(G.players[1].passed){
+    if(G.players[0].passed){
       endRound();return;
     }
     G.currentTurn='player';
@@ -669,22 +669,22 @@ function aiTurn(){
   if(G.phase!=='playing')return;
   // 防御性检查: 如果AI粮草为0且手牌无费用可出，立即pass
   if(G.provisions[1]<=0 && !hasPlayableCard(1)){
-    G.aiPassed=true;
+    G.players[1].passed=true;
     addLog('AI无粮草可出，自动放弃');
-    if(G.playerPassed){endRound();return}
+    if(G.players[0].passed){endRound();return}
     G.currentTurn='player';
     render();return;
   }
-  if(G.aiPassed){
-    if(G.playerPassed){endRound();return}
+  if(G.players[1].passed){
+    if(G.players[0].passed){endRound();return}
     G.currentTurn='player';
     render();
     return;
   }
   if(!hasPlayableCard(1)){
-    G.aiPassed=true;
+    G.players[1].passed=true;
     addLog('AI无牌可出，放弃了');
-    if(G.playerPassed){endRound();return}
+    if(G.players[0].passed){endRound();return}
     G.currentTurn='player';
     render();return;
   }
@@ -693,17 +693,17 @@ function aiTurn(){
     render();
   }
   if(aiShouldPass()){
-    G.aiPassed=true;
+    G.players[1].passed=true;
     addLog('AI放弃了本局');
-    if(G.playerPassed){endRound();return}
+    if(G.players[0].passed){endRound();return}
     G.currentTurn='player';
     render();return;
   }
   const choice=aiChooseCard();
-  if(!choice){G.aiPassed=true;addLog('AI放弃了');if(G.playerPassed){endRound();return}G.currentTurn='player';render();return}
+  if(!choice){G.players[1].passed=true;addLog('AI放弃了');if(G.players[0].passed){endRound();return}G.currentTurn='player';render();return}
   setTimeout(()=>{
     try{
-      if(G.phase!=='playing'||G.aiPassed)return;
+      if(G.phase!=='playing'||G.players[1].passed)return;
       playCard(1,choice.handIdx,choice.row);
     }catch(e){
       console.error('[AI playCard]',e);
@@ -711,7 +711,7 @@ function aiTurn(){
     }
     try{
       G.turnCount++;
-      if(G.playerPassed){endRound();return}
+      if(G.players[0].passed){endRound();return}
       G.currentTurn='player';
       if(G.globalBuffs.playerFarm>0){
         G.provisions[0]+=G.globalBuffs.playerFarm;
@@ -731,8 +731,8 @@ function aiTurn(){
 function aiShouldPass(){
   // 早期几轮不让 AI 主动放弃(避免一上来就 Pass 太弱)
   if(G.turnCount<3)return false;
-  const aiP=getBoardPower(G.aiBoard,1);
-  const plP=getBoardPower(G.playerBoard,0);
+  const aiP=getBoardPower(G.players[1].board,1);
+  const plP=getBoardPower(G.players[0].board,0);
   const prov=G.provisions[1];
   // 无牌可出必 Pass
   if(!hasPlayableCard(1))return true;
@@ -743,16 +743,16 @@ function aiShouldPass(){
 }
 
 function aiChooseCard(){
-  const hand=G.aiHand;
+  const hand=G.players[1].hand;
   const prov=G.provisions[1];
   const playable=hand.map((c,i)=>({card:c,idx:i})).filter(x=>x.card&&getCardCost(x.card.strength)<=prov);
   if(!playable.length)return null;
-  const aiP=getBoardPower(G.aiBoard,1);
-  const plP=getBoardPower(G.playerBoard,0);
+  const aiP=getBoardPower(G.players[1].board,1);
+  const plP=getBoardPower(G.players[0].board,0);
   let best=null,bestScore=-9999;
   for(const{card,idx}of playable){
     let score=card.strength;
-    const rp={infantry:getRowPower(G.aiBoard.infantry,1),cavalry:getRowPower(G.aiBoard.cavalry,1),navy:getRowPower(G.aiBoard.navy,1),strategy:getRowPower(G.aiBoard.strategy,1)};
+    const rp={infantry:getRowPower(G.players[1].board.infantry,1),cavalry:getRowPower(G.players[1].board.cavalry,1),navy:getRowPower(G.players[1].board.navy,1),strategy:getRowPower(G.players[1].board.strategy,1)};
     const minR=Object.keys(rp).reduce((a,b)=>rp[a]<rp[b]?a:b);
     let targetRow=card.row;
     if(card.row===minR)score+=4;
@@ -776,7 +776,7 @@ function aiChooseCard(){
       if(t==='crit')score+=6;
       if(t==='unify')score+=3;
       if(t==='anti_south'){
-        const oppFaction=G.playerLeader?G.playerLeader.faction:'';
+        const oppFaction=G.players[0].leader?G.players[0].leader.faction:'';
         if(['song','qi','liang','chen'].includes(oppFaction))score+=4;
       }
       if(t==='boost_row')score+=3;
@@ -799,8 +799,8 @@ function aiChooseCard(){
 }
 
 function endRound(){
-  const pP=getBoardPower(G.playerBoard,0);
-  const aP=getBoardPower(G.aiBoard,1);
+  const pP=getBoardPower(G.players[0].board,0);
+  const aP=getBoardPower(G.players[1].board,1);
   let winner;
   if(pP>aP){winner=0;G.scores[0]++}
   else if(aP>pP){winner=1;G.scores[1]++}
@@ -1009,6 +1009,7 @@ function renderMenu(el){
         运筹帷幄 · 决胜千里
       </div>
       <button class="menu-btn" onclick="G.phase='tutorial';render()">开始游戏</button>
+      <button class="menu-btn" onclick="initHotSeat()" style="background:linear-gradient(135deg,#7B2FBE,#E23E57);">热座对战 (同机双人)</button>
       <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
     </div>
     <div class="menu-bottom-deco">
@@ -1107,13 +1108,13 @@ function selectLeader(id){
 
 function confirmLeader(){
   if(!G._selectedLeader)return;
-  G.playerLeader=LEADERS_DATA.find(l=>l.id===G._selectedLeader);
+  G.players[0].leader=LEADERS_DATA.find(l=>l.id===G._selectedLeader);
   let aiLeaders=LEADERS_DATA.filter(l=>l.id!==G._selectedLeader);
-  G.aiLeader=aiLeaders[Math.floor(random()*aiLeaders.length)];
-  G.playerDeck=buildDeck(G.playerLeader.faction);
-  G.aiDeck=buildDeck(G.aiLeader.faction);
-  applyLeaderDeckAbility(G.playerLeader,G.playerDeck);
-  applyLeaderDeckAbility(G.aiLeader,G.aiDeck);
+  G.players[1].leader=aiLeaders[Math.floor(random()*aiLeaders.length)];
+  G.players[0].deck=buildDeck(G.players[0].leader.faction);
+  G.players[1].deck=buildDeck(G.players[1].leader.faction);
+  applyLeaderDeckAbility(G.players[0].leader,G.players[0].deck);
+  applyLeaderDeckAbility(G.players[1].leader,G.players[1].deck);
   G.scores=[0,0];
   G.round=0;
   drawCards(0,7);
@@ -1125,9 +1126,9 @@ function confirmLeader(){
 }
 
 function renderMulligan(app){
-  const f=FACTIONS[G.playerLeader.faction];
+  const f=FACTIONS[G.players[0].leader.faction];
   const sel=G.mulliganSelected;
-  const hand=(G.playerHand||[]).filter(c=>c&&typeof c==='object');
+  const hand=(G.players[0].hand||[]).filter(c=>c&&typeof c==='object');
   const cardsHtml=hand.map((c,i)=>{
     const cf=FACTIONS[c.faction];
     const isSelected=sel.has(i);
@@ -1170,13 +1171,13 @@ function onMulliganCardClick(idx){
 function confirmMulligan(){
   const sorted=[...G.mulliganSelected].sort((a,b)=>b-a);
   sorted.forEach(idx=>{
-    if(G.playerHand.length>idx) G.playerHand.splice(idx,1);
+    if(G.players[0].hand.length>idx) G.players[0].hand.splice(idx,1);
     drawCards(0,1);
   });
   const aiReplace=Math.floor(random()*3);
-  for(let i=0;i<aiReplace&&G.aiHand.length>0;i++){
-    const ri=Math.floor(random()*G.aiHand.length);
-    G.aiHand.splice(ri,1);
+  for(let i=0;i<aiReplace&&G.players[1].hand.length>0;i++){
+    const ri=Math.floor(random()*G.players[1].hand.length);
+    G.players[1].hand.splice(ri,1);
     drawCards(1,1);
   }
   G.mulliganSelected=new Set();
@@ -1189,7 +1190,7 @@ function confirmMulligan(){
 
 function useLeaderAbility(playerIdx){
   if(G.leaderAbilityUsed[playerIdx])return;
-  const leader=playerIdx===0?G.playerLeader:G.aiLeader;
+  const leader=playerIdx===0?G.players[0].leader:G.players[1].leader;
   if(!leader)return;
   const ability=leader.ability;
   switch(ability.type){
@@ -1375,8 +1376,8 @@ function renderHandCard(card,idx){
 }
 
 function onCardClick(idx){
-  if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
-  const card=G.playerHand[idx];
+  if(G.phase!=='playing'||G.currentTurn!=='player'||G.players[0].passed)return;
+  const card=G.players[0].hand[idx];
   if(!card)return;  // 防御：手牌数组可能有空洞（AI 连锁效应导致 splice 后索引错位）
   if(getCardCost(card.strength)>G.provisions[0])return;
   if(G.selectedCard===idx){
@@ -1389,7 +1390,7 @@ function onCardClick(idx){
 
 function onRowClick(rowType){
   if(G.selectedCard===null||G.selectedCard===undefined)return;
-  const card=G.playerHand[G.selectedCard];
+  const card=G.players[0].hand[G.selectedCard];
   if(!card)return;
   // 只能放到对应行
   if(card.row!==rowType){
@@ -1483,13 +1484,13 @@ function renderGameResult(el){
     function resetGame(){
   uid=0;
   G.phase='menu';G.round=0;G.scores=[0,0];
-  G.playerLeader=null;G.aiLeader=null;
-  G.playerDeck=[];G.aiDeck=[];
-  G.playerHand=[];G.aiHand=[];
-  G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.players[0].leader=null;G.players[1].leader=null;
+  G.players[0].deck=[];G.players[1].deck=[];
+  G.players[0].hand=[];G.players[1].hand=[];
+  G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+  G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.provisions=[30,30];G.currentTurn='player';
-  G.playerPassed=false;G.aiPassed=false;
+  G.players[0].passed=false;G.players[1].passed=false;
   G.selectedCard=null;G.logs=[];G.turnCount=0;
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
   G.graveyard=[];
