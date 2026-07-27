@@ -183,8 +183,8 @@ function buildDeck(faction){
 
 function applyLeaderDeckAbility(leader,deck){
   const a=leader.ability;
-  if(a.type==='row_boost') deck.forEach(c=>{if(c.row===a.row)c.strength+=a.value});
-  if(a.type==='all_boost') deck.forEach(c=>c.strength+=a.value);
+  if(a.type==='row_boost') deck.forEach(c=>{if(c&&c.row===a.row)c.strength+=a.value});
+  if(a.type==='all_boost') deck.forEach(c=>{if(c)c.strength+=a.value});
 }
 
 function applyRoundStartAbilities(){
@@ -214,7 +214,7 @@ function applyLeaderAbilityForRound(leader,playerIdx){
       const p=getRowPower(myBoard[r],playerIdx);
       if(p>maxPower){maxPower=p;bestRow=r}
     });
-    myBoard[bestRow].forEach(c=>{c.strength+=a.value});
+    myBoard[bestRow].forEach(c=>{if(c)c.strength+=a.value});
     addLog(`【${leader.name}】效果：${ROW_NAMES[bestRow]}行+${a.value}`);
   }
 }
@@ -281,12 +281,12 @@ function triggerAbility(card,playerIdx){
       }
       break;}
     case'boost_row':
-      myBoard[card.row].forEach(c=>{if(c.uid!==card.uid)c.strength+=n});
+      myBoard[card.row].forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
       addLog(`${card.name}的效果：本行+${n}`);
       break;
     case'weaken_row':{
       const wk=weakestOpponentRow(oppBoard,opp);
-      oppBoard[wk].forEach(c=>c.strength=Math.max(1,c.strength-n));
+      oppBoard[wk].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-n)});
       addLog(`${card.name}的效果：${opp===0?'你':'AI'}${ROW_NAMES[wk]}行-${n}`);
       break;}
     case'gain_provisions':
@@ -295,7 +295,7 @@ function triggerAbility(card,playerIdx){
       break;
     case'ambush':
       if(G.turnCount===0&&!G.globalBuffs.ambushTriggered){
-        myBoard.infantry.forEach(c=>c.strength+=n);
+        myBoard.infantry.forEach(c=>{if(c)c.strength+=n});
         G.globalBuffs.ambushTriggered=true;
         addLog(`${card.name}的效果：突袭！步兵行+${n}`);
       }
@@ -304,7 +304,7 @@ function triggerAbility(card,playerIdx){
       const cmdH=getHand(playerIdx);
       if(cmdH.length>0){
         let weakIdx=0,weakStr=Infinity;
-        cmdH.forEach((c,i)=>{if(c.strength<weakStr){weakStr=c.strength;weakIdx=i}});
+        cmdH.forEach((c,i)=>{if(c&&c.strength<weakStr){weakStr=c.strength;weakIdx=i}});
         const discarded=cmdH.splice(weakIdx,1)[0];
         addLog(`${card.name}的效果：弃掉了${discarded.name}（${discarded.strength}）`);
         if(cmdH.length>0){
@@ -319,7 +319,7 @@ function triggerAbility(card,playerIdx){
         const p=getRowPower(oppBoard[r],opp);
         if(p>ctrlMaxP){ctrlMaxP=p;ctrlMaxRow=r}
       });
-      oppBoard[ctrlMaxRow].forEach(c=>c.strength=Math.max(1,c.strength-1));
+      oppBoard[ctrlMaxRow].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-1)});
       addLog(`${card.name}的效果：离间计！${opp===0?'你':'AI'}${ROW_NAMES[ctrlMaxRow]}行-1`);
       break;}
     case'skirmish':
@@ -329,12 +329,12 @@ function triggerAbility(card,playerIdx){
       break;
     case'shield':
       ['infantry','cavalry','navy','strategy'].forEach(r=>{
-        myBoard[r].forEach(c=>c.strength+=n);
+        myBoard[r].forEach(c=>{if(c)c.strength+=n});
       });
       addLog(`${card.name}的效果：全场+${n}`);
       break;
     case'navy_boost':
-      myBoard.navy.forEach(c=>{if(c.uid!==card.uid)c.strength+=n});
+      myBoard.navy.forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
       addLog(`${card.name}的效果：水军行+${n}`);
       break;
     case'farm':
@@ -343,7 +343,7 @@ function triggerAbility(card,playerIdx){
       addLog(`${card.name}的效果：每回合+${n}粮草`);
       break;
     case'fortify':
-      myBoard[card.row].forEach(c=>{if(c.uid!==card.uid)c.strength+=n});
+      myBoard[card.row].forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
       addLog(`${card.name}的效果：本行+${n}`);
       break;
     case'flex':
@@ -373,7 +373,7 @@ function triggerAbility(card,playerIdx){
         const p=getRowPower(oppBoard[r],opp);
         if(p>sMaxP){sMaxP=p;sMaxRow=r}
       });
-      oppBoard[sMaxRow].forEach(c=>c.strength=Math.max(1,c.strength-n));
+      oppBoard[sMaxRow].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-n)});
       addLog(`${card.name}的效果：围城！${opp===0?'你':'AI'}${ROW_NAMES[sMaxRow]}行-${n}`);
       break;}
     case'coordinate':
@@ -425,7 +425,7 @@ function triggerAbility(card,playerIdx){
       break;}
     case'combo_boost':{
       const sameType=Object.values(myBoard).flat().filter(c=>c.uid!==card.uid&&c.ability&&c.ability.split(':')[0]==='combo_boost');
-      sameType.forEach(c=>c.strength+=n);
+      sameType.forEach(c=>{if(c)c.strength+=n});
       addLog(`${card.name}的效果：连携！友方连携卡+${n}`);
       break;}
     case'destroy':{
@@ -454,7 +454,7 @@ function triggerAbility(card,playerIdx){
       const oppH2=getHand(opp);
       if(oppH2.length>0){
         let spyMax=-1,spyIdx=0;
-        oppH2.forEach((c,i)=>{if(c.strength>spyMax){spyMax=c.strength;spyIdx=i}});
+        oppH2.forEach((c,i)=>{if(c&&c.strength>spyMax){spyMax=c.strength;spyIdx=i}});
         const discarded=oppH2.splice(spyIdx,1)[0];
         G.graveyard.push(discarded);
         addLog(`${card.name}的效果：间谍行动，${opp===0?'你':'AI'}弃掉了${discarded.name}（${discarded.strength}）`);
@@ -489,7 +489,9 @@ function triggerAbilityWithFlash(card,playerIdx,row){
 
 function playCard(playerIdx,handIdx,row){
   const hand=getHand(playerIdx);
+  if(!hand[handIdx])return;  // 防御：手牌索引可能已失效
   const card=hand.splice(handIdx,1)[0];
+  if(!card)return;  // 防御：splice 结果不应为 undefined（双保险）
 
   const berserkKey=playerIdx===0?'playerBerserkCard':'aiBerserkCard';
   const berserkUid=G.globalBuffs[berserkKey];
@@ -553,6 +555,7 @@ function startRound(){
 function playerPlayCard(handIdx,row){
   if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
   const card=G.playerHand[handIdx];
+  if(!card)return;  // 防御：手牌可能已被 splice
   if(getCardCost(card.strength)>G.provisions[0])return;
   playCard(0,handIdx,row);
   G.selectedCard=null;
@@ -691,7 +694,7 @@ function aiShouldPass(){
 function aiChooseCard(){
   const hand=G.aiHand;
   const prov=G.provisions[1];
-  const playable=hand.map((c,i)=>({card:c,idx:i})).filter(x=>getCardCost(x.card.strength)<=prov);
+  const playable=hand.map((c,i)=>({card:c,idx:i})).filter(x=>x.card&&getCardCost(x.card.strength)<=prov);
   if(!playable.length)return null;
   const aiP=getBoardPower(G.aiBoard,1);
   const plP=getBoardPower(G.playerBoard,0);
@@ -1137,7 +1140,7 @@ function useLeaderAbility(playerIdx){
   const ability=leader.ability;
   switch(ability.type){
     case'row_boost':
-      getBoard(playerIdx)[ability.row].forEach(c=>c.strength+=ability.value);
+      getBoard(playerIdx)[ability.row].forEach(c=>{if(c)c.strength+=ability.value});
       addLog(`【${leader.name}】技能：${ROW_NAMES[ability.row]}行+${ability.value}`);
       break;
     case'extra_draw':
@@ -1158,7 +1161,7 @@ function useLeaderAbility(playerIdx){
       addLog(`【${leader.name}】技能：粮草+${ability.value}`);
       break;
     case'all_boost':
-      ['infantry','cavalry','navy','strategy'].forEach(r=>getBoard(playerIdx)[r].forEach(c=>c.strength+=ability.value));
+      ['infantry','cavalry','navy','strategy'].forEach(r=>getBoard(playerIdx)[r].forEach(c=>{if(c)c.strength+=ability.value}));
       addLog(`【${leader.name}】技能：全场+${ability.value}`);
       break;
     case'double_edge':{
@@ -1171,8 +1174,8 @@ function useLeaderAbility(playerIdx){
         if(p<minP){minP=p;worstR=r}
       });
       if(bestR===worstR) bestR=rows.find(r=>r!==worstR)||'infantry';
-      myBoard[bestR].forEach(c=>c.strength+=ability.value);
-      myBoard[worstR].forEach(c=>c.strength=Math.max(1,c.strength-1));
+      myBoard[bestR].forEach(c=>{if(c)c.strength+=ability.value});
+      myBoard[worstR].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-1)});
       addLog(`【${leader.name}】技能：${ROW_NAMES[bestR]}行+${ability.value}，${ROW_NAMES[worstR]}行-1`);
       break;}
     case'hand_boost':{
@@ -1320,6 +1323,7 @@ function renderHandCard(card,idx){
 function onCardClick(idx){
   if(G.phase!=='playing'||G.currentTurn!=='player'||G.playerPassed)return;
   const card=G.playerHand[idx];
+  if(!card)return;  // 防御：手牌数组可能有空洞（AI 连锁效应导致 splice 后索引错位）
   if(getCardCost(card.strength)>G.provisions[0])return;
   if(G.selectedCard===idx){
     G.selectedCard=null;
