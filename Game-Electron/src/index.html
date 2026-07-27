@@ -273,15 +273,15 @@ function applyLeaderAbilityForRound(leader,playerIdx){
 function getHand(p){
   // 返回原始数组引用 - 调用者必须自己处理 undefined
   // (历史原因: 此函数曾加 filter 但破坏了 drawCards 的 push)
-  return p===0?G.playerHand:G.aiHand;
+  return G.players[p].hand;
 }
 
 function getHandSafe(p){
   // 只读操作, 过滤掉 undefined
   return getHand(p).filter(c=>c&&typeof c==='object');
 }
-function getDeck(p){return p===0?G.playerDeck:G.aiDeck}
-function getBoard(p){return p===0?G.playerBoard:G.aiBoard}
+function getDeck(p){return G.players[p].deck}
+function getBoard(p){return G.players[p].board}
 function getBoardSafe(p){
   const b=getBoard(p);
   const clean=r=>Array.isArray(r)?r.filter(c=>c&&typeof c==='object'):[];
@@ -290,9 +290,9 @@ function getBoardSafe(p){
 
 function drawCards(playerIdx,count){
   // 不能用 getHand() 因为它返回 .filter() 的新数组, push 会失败
-  // 必须直接引用 G.playerHand/G.aiHand 数组
-  const realHand=playerIdx===0?G.playerHand:G.aiHand;
-  const deck=playerIdx===0?G.playerDeck:G.aiDeck;
+  // 直接引用 G.players[playerIdx].hand 数组
+  const realHand=G.players[playerIdx].hand;
+  const deck=G.players[playerIdx].deck;
   for(let i=0;i<count&&realHand.length<10&&deck.length>0;i++) realHand.push(deck.shift());
 }
 
