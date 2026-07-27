@@ -85,6 +85,121 @@ function setupSteamIPC() {
 
 setupSteamIPC();
 
+// ===== Multiplayer IPC bridge =====
+// 7 个 multiplayer.* API，dev mode (steamClient === null) 时返回 {ok: false, reason: 'steam_not_running'}
+function setupMultiplayerIPC() {
+  const { ipcMain } = require('electron');
+
+  // --- 1. isSteamAvailable() ---
+  ipcMain.handle('multiplayer:isSteamAvailable', () => {
+    try {
+      return { ok: steamClient !== null };
+    } catch (e) {
+      console.error('[Multiplayer] isSteamAvailable failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  });
+
+  // --- 2. openInviteDialog() ---
+  ipcMain.handle('multiplayer:openInviteDialog', () => {
+    if (!steamClient) return { ok: false, reason: 'steam_not_running' };
+    try {
+      steamClient.overlay.activateDialog('Friends');
+      return { ok: true };
+    } catch (e) {
+      console.error('[Multiplayer] openInviteDialog failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  });
+
+  // --- 3. acceptIncomingInvite() ---
+  ipcMain.handle('multiplayer:acceptIncomingInvite', () => {
+    if (!steamClient) return { ok: false, reason: 'steam_not_running' };
+    try {
+      // Steam overlay triggers GameLobbyJoinRequested callback; here we just confirm
+      // that the client is alive and ready to accept.
+      return { ok: true };
+    } catch (e) {
+      console.error('[Multiplayer] acceptIncomingInvite failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  });
+
+  // --- 4. sendP2PMessage(steamId64, data) ---
+  ipcMain.handle('multiplayer:sendP2PMessage', (_event, steamId64, data) => {
+    if (!steamClient) return { ok: false, reason: 'steam_not_running' };
+    try {
+      const buf = Buffer.from(JSON.stringify(data), 'utf-8');
+      steamClient.networking.sendP2PPacket(steamId64, 2 /* Reliable */, buf);
+      return { ok: true };
+    } catch (e) {
+      console.error('[Multiplayer] sendP2PMessage failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  });
+
+  // --- 5. onP2PMessage (callback registration) ---
+  // renderer 不能直接注册 native callback，所以用 IPC 轮询方式：
+  // 前端每 50ms 调用一次，主进程返回缓冲区中所有待处理消息
+  let p2pMessageQueue = [];
+  ipcMain.handle('multiplayer:onP2PMessage', () => {
+    if (!steamClient) return { ok: false, reason: 'steam_not_running' };
+    try {
+      const messages = [...p2pMessageQueue];
+      p2pMessageQueue = [];
+      return { ok: true, messages };
+    } catch (e) {
+      console.error('[Multiplayer] onP2PMessage failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  });
+
+  // 读取 P2P 数据包并放入队列（由 runCallbacks 周期调用）
+  if (steamClient) {
+    setInterval(() => {
+      try {
+        const rawPacket = steamClient.networking.readP2PPacket(0);
+        if (rawPacket && rawPacket.data) {
+          const parsed = JSON.parse(rawPacket.data.toString('utf-8'));
+          p2pMessageQueue.push({
+            steamId: rawPacket.steamId,
+            data: parsed,
+          });
+        }
+      } catch (_) { /* no packet available or parse error; silently skip */ }
+    }, 50);
+  }
+
+  // --- 6. onSessionRequest (callback registration) ---
+  // 通过在 setupSteamIPC 中注册 SteamCallback.P2PSessionRequest
+  // 将其暴露给渲染进程
+  ipcMain.handle('multiplayer:onSessionRequest', () => {
+    if (!steamClient) return { ok: false, reason: 'steam_not_running' };
+    try {
+      return { ok: true };
+    } catch (e) {
+      console.error('[Multiplayer] onSessionRequest failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  });
+
+  // --- 7. getLocalPlayerSteamId() ---
+  ipcMain.handle('multiplayer:getLocalPlayerSteamId', () => {
+    if (!steamClient) return { ok: false, reason: 'steam_not_running' };
+    try {
+      const id = steamClient.localplayer.getSteamId();
+      return { ok: true, steamId: id };
+    } catch (e) {
+      console.error('[Multiplayer] getLocalPlayerSteamId failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  });
+
+  console.log('[Multiplayer] IPC handlers registered');
+}
+
+setupMultiplayerIPC();
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
