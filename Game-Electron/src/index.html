@@ -203,23 +203,7 @@ mulliganSelected:new Set(),
 leaderAbilityUsed:[false,false]
 };
 
-// 别名 getter/setter — 旧代码通过 playerHand/aiHand/... 读写等价于 players[idx].hand
-(function(){
-  const ALIAS=['Deck','Hand','Board','Leader','Passed'];
-  const idxes={player:0,ai:1};
-  for(const prefix in idxes){
-    const i=idxes[prefix];
-    for(const a of ALIAS){
-      const aliasName=prefix+a;
-      const propName=a.charAt(0).toLowerCase()+a.slice(1); // Deck→deck, Hand→hand, etc.
-      Object.defineProperty(window.G,aliasName,{
-        enumerable:true,configurable:true,
-        get(){return window.G.players[i][propName];},
-                set(v){window.G.players[i][propName]=v;}
-      });
-    }
-  }
-})();
+// 旧别名 playerHand/aiHand/... 已删除 — 所有 call sites 已迁移至 G.players[idx].*
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
@@ -1376,6 +1360,15 @@ function renderHandCard(card,idx){
 }
 
 function onCardClick(idx){
+  // Hot-seat mode
+  if(G._hsPhase==='game'){
+      let act=G.activePlayer;
+      let c=G.players[act].hand[idx];
+      if(!c)return;
+      if(getCardCost(c.strength)>G.provisions[act])return;
+      if(G.selectedCard===idx){G.selectedCard=null}else{G.selectedCard=idx}
+      render();return;
+  }
   if(G.phase!=='playing'||G.currentTurn!=='player'||G.players[0].passed)return;
   const card=G.players[0].hand[idx];
   if(!card)return;  // 防御：手牌数组可能有空洞（AI 连锁效应导致 splice 后索引错位）
@@ -1389,6 +1382,16 @@ function onCardClick(idx){
 }
 
 function onRowClick(rowType){
+  // Hot-seat 模式
+  if(G._hsPhase==='game'){
+      if(G.selectedCard===null||G.selectedCard===undefined)return;
+      let act=G.activePlayer;
+      let c=G.players[act].hand[G.selectedCard];
+      if(!c)return;
+      if(c.row!==rowType){addLog('该卡牌只能放入'+ROW_NAMES[c.row]);return}
+      hotSeatPlayCard(G.selectedCard,rowType);
+      return;
+  }
   if(G.selectedCard===null||G.selectedCard===undefined)return;
   const card=G.players[0].hand[G.selectedCard];
   if(!card)return;
@@ -1469,19 +1472,433 @@ function renderGameResult(el){
         }
 
         // ===== 06: mode-router — 多人模式 / 热座模式渲染空壳 =====
-        function renderMultiplayerLobby(el){
-      el.innerHTML='<div class="multiplayer-lobby"><h2>多人对战大厅</h2><p>即将推出...</p></div>';
+                function renderMultiplayerLobby(el){
+              el.innerHTML='<div class="multiplayer-lobby"><h2>多人对战大厅</h2><p>即将推出...</p></div>';
+            }
+
+            function renderMultiplayerPlaying(el){
+              el.innerHTML='<div class="multiplayer-playing"><h2>多人对战</h2><p>即将推出...</p></div>';
+            }
+
+            // ===== 08: hot-seat — 同机双人完整流程 =====
+            function initHotSeat(){
+              const seed=Math.floor(Math.random()*2147483647);
+              G._rng=rngFromSeed(seed);
+              G.phase='hot_seat_playing';
+              G.activePlayer=0;
+              G._hsPhase='leader_select';
+              G._hsLeaderPicks=[null,null];
+              G.scores=[0,0]; G.round=0;
+              G.provisions=[30,30];
+              G.leaderAbilityUsed=[false,false];
+              render();
+            }
+
+            function hotSeatPickLeader(){
+      if(!G._selectedLeader)return;
+      var p=G.activePlayer;
+      var l=LEADERS_DATA.find(function(x){return x.id===G._selectedLeader});
+      G._hsLeaderPicks[p]=l;
+      G.players[p].leader=l;
+      G._selectedLeader=null;
+      if(p===0){
+        G.activePlayer=1;
+        showHotSeatPassModal('请将设备交给玩家2选择主将');
+        render();
+        return;
+      }
+      // Both done: setup game
+      hotSeatSetup();
     }
 
-    function renderMultiplayerPlaying(el){
-      el.innerHTML='<div class="multiplayer-playing"><h2>多人对战</h2><p>即将推出...</p></div>';
-    }
+    function hotSeatSetup(){
+              // Called after both leaders confirmed
+              const p0=G.players[0].leader, p1=G.players[1].leader;
+              G.players[0].deck=buildDeck(p0.faction);
+              G.players[1].deck=buildDeck(p1.faction);
+              applyLeaderDeckAbility(p0,G.players[0].deck);
+              applyLeaderDeckAbility(p1,G.players[1].deck);
+              G.scores=[0,0]; G.round=0;
+              G.players[0].passed=false; G.players[1].passed=false;
+              G.selectedCard=null; G.logs=[]; G.turnCount=0;
+              G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
+                playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+              G.graveyard=[];
+              G.mulliganSelected=new Set();
+              G.leaderAbilityUsed=[false,false];
+              G.activePlayer=0;
+              // Mulligan-like: both draw 7
+              drawCards(0,7); drawCards(1,7);
+              G._hsPhase='mulligan';
+              addLog('═══ 热座模式：双方换牌 ═══');
+              addLog('玩家1先换牌');
+              render();
+            }
 
-    function renderHotSeatPlaying(el){
-      el.innerHTML='<div class="hot-seat-playing"><h2>热座模式</h2><p>即将推出...</p></div>';
-    }
+            function hotSeatConfirmMulligan(){
+                          var p=G.activePlayer;
+                          var hand=getHand(p);
+                          // Selected = keep; swap the rest
+                          var keeperIdx=new Set();
+                          G.mulliganSelected.forEach(function(idx){if(idx<hand.length)keeperIdx.add(idx)});
+                          var i=0; while(i<hand.length){
+                            if(keeperIdx.has(i)){i++;continue}
+                            hand.splice(i,1);
+                          }
+                          var cnt=7-keeperIdx.size;
+                          if(cnt>0)drawCards(p,cnt);
+                          addLog((p===0?'玩家1':'玩家2')+'换了'+cnt+'张牌');
+                          G.mulliganSelected=new Set();
+                          if(G.activePlayer===0){
+                            G.activePlayer=1;
+                            render();
+                            showHotSeatPassModal('换牌阶段 — 请将设备交给玩家2');
+                            return;
+                          }
+                          // Both done mulligan
+                          G._hsPhase='game';
+                          G.activePlayer=0;
+                          G.currentTurn='player';
+                          G.players[0].passed=false; G.players[1].passed=false;
+                          G.selectedCard=null;
+                          G.turnCount=0;
+                          addLog('═══ 换牌结束，玩家1先手 ═══');
+                          render();
+                        }
 
-    function resetGame(){
+            function hotSeatToggleMulligan(idx){
+              if(G.mulliganSelected.has(idx)) G.mulliganSelected.delete(idx);
+              else G.mulliganSelected.add(idx);
+              render();
+            }
+
+            function hotSeatPassTurn(){
+              const a=G.activePlayer;
+              G.players[a].passed=true;
+              addLog((a===0?'玩家1':'玩家2')+'放弃了本局');
+              G.selectedCard=null;
+              const b=1-a;
+              if(G.players[b].passed){
+                hotSeatEndRound();
+              }else{
+                G.activePlayer=b;
+            if(a===0) showHotSeatPassModal('请将设备交给玩家2');
+            else if(b===0) showHotSeatPassModal('请将设备交还给玩家1');
+                render();
+              }
+            }
+
+            function hotSeatEndRound(){
+              const pP=getBoardPower(G.players[0].board,0);
+              const aP=getBoardPower(G.players[1].board,1);
+              let winner;
+              if(pP>aP){winner=0;G.scores[0]++}
+              else if(aP>pP){winner=1;G.scores[1]++}
+              else{winner=-1}
+              addLog('═══ 第'+G.round+'局结束 ═══');
+              if(winner===0) addLog('玩家1战力:'+pP+' vs 玩家2战力:'+aP+' → 玩家1胜利！');
+              else if(winner===1) addLog('玩家1战力:'+pP+' vs 玩家2战力:'+aP+' → 玩家2胜利！');
+              else addLog('玩家1战力:'+pP+' vs 玩家2战力:'+aP+' → 平局！');
+              G._roundResult={playerPower:pP,aiPower:aP,winner};
+              G._hsPhase='round_result';
+              render();
+            }
+
+            function hotSeatCheckGameEnd(){
+              if(G.scores[0]>=2||G.scores[1]>=2||G.round>=3){
+                G._hsPhase='game_result';
+                render();
+                const txt=G.scores[0]>G.scores[1]?'玩家1赢得了天下！':
+                  G.scores[0]===G.scores[1]?'棋逢对手，不分胜负！':'玩家2赢得了天下！';
+                showNotification(txt,3000);
+              }else{
+                G.round++;
+                G.players[0].passed=false; G.players[1].passed=false;
+                G.selectedCard=null; G.turnCount=0;
+                G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+                G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+                G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
+                  playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+                G.graveyard=[];
+                G.logs=[];
+                G.leaderAbilityUsed=[false,false];
+                G.activePlayer=0;
+                G.currentTurn='player';
+                const drawCount=G.round<=1?0:4;
+                if(drawCount>0){drawCards(0,drawCount);drawCards(1,drawCount);}
+                applyRoundStartAbilities();
+                addLog('═══ 第'+G.round+'局开始 ═══');
+                if(drawCount>0) addLog('双方各抽'+drawCount+'张牌');
+                G._hsPhase='game';
+                render();
+              }
+            }
+
+            function hotSeatPlayCard(handIdx,row){
+              if(G._hsPhase!=='game')return;
+              const a=G.activePlayer;
+              const card=getHand(a)[handIdx];
+              if(!card)return;
+              if(getCardCost(card.strength)>G.provisions[a])return;
+              if(card.row!==row)return;
+              playCard(a,handIdx,row);
+              G.selectedCard=null;
+              G.turnCount++;
+              // check if opponent has any playable card
+              const opp=1-a;
+              if(!hasPlayableCard(opp)){
+                G.players[opp].passed=true;
+                addLog('玩家'+(opp+1)+'无牌可出，自动放弃');
+              }
+              if(G.players[0].passed&&G.players[1].passed){
+                hotSeatEndRound();
+              }else{
+                // Switch player
+                let next=1-a;
+                // Skip passed player
+                if(G.players[next].passed) next=1-next;
+                if(G.players[next].passed){
+                  hotSeatEndRound();
+                return;
+                }
+                G.activePlayer=next;
+                if(a===0) showHotSeatPassModal('请将设备交给玩家2');
+                else showHotSeatPassModal('请将设备交还给玩家1');
+                render();
+              }
+            }
+
+            function showHotSeatPassModal(msg){
+              const overlay=document.createElement('div');
+              overlay.className='confirm-modal-overlay';
+              overlay.id='hs-pass-overlay';
+              overlay.innerHTML='<div class="confirm-modal" style="background:#1a1025;border:2px solid #7B2FBE;">'+
+                '<div class="confirm-title" style="color:#C4A8D4">📱 传递设备</div>'+
+                '<div class="confirm-msg" style="font-size:1.2em;color:#E0D0F0">'+msg+'</div>'+
+                '<div class="confirm-btns">'+
+                  '<button class="confirm-btn confirm-yes" onclick="hotSeatPassConfirm()">已就绪</button>'+
+                '</div></div>';
+              document.body.appendChild(overlay);
+            }
+
+            function hotSeatPassConfirm(){
+                          var overlay=document.getElementById('hs-pass-overlay');
+                          if(overlay) overlay.remove();
+                          render();
+                        }
+
+            function renderHotSeatPlaying(el){
+              var hs=G._hsPhase||"";
+              // --- LEADER SELECT ---
+              if(hs==="leader_select"){
+                var p=G.activePlayer;
+                var avail=LEADERS_DATA.filter(function(l){return !G._hsLeaderPicks.some(function(x){return x&&x.id===l.id})});
+                var cardsHtml=avail.map(function(l){
+                  return'<div class="leader-card" style="cursor:pointer;border:2px solid '+
+                    (G._selectedLeader===l.id?'#FFD700':'#4A3060')+
+                    ';border-radius:10px;padding:12px;width:200px;background:rgba(30,20,50,0.9);text-align:center"'+
+                    ' onclick="G._selectedLeader='+l.id+';render()">'+
+                    '<div style="font-size:1.1em;color:#FFD700;font-weight:bold">'+l.name+'</div>'+
+                    '<div style="color:#B8A88A;font-size:0.85em">'+l.era+'</div>'+
+                    '<div style="color:#C0A8D4;font-size:0.8em;margin-top:4px">'+l.desc+'</div>'+
+                    '</div>';
+                }).join('');
+                el.innerHTML='<div class="hot-seat-leader-select">'+
+                  '<h2 style="color:#E0D0F0;text-align:center;margin:20px 0">🎭 热座模式 · 玩家'+(p+1)+'选择主将</h2>'+
+                  '<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:10px 20px">'+
+                  cardsHtml+'</div>'+
+                  (G._selectedLeader?'<div style="text-align:center;margin:20px">'+
+                    '<button class="btn btn-primary" onclick="hotSeatPickLeader()">玩家'+(p+1)+'确认选择</button>'+
+                  '</div>':'');
+                return;
+              }
+              // === MULLIGAN ===
+              if(hs==="mulligan"){
+                var a=G.activePlayer;
+                var hnd=G.players[a].hand.filter(function(c){return c;});
+                var sel=G.mulliganSelected;
+                el.innerHTML='<div class="hot-seat-mulligan" style="text-align:center;padding:20px">'+
+                  '<h2 style="color:#E0D0F0;margin-bottom:15px">🔄 玩家'+(a+1)+'换牌</h2>'+
+                  '<p style="color:#B8A88A">先选出<b>要留下的牌</b>，然后确认换掉其余</p>'+
+                  '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px 30px;max-height:45vh;overflow-y:auto">'+
+                  hnd.map(function(c,i){
+                    var picked=sel.has(i);
+                    var f=FACTIONS[c.faction];
+                    return'<div style="cursor:pointer;width:110px;border:2px solid '+
+                      (picked?'#FFD700':'#444')+
+                      ';border-radius:8px;padding:6px;text-align:center;background:rgba(20,15,35,0.9)"'+
+                      ' onclick="hotSeatToggleMulligan('+i+')">'+
+                      '<div style="color:'+f.color+';font-weight:bold;font-size:0.9em">'+c.name+'</div>'+
+                      '<div style="color:#888;font-size:0.75em">'+ROW_NAMES[c.row]+' ⚔'+c.strength+'</div>'+
+                      (picked?'<div style="color:#FFD700;font-size:0.7em;margin-top:3px">💎 留下</div>':'')+
+                      '</div>';
+                  }).join('')+'</div>'+
+                  '<div style="margin:15px">'+
+                    '<button class="btn btn-primary" onclick="hotSeatConfirmMulligan()">确认换牌 (选中'+sel.size+'张保留)</button>'+
+                  '</div>';
+                return;
+            }
+            // === GAME ===
+            if(hs==="game"){
+                renderHotSeatGame(el);
+                return;
+            }
+            // === ROUND RESULT ===
+            if(hs==="round_result"){
+                var rr=G._roundResult;
+                var wTxt=rr.winner===0?'玩家1胜利！':rr.winner===1?'玩家2胜利！':'平局！';
+                G.phase='hot_seat_playing';
+                el.innerHTML='<div class="round-result" style="text-align:center;padding:30px 20px">'+
+                  '<h2 style="color:#E0D0F0;margin:15px 0">第'+G.round+'局结束</h2>'+
+                  '<div style="display:flex;justify-content:center;gap:50px;margin:20px 0">'+
+                    '<div><div style="color:#4A90D9;font-size:1.4em;font-weight:bold">玩家1</div>'+
+                      '<div style="color:#FFD700;font-size:1.8em">'+rr.playerPower+'战力</div></div>'+
+                    '<div><div style="color:#E23E57;font-size:1.4em;font-weight:bold">玩家2</div>'+
+                      '<div style="color:#FFD700;font-size:1.8em">'+rr.aiPower+'战力</div></div>'+
+                  '</div>'+
+                  '<div style="color:#FFD700;font-size:1.2em;margin:15px 0">'+winnerText+'</div>'+
+                  '<div style="margin:25px 0">比分: <span style="color:#4A90D9;font-size:1.2em">'+G.scores[0]+'</span> : '+
+                    '<span style="color:#E23E57;font-size:1.2em">'+G.scores[1]+'</span></div>'+
+                  '<button class="btn btn-primary" onclick="hotSeatCheckGameEnd()">继续</button>'+
+                '</div>';
+                return;
+            }
+            // === GAME RESULT ===
+            if(hs==="game_result"){
+                var winner=G.scores[0]>G.scores[1]?0:G.scores[0]===G.scores[1]?-1:1;
+                el.innerHTML='<div class="game-result" style="text-align:center;padding:40px 20px">'+
+                  '<h2 style="color:#FFD700;margin:20px 0">⚔️ 对战结束 ⚔️</h2>'+
+                  '<div style="color:#C0A8D4;margin:20px">'+
+                    '<p>玩家1 · '+G.players[0].leader.name+' ('+FACTIONS[G.players[0].leader.faction].name+')</p>'+
+                    '<p>玩家2 · '+G.players[1].leader.name+' ('+FACTIONS[G.players[1].leader.faction].name+')</p>'+
+                  '</div>'+
+                  '<div style="font-size:2em;color:#FFD700;margin:20px">'+G.scores[0]+' : '+G.scores[1]+'</div>'+
+                  (winner===0?'<div style="font-size:1.3em;color:#4A90D9">玩家1赢得了天下！</div>':
+                   winner===1?'<div style="font-size:1.3em;color:#E23E57">玩家2赢得了天下！</div>':
+                   '<div style="font-size:1.3em;color:#888">棋逢对手，不分胜负！</div>')+
+                  '<button class="btn btn-primary" onclick="resetGame()">返回菜单</button>'+
+                '</div>';
+                return;
+            }
+            // Default fallback
+            el.innerHTML='<div class="hot-seat-playing"><h2>热座模式</h2><p>加载中...</p></div>';
+        }
+
+        function renderHotSeatGame(el){
+            var act=G.activePlayer;
+            var p0=G.players[0], p1=G.players[1];
+            var f0=FACTIONS[p0.leader.faction], f1=FACTIONS[p1.leader.faction];
+            var pow0=getBoardPower(p0.board,0), pow1=getBoardPower(p1.board,1);
+            var isP1=act===0;
+            var appearText=isP1?'玩家1的回合':'玩家2的回合';
+            var handClass=isP1?'your-turn':'ai-turn';
+            var lastUid=G._lastPlayedUid||null;
+            var lastR=G._lastPlayedBy||null;
+
+            function renderPips(v,m,cls){
+                var h='';
+                for(var i=0;i<m;i++){
+                    var filled=i<v?'filled '+cls:'';
+                    h+='<div class="pip '+filled+'"></div>';
+                }
+                return h;
+            }
+
+            el.innerHTML='<div class="game-header">'+
+                '<div class="player-info" style="text-align:left">'+
+                  '<div class="name" style="color:'+f0.color+'">玩家1</div>'+
+                  '<div class="leader">'+p0.leader.name+'</div>'+
+                  '<div class="provisions-bar">'+
+                    '<span class="label">粮草</span>'+
+                    '<div class="pips">'+renderPips(G.provisions[0],30,'player')+'</div>'+
+                    '<span class="count">'+G.provisions[0]+'</span>'+
+                  '</div>'+
+                  '<div style="font-size:0.85em;color:#B8B8D1;font-weight:500">🃏 '+p0.hand.length+' 张手牌</div>'+
+                '</div>'+
+                '<div class="score-center">'+
+                  '<div class="rounds">第 '+G.round+' / 3 局</div>'+
+                  '<div class="score">'+G.scores[0]+' : '+G.scores[1]+'</div>'+
+                  '<div class="rounds-won">玩家1 '+G.scores[0]+'胜 · 玩家2 '+G.scores[1]+'胜</div>'+
+                '</div>'+
+                '<div class="player-info" style="text-align:right">'+
+                  '<div class="name" style="color:'+f1.color+'">玩家2</div>'+
+                  '<div class="leader">'+p1.leader.name+'</div>'+
+                  '<div class="provisions-bar">'+
+                    '<span class="label">粮草</span>'+
+                    '<div class="pips">'+renderPips(G.provisions[1],30,'ai')+'</div>'+
+                    '<span class="count">'+G.provisions[1]+'</span>'+
+                  '</div>'+
+                  '<div style="font-size:0.85em;color:#B8C9D1;font-weight:500">🃏 '+p1.hand.length+' 张手牌</div>'+
+                '</div>'+
+              '</div>'+
+              '<div class="battlefield-wrap game-content">'+
+                '<div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>'+
+                '<div class="battlefield">'+
+                  '<div class="board-section ai-rows"><div class="section-label">— 玩家2 阵营 · 战力 '+pow1+' —</div>'+
+                    renderRow('navy',p1.board.navy,false,lastUid,lastR)+
+                    renderRow('cavalry',p1.board.cavalry,false,lastUid,lastR)+
+                    renderRow('infantry',p1.board.infantry,false,lastUid,lastR)+
+                    renderRow('strategy',p1.board.strategy,false,lastUid,lastR)+
+                  '</div>'+
+                  '<div class="decorative-line"></div>'+
+                  '<div class="board-section player-rows">'+
+                    '<div class="section-label">— 玩家1 阵营 · 战力 '+pow0+' —</div>'+
+                    renderRow('infantry',p0.board.infantry,true,lastUid,lastR)+
+                    renderRow('cavalry',p0.board.cavalry,true,lastUid,lastR)+
+                    renderRow('navy',p0.board.navy,true,lastUid,lastR)+
+                    renderRow('strategy',p0.board.strategy,true,lastUid,lastR)+
+                  '</div>'+
+                '</div>'+
+              '</div>'+
+              '<div class="turn-indicator">'+
+                '<span class="'+handClass+'">'+appearText+'</span>'+
+                (p0.passed&&!p1.passed?'<span class="waiting"> · 对手已放弃，等待你</span>':'')+
+              '</div>'+
+              '<div class="hand-area">'+
+                '<div class="hand-label">— '+(isP1?'玩家1':'玩家2')+' 的手牌 ('+G.players[act].hand.length+'张) —</div>'+
+                '<div class="hand-cards '+(G.players[act].hand.length===0?'empty':'')+
+                  (G.players[act].hand.length>=5?' many-cards':'')+
+                  (G.players[act].hand.length>=7?' overflow-cards':'')+'">'+
+                  (G.players[act].hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
+                    G.players[act].hand.map(function(c,i){return renderHandCard(c,i)}).join(''))+
+                '</div>'+
+              '</div>'+
+              '<div class="action-bar">'+
+                '<button class="btn btn-sm btn-primary" onclick="useLeaderAbility('+act+')" '+
+                  (G.leaderAbilityUsed[act]?'disabled':'')+'>'+
+                  (G.leaderAbilityUsed[act]?'已使用':'主将技能')+' · '+G.players[act].leader.name+'</button>'+
+                '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">放弃本局</button>'+
+              '</div>'+
+              '<div class="log-area">'+
+                (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
+              '</div>';
+            var logsEl=document.getElementById('logs');
+            if(logsEl)logsEl.scrollTop=logsEl.scrollHeight;
+        }
+
+        function handleHotSeatHandCard(card,idx,activeIdx){
+            var f=FACTIONS[card.faction];
+            var cost=getCardCost(card.strength);
+            var myTurn=G.activePlayer===activeIdx;
+            var playable=myTurn&&!G.players[activeIdx].passed&&cost<=G.provisions[activeIdx];
+            var selected=myTurn&&G.selectedCard===idx;
+            var cls=selected?'selected':(!playable?'unplayable':'');
+            var rowName=ROW_NAMES[card.row];
+            var desc=(card.desc||'')+(card.protectArmor?' 🛡'+card.protectArmor:'');
+            return'<div class="card '+cls+'" '+(myTurn?'onclick="onCardClick('+idx+')" ':'')+
+              'title="'+card.name+' - '+rowName+'" style="'+
+              '--faction-color:'+f.color+';--faction-glow:'+f.color+'40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px">'+
+              '<div class="card-cost">'+cost+'</div>'+
+              '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[card.id]||'assets/cards/card_'+card.id+'.png')+
+                '" alt="'+card.name+'"/></div>'+
+              '<div class="card-name">'+card.name+'</div>'+
+              '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
+              '<div class="card-ability">'+desc+'</div>'+
+              '<div class="card-stats-bar"><span class="card-atk">⚔ '+card.strength+'</span></div>'+
+            '</div>';
+        }
+
+            function resetGame(){
   uid=0;
   G.phase='menu';G.round=0;G.scores=[0,0];
   G.players[0].leader=null;G.players[1].leader=null;
