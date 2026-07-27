@@ -28,6 +28,36 @@
   再把 inline 代码迁移过去。当前为最小风险,保留 inline 不动。
 -->
 <script>
+// ===== 确定性 RNG 模块 (mulberry32) =====
+// rngFromSeed(seed: number) → { next(): float[0,1), shuffle(arr), pick(arr) }
+function rngFromSeed(seed){
+  let state=seed|0;
+  // mulberry32: fast, good distribution, 32-bit state
+  function next(){
+    state|=0; state=state+0x6D2B79F5|0;
+    let t=Math.imul(state^state>>>15,1|state);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  }
+  return{
+    next,
+    shuffle(arr){
+      const a=arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(next()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    },
+    pick(arr){return arr[Math.floor(next()*arr.length)]}
+  };
+}
+
+// random() 全局入口: 多人模式下若 G._rng 存在则走确定性RNG, 否则 Math.random()
+function random(){
+  return (window.G&&G._rng)?G._rng.next():Math.random();
+}
+
 const ROW_NAMES={infantry:'步兵',cavalry:'骑兵',navy:'水军',strategy:'谋略'};
 
 const ROW_ICONS={
@@ -153,16 +183,19 @@ let uid=0;
 function makeCard(c){return{...c,uid:++uid}}
 function getCardCost(s){return Math.ceil(s/3)}
 
+// ===== 02: state-migration-expand — 引入 players[] 数组 + 保留旧别名 =====
+// players[0] = 玩家, players[1] = AI
+// 旧别名 playerHand/aiHand/... 通过 Object.defineProperty getter/setter 桥接到 players[idx]
 window.G={
+players:[
+  {deck:[],hand:[],board:{infantry:[],cavalry:[],navy:[],strategy:[]},leader:null,passed:false},
+  {deck:[],hand:[],board:{infantry:[],cavalry:[],navy:[],strategy:[]},leader:null,passed:false}
+],
+
+// 顶层属性（无需桥接 — 不属于单个玩家）
 phase:'menu',round:0,scores:[0,0],
-playerLeader:null,aiLeader:null,
-playerDeck:[],aiDeck:[],
-playerHand:[],aiHand:[],
-playerBoard:{infantry:[],cavalry:[],navy:[],strategy:[]},
-aiBoard:{infantry:[],cavalry:[],navy:[],strategy:[]},
 provisions:[30,30],
 currentTurn:'player',
-playerPassed:false,aiPassed:false,
 selectedCard:null,logs:[],turnCount:0,
 globalBuffs:{playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null},
 graveyard:[],
@@ -170,7 +203,25 @@ mulliganSelected:new Set(),
 leaderAbilityUsed:[false,false]
 };
 
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+// 别名 getter/setter — 旧代码通过 playerHand/aiHand/... 读写等价于 players[idx].hand
+(function(){
+  const ALIAS=['Deck','Hand','Board','Leader','Passed'];
+  const idxes={player:0,ai:1};
+  for(const prefix in idxes){
+    const i=idxes[prefix];
+    for(const a of ALIAS){
+      const aliasName=prefix+a;
+      const propName=a.charAt(0).toLowerCase()+a.slice(1); // Deck→deck, Hand→hand, etc.
+      Object.defineProperty(window.G,aliasName,{
+        enumerable:true,configurable:true,
+        get(){return window.G.players[i][propName];},
+                set(v){window.G.players[i][propName]=v;}
+      });
+    }
+  }
+})();
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 function buildDeck(faction){
   const fc=CARDS_DATA.filter(c=>c.faction===faction);
@@ -201,7 +252,7 @@ function applyLeaderAbilityForRound(leader,playerIdx){
     const opp=1-playerIdx;
     const h=getHand(opp);
     for(let i=0;i<a.value&&h.length>0;i++){
-      const idx=Math.floor(Math.random()*h.length);
+      const idx=Math.floor(random()*h.length);
       addLog(`【${leader.name}】效果：${opp===0?'你':'AI'}弃掉了${h[idx].name}`);
       h.splice(idx,1);
     }
@@ -275,7 +326,7 @@ function triggerAbility(card,playerIdx){
     case'discard':{
       const oppH=getHand(opp);
       for(let i=0;i<n&&oppH.length>0;i++){
-        const idx=Math.floor(Math.random()*oppH.length);
+        const idx=Math.floor(random()*oppH.length);
         addLog(`${card.name}的效果：${opp===0?'你':'AI'}弃掉了${oppH[idx].name}`);
         oppH.splice(idx,1);
       }
@@ -386,7 +437,7 @@ function triggerAbility(card,playerIdx){
       drawCards(playerIdx,1);
       const ambH=getHand(opp);
       if(ambH.length>0){
-        const idx=Math.floor(Math.random()*ambH.length);
+        const idx=Math.floor(random()*ambH.length);
         addLog(`${card.name}的效果：${opp===0?'你':'AI'}弃掉了${ambH[idx].name}`);
         ambH.splice(idx,1);
       }
@@ -431,7 +482,7 @@ function triggerAbility(card,playerIdx){
     case'destroy':{
       const oppAll=Object.entries(oppBoard).flatMap(([r,cards])=>cards.map(c=>({...c,_row:r})));
       for(let i=0;i<n&&oppAll.length>0;i++){
-        const ri=Math.floor(Math.random()*oppAll.length);
+        const ri=Math.floor(random()*oppAll.length);
         const target=oppAll.splice(ri,1)[0];
         oppBoard[target._row]=oppBoard[target._row].filter(c=>c.uid!==target.uid);
         G.graveyard.push(target);
@@ -440,7 +491,7 @@ function triggerAbility(card,playerIdx){
       break;}
     case'resurrect':{
       for(let i=0;i<n&&G.graveyard.length>0;i++){
-        const ri=Math.floor(Math.random()*G.graveyard.length);
+        const ri=Math.floor(random()*G.graveyard.length);
         const card2=G.graveyard.splice(ri,1)[0];
         getHandSafe(playerIdx).push(card2);
         addLog(`${card.name}的效果：从墓地回收了${card2.name}`);
@@ -637,7 +688,7 @@ function aiTurn(){
     G.currentTurn='player';
     render();return;
   }
-  if(G.leaderAbilityUsed[1]===false&&Math.random()<0.4){
+  if(G.leaderAbilityUsed[1]===false&&random()<0.4){
     useLeaderAbility(1);
     render();
   }
@@ -741,7 +792,7 @@ function aiChooseCard(){
       if(t==='draw_extra')score+=3;
     }
     if(aiP<plP)score+=card.strength*0.5;
-    score+=Math.random()*2;
+    score+=random()*2;
     if(score>bestScore){bestScore=score;best={handIdx:idx,row:targetRow}}
   }
   return best;
@@ -1055,7 +1106,7 @@ function confirmLeader(){
   if(!G._selectedLeader)return;
   G.playerLeader=LEADERS_DATA.find(l=>l.id===G._selectedLeader);
   let aiLeaders=LEADERS_DATA.filter(l=>l.id!==G._selectedLeader);
-  G.aiLeader=aiLeaders[Math.floor(Math.random()*aiLeaders.length)];
+  G.aiLeader=aiLeaders[Math.floor(random()*aiLeaders.length)];
   G.playerDeck=buildDeck(G.playerLeader.faction);
   G.aiDeck=buildDeck(G.aiLeader.faction);
   applyLeaderDeckAbility(G.playerLeader,G.playerDeck);
@@ -1119,9 +1170,9 @@ function confirmMulligan(){
     if(G.playerHand.length>idx) G.playerHand.splice(idx,1);
     drawCards(0,1);
   });
-  const aiReplace=Math.floor(Math.random()*3);
+  const aiReplace=Math.floor(random()*3);
   for(let i=0;i<aiReplace&&G.aiHand.length>0;i++){
-    const ri=Math.floor(Math.random()*G.aiHand.length);
+    const ri=Math.floor(random()*G.aiHand.length);
     G.aiHand.splice(ri,1);
     drawCards(1,1);
   }
@@ -1151,7 +1202,7 @@ function useLeaderAbility(playerIdx){
       const opp=1-playerIdx;
       const oppH=getHand(opp);
       for(let i=0;i<ability.value&&oppH.length>0;i++){
-        const ri=Math.floor(Math.random()*oppH.length);
+        const ri=Math.floor(random()*oppH.length);
         addLog(`【${leader.name}】技能：对手弃${oppH[ri].name}`);
         oppH.splice(ri,1);
       }
@@ -1180,7 +1231,7 @@ function useLeaderAbility(playerIdx){
       break;}
     case'hand_boost':{
       const hand=getHand(playerIdx);
-      const shuffled=[...hand].sort(()=>Math.random()-0.5);
+      const shuffled=[...hand].sort(()=>random()-0.5);
       const cnt=Math.min(ability.value,shuffled.length);
       for(let i=0;i<cnt;i++) shuffled[i].strength+=2;
       addLog(`【${leader.name}】技能：手牌${cnt}张+2`);
