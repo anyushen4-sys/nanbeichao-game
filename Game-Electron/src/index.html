@@ -970,14 +970,17 @@ function render(){
   G._lastPlayedUid=null;
   G._lastPlayedBy=null;
   switch(G.phase){
-    case'menu':renderMenu(app);break;
-    case'tutorial':renderTutorial(app);break;
-    case'leader_select':renderLeaderSelect(app);break;
-    case'mulligan':renderMulligan(app);break;
-    case'playing':renderGame(app,lastUid,lastBy);break;
-    case'round_result':renderRoundResult(app);break;
-    case'game_result':renderGameResult(app);break;
-  }
+      case'menu':renderMenu(app);break;
+      case'tutorial':renderTutorial(app);break;
+      case'leader_select':renderLeaderSelect(app);break;
+      case'mulligan':renderMulligan(app);break;
+      case'playing':renderGame(app,lastUid,lastBy);break;
+      case'round_result':renderRoundResult(app);break;
+      case'game_result':renderGameResult(app);break;
+      case'multiplayer_lobby':renderMultiplayerLobby(app);break;
+      case'multiplayer_playing':renderMultiplayerPlaying(app);break;
+      case'hot_seat_playing':renderHotSeatPlaying(app);break;
+    }
 }
 
 function renderMenu(el){
@@ -1242,10 +1245,10 @@ function useLeaderAbility(playerIdx){
 }
 
 function renderGame(el,lastUid,lastBy){
-  const pF=FACTIONS[G.playerLeader.faction];
-  const aF=FACTIONS[G.aiLeader.faction];
-  const pP=getBoardPower(G.playerBoard,0);
-  const aP=getBoardPower(G.aiBoard,1);
+  const pF=FACTIONS[G.players[0].leader.faction];
+  const aF=FACTIONS[G.players[1].leader.faction];
+  const pP=getBoardPower(G.players[0].board,0);
+  const aP=getBoardPower(G.players[1].board,1);
   const turnText=G.currentTurn==='player'?'你的回合':'AI思考中...';
   const turnClass=G.currentTurn==='player'?'your-turn':'ai-turn';
 
@@ -1253,7 +1256,7 @@ function renderGame(el,lastUid,lastBy){
   <div class="game-header">
     <div class="player-info">
       <div class="name" style="color:${pF.color}">你</div>
-      <div class="leader">${G.playerLeader.name}</div>
+      <div class="leader">${G.players[0].leader.name}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
         <div class="pips">${renderPips(G.provisions[0],30,'player')}</div>
@@ -1267,14 +1270,14 @@ function renderGame(el,lastUid,lastBy){
     </div>
     <div class="player-info">
       <div class="name" style="color:${aF.color}">AI</div>
-      <div class="leader">${G.aiLeader.name}</div>
+      <div class="leader">${G.players[1].leader.name}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
         <div class="pips">${renderPips(G.provisions[1],30,'ai')}</div>
         <span class="count">${G.provisions[1]}</span>
       </div>
       <div class="opponent-hand-pile">
-        <span style="font-size:.85em;color:#B8C9D1;font-weight:500">🃏 ${G.aiHand.length} 张手牌</span>
+              <span style="font-size:.85em;color:#B8C9D1;font-weight:500">🃏 ${G.players[1].hand.length} 张手牌</span>
       </div>
     </div>
   </div>
@@ -1283,35 +1286,35 @@ function renderGame(el,lastUid,lastBy){
     <div class="battlefield">
     <div class="board-section ai-rows">
       <div class="section-label">— AI 阵营 · 战力 ${aP} —</div>
-      ${renderRow('navy',G.aiBoard.navy,false,lastUid,lastBy)}
-      ${renderRow('cavalry',G.aiBoard.cavalry,false,lastUid,lastBy)}
-      ${renderRow('infantry',G.aiBoard.infantry,false,lastUid,lastBy)}
-      ${renderRow('strategy',G.aiBoard.strategy,false,lastUid,lastBy)}
+      ${renderRow('navy',G.players[1].board.navy,false,lastUid,lastBy)}
+            ${renderRow('cavalry',G.players[1].board.cavalry,false,lastUid,lastBy)}
+            ${renderRow('infantry',G.players[1].board.infantry,false,lastUid,lastBy)}
+            ${renderRow('strategy',G.players[1].board.strategy,false,lastUid,lastBy)}
     </div>
     <div class="decorative-line"></div>
     <div class="board-section player-rows">
       <div class="section-label">— 你的阵营 · 战力 ${pP} —</div>
-      ${renderRow('infantry',G.playerBoard.infantry,true,lastUid,lastBy)}
-      ${renderRow('cavalry',G.playerBoard.cavalry,true,lastUid,lastBy)}
-      ${renderRow('navy',G.playerBoard.navy,true,lastUid,lastBy)}
-      ${renderRow('strategy',G.playerBoard.strategy,true,lastUid,lastBy)}
+      ${renderRow('infantry',G.players[0].board.infantry,true,lastUid,lastBy)}
+            ${renderRow('cavalry',G.players[0].board.cavalry,true,lastUid,lastBy)}
+            ${renderRow('navy',G.players[0].board.navy,true,lastUid,lastBy)}
+            ${renderRow('strategy',G.players[0].board.strategy,true,lastUid,lastBy)}
     </div>
   </div>
   </div>
   <div class="turn-indicator">
     <span class="${turnClass}">${turnText}</span>
-    ${G.playerPassed&&!G.aiPassed?'<span class="waiting"> · 你已放弃，等待AI</span>':''}
+    ${G.players[0].passed&&!G.players[1].passed?'<span class="waiting"> · 你已放弃，等待AI</span>':''}
   </div>
   <div class="hand-area">
-    <div class="hand-label">— 你的手牌 (${G.playerHand.length}张) —</div>
-    <div class="hand-cards ${G.playerHand.length===0?'empty':''}${G.playerHand.length>=5?' many-cards':''}${G.playerHand.length>=7?' overflow-cards':''}">
-      ${(G.playerHand||[]).filter(c=>c&&typeof c==='object').length===0?'无手牌':G.playerHand.filter(c=>c&&typeof c==='object').map((c,i)=>renderHandCard(c,i)).join('')}
+    <div class="hand-label">— 你的手牌 (${G.players[0].hand.length}张) —</div>
+        <div class="hand-cards ${G.players[0].hand.length===0?'empty':''}${G.players[0].hand.length>=5?' many-cards':''}${G.players[0].hand.length>=7?' overflow-cards':''}">
+          ${(G.players[0].hand||[]).filter(c=>c&&typeof c==='object').length===0?'无手牌':G.players[0].hand.filter(c=>c&&typeof c==='object').map((c,i)=>renderHandCard(c,i)).join('')}
     </div>
   </div>
   <div class="action-bar">
-    <button class="btn btn-sm btn-primary" onclick="useLeaderAbility(0)" ${G.currentTurn!=='player'||G.playerPassed||G.leaderAbilityUsed[0]?'disabled':''}>${G.leaderAbilityUsed[0]?'已使用':'主将技能'} · ${G.playerLeader?G.playerLeader.name:''}</button>
-    ${G.playerLeader&&!G.leaderAbilityUsed[0]?`<div class="skill-desc">${G.playerLeader.desc}</div>`:''}
-    <button class="btn btn-sm btn-pass" onclick="playerPass()" ${G.currentTurn!=='player'||G.playerPassed?'disabled':''}>放弃本局</button>
+    <button class="btn btn-sm btn-primary" onclick="useLeaderAbility(0)" ${G.currentTurn!=='player'||G.players[0].passed||G.leaderAbilityUsed[0]?'disabled':''}>${G.leaderAbilityUsed[0]?'已使用':'主将技能'} · ${G.players[0].leader?G.players[0].leader.name:''}</button>
+        ${G.players[0].leader&&!G.leaderAbilityUsed[0]?`<div class="skill-desc">${G.players[0].leader.desc}</div>`:''}
+        <button class="btn btn-sm btn-pass" onclick="playerPass()" ${G.currentTurn!=='player'||G.players[0].passed?'disabled':''}>放弃本局</button>
   </div>
   <div class="log-area">
     ${G.logs.slice(-3).map(l=>`<div class="log-entry">${l}</div>`).join('')}
@@ -1331,19 +1334,19 @@ function renderPips(current,max,playerClass){
 function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
   const playerIdx=isPlayer?0:1;
   const power=getRowPower(cards,playerIdx);
-  const highlight=isPlayer&&G.currentTurn==='player'&&!G.playerPassed&&G.selectedCard!==null;
-  const canPlay=highlight;
-  const cardsHtml=cards.length===0?'<span style="color:#B8A88A;font-size:.75em">空</span>':
-    cards.map(c=>{
-      const f=FACTIONS[c.faction];
-      const animClass=c.uid===lastUid?(lastBy===1?' ai-play-card':' play-animation'):'';
-      return`<div class="card-mini ${c.ability?'has-ability':''}${animClass}" style="perspective:600px">
-        <div class="c-faction-dot" style="background:${f.color}"></div>
-        <div class="c-name" title="${c.name}">${c.name}</div>
-        <div class="c-str">${c.strength}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
-      </div>`;
-    }).join('');
-  const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.playerHand[G.selectedCard]&&G.playerHand[G.selectedCard].row===rowType;
+  const highlight=isPlayer&&G.currentTurn==='player'&&!G.players[0].passed&&G.selectedCard!==null;
+      const canPlay=highlight;
+    const cardsHtml=cards.length===0?'<span style="color:#B8A88A;font-size:.75em">空</span>':
+      cards.map(c=>{
+        const f=FACTIONS[c.faction];
+        const animClass=c.uid===lastUid?(lastBy===1?' ai-play-card':' play-animation'):'';
+        return`<div class="card-mini ${c.ability?'has-ability':''}${animClass}" style="perspective:600px">
+          <div class="c-faction-dot" style="background:${f.color}"></div>
+          <div class="c-name" title="${c.name}">${c.name}</div>
+          <div class="c-str">${c.strength}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
+        </div>`;
+      }).join('');
+    const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.players[0].hand[G.selectedCard]&&G.players[0].hand[G.selectedCard].row===rowType;
   const canPlayRow=isMatch&&canPlay;
   return`<div class="row ${canPlayRow?'highlight':''}" ${canPlay?`onclick="onRowClick('${rowType}')"`:''}>
     <div class="row-label">${ROW_NAMES[rowType]}</div>
@@ -1355,7 +1358,7 @@ function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
 function renderHandCard(card,idx){
   const f=FACTIONS[card.faction];
   const cost=getCardCost(card.strength);
-  const playable=G.currentTurn==='player'&&!G.playerPassed&&cost<=G.provisions[0];
+  const playable=G.currentTurn==='player'&&!G.players[0].passed&&cost<=G.provisions[0];
   const selected=G.selectedCard===idx;
   const cls=selected?'selected':(!playable?'unplayable':'');
   const rowName=ROW_NAMES[card.row];
@@ -1454,17 +1457,30 @@ function renderGameResult(el){
     <h1 class="${playerWin?'victory':isDraw?'draw':'defeat'}">${playerWin?'天下归一':isDraw?'棋逢对手':'功败垂成'}</h1>
     <div class="final-score">${G.scores[0]} : ${G.scores[1]}</div>
     <div class="detail">
-      ${G.playerLeader.name}（${FACTIONS[G.playerLeader.faction].name}）VS ${G.aiLeader.name}（${FACTIONS[G.aiLeader.faction].name}）
+      ${G.players[0].leader.name}（${FACTIONS[G.players[0].leader.faction].name}）VS ${G.players[1].leader.name}（${FACTIONS[G.players[1].leader.faction].name}）
     </div>
     <div class="decorative-line" style="width:200px;margin:20px auto"></div>
-    <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
-      ${playerWin?'运筹帷幄之中，决胜千里之外。':isDraw?'将遇良才，棋逢对手。':'胜败乃兵家常事，再接再厉。'}
-    </p>
-    <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
-  </div>`;
-}
+        <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
+          ${playerWin?'运筹帷幄之中，决胜千里之外。':isDraw?'将遇良才，棋逢对手。':'胜败乃兵家常事，再接再厉。'}
+        </p>
+        <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
+          </div>`;
+        }
 
-function resetGame(){
+        // ===== 06: mode-router — 多人模式 / 热座模式渲染空壳 =====
+        function renderMultiplayerLobby(el){
+      el.innerHTML='<div class="multiplayer-lobby"><h2>多人对战大厅</h2><p>即将推出...</p></div>';
+    }
+
+    function renderMultiplayerPlaying(el){
+      el.innerHTML='<div class="multiplayer-playing"><h2>多人对战</h2><p>即将推出...</p></div>';
+    }
+
+    function renderHotSeatPlaying(el){
+      el.innerHTML='<div class="hot-seat-playing"><h2>热座模式</h2><p>即将推出...</p></div>';
+    }
+
+    function resetGame(){
   uid=0;
   G.phase='menu';G.round=0;G.scores=[0,0];
   G.playerLeader=null;G.aiLeader=null;
