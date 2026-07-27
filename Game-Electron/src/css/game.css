@@ -585,7 +585,7 @@ html, body {
 .hand-cards {
     display: flex;
     gap: 6px;
-    justify-content: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
     min-height: 70px;
     padding: 4px;

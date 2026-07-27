@@ -160,7 +160,7 @@ playerDeck:[],aiDeck:[],
 playerHand:[],aiHand:[],
 playerBoard:{infantry:[],cavalry:[],navy:[],strategy:[]},
 aiBoard:{infantry:[],cavalry:[],navy:[],strategy:[]},
-provisions:[8,8],
+provisions:[30,30],
 currentTurn:'player',
 playerPassed:false,aiPassed:false,
 selectedCard:null,logs:[],turnCount:0,
@@ -531,7 +531,7 @@ function startRound(){
   G.aiPassed=false;
   G.selectedCard=null;
   G.turnCount=0;
-  G.provisions=[8,8];
+  // 粮草不再重置——开局30跨局共享（仅 confirmLeader/resetGame 初始化）
   G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
@@ -1091,7 +1091,7 @@ function renderMulligan(app){
   <div class="leader-select">
     <h2>换牌阶段</h2>
     <p class="subtitle">点击选择要替换的牌（可换 ${sel.size} 张）</p>
-    <div class="hand-cards" style="justify-content:center;flex-wrap:wrap;gap:10px;padding:16px">
+    <div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">
       ${cardsHtml}
     </div>
     <div style="text-align:center;margin-top:20px">
@@ -1202,7 +1202,7 @@ function renderGame(el,lastUid,lastBy){
       <div class="leader">${G.playerLeader.name}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
-        <div class="pips">${renderPips(G.provisions[0],10,'player')}</div>
+        <div class="pips">${renderPips(G.provisions[0],30,'player')}</div>
         <span class="count">${G.provisions[0]}</span>
       </div>
     </div>
@@ -1216,7 +1216,7 @@ function renderGame(el,lastUid,lastBy){
       <div class="leader">${G.aiLeader.name}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
-        <div class="pips">${renderPips(G.provisions[1],10,'ai')}</div>
+        <div class="pips">${renderPips(G.provisions[1],30,'ai')}</div>
         <span class="count">${G.provisions[1]}</span>
       </div>
       <div class="opponent-hand-pile">
@@ -1290,8 +1290,8 @@ function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
       </div>`;
     }).join('');
   const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.playerHand[G.selectedCard]&&G.playerHand[G.selectedCard].row===rowType;
-const canPlayRow=isMatch&&canPlay;
-return`<div class="row ${canPlayRow?'highlight':''}" ${canPlayRow?`onclick="onRowClick('${rowType}')"`:''}>
+  const canPlayRow=isMatch&&canPlay;
+  return`<div class="row ${canPlayRow?'highlight':''}" ${canPlay?`onclick="onRowClick('${rowType}')"`:''}>
     <div class="row-label">${ROW_NAMES[rowType]}</div>
     <div class="row-cards">${cardsHtml}</div>
     <div class="row-power"><div class="val">${power}</div></div>
@@ -1417,7 +1417,7 @@ function resetGame(){
   G.playerHand=[];G.aiHand=[];
   G.playerBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.aiBoard={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.provisions=[8,8];G.currentTurn='player';
+  G.provisions=[30,30];G.currentTurn='player';
   G.playerPassed=false;G.aiPassed=false;
   G.selectedCard=null;G.logs=[];G.turnCount=0;
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
