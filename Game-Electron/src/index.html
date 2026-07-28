@@ -1572,58 +1572,68 @@ function renderGameResult(el){
           var isGuest = mp._host === 'guest';
 
           // --- LEADER SELECT ---
-          if (phase === 'leader_select') {
-            var avail = LEADERS_DATA.filter(function(l) { return !mp._peerLeaderSelected || mp._peerLeaderSelected !== l.id; });
-            var cardsHtml = avail.map(function(l) {
-              return '<div class="leader-card" style="cursor:pointer;border:2px solid ' +
-                (G._selectedLeader === l.id ? '#FFD700' : '#4A3060') +
-                ';border-radius:10px;padding:12px;width:200px;background:rgba(30,20,50,0.9);text-align:center"' +
-                ' onclick="G._selectedLeader=' + l.id + ';render()">' +
-                '<div style="font-size:1.1em;color:#FFD700;font-weight:bold">' + l.name + '</div>' +
-                '<div style="color:#B8A88A;font-size:0.85em">' + l.era + '</div>' +
-                '<div style="color:#C0A8D4;font-size:0.8em;margin-top:4px">' + l.desc + '</div>' +
-                '</div>';
-            }).join('');
-            el.innerHTML = '<div class="hot-seat-leader-select">' +
-              '<h2 style="color:#E0D0F0;text-align:center;margin:20px 0">🎭 多人对战 · 选择主将</h2>' +
-              '<div style="color:#8A8A6A;text-align:center;font-size:0.9em">' +
-                (isHost ? '你是主机' : '你是客机') +
-                (mp.peerName ? ' · 对手: ' + mp.peerName : '') +
-                '</div>' +
-              '<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:10px 20px">' +
-              cardsHtml + '</div>' +
-              (G._selectedLeader ? '<div style="text-align:center;margin:20px">' +
-                '<button class="btn btn-primary" onclick="multiplayerPickLeader()">确认选择</button>' +
-                '</div>' : '');
-            return;
-          }
+                    if (phase === 'leader_select') {
+                      var avail = LEADERS_DATA.filter(function(l) { return !mp._peerLeaderSelected || mp._peerLeaderSelected !== l.id; });
+                      var cardsHtml = avail.map(function(l) {
+                        var f = FACTIONS[l.faction];
+                        var fc = f.color;
+                        var sel = G._selectedLeader === l.id;
+                        return '<div class="leader-card'+(sel?' selected':'')+'" style="--fc:'+fc+';--fc22:'+fc+'22;--fc11:'+fc+'11;cursor:pointer" onclick="G._selectedLeader=' + l.id + ';render()">' +
+                          '<div class="leader-portrait">' +
+                            '<img src="assets/leaders/leader_L' + l.id + '.png" alt="' + l.name + '" onerror="leaderImgFallback(this,\'assets/leaders/leader_L' + l.id + '.png\',\''+fc+'\',\''+l.name[0]+'\')" loading="eager" decoding="async"/>' +
+                            '<div class="placeholder-block">' + l.name[0] + '</div>' +
+                          '</div>' +
+                          '<div class="leader-info">' +
+                            '<div class="era">' + l.era + '</div>' +
+                            '<div class="name">' + l.name + '</div>' +
+                            '<span class="faction-tag">' + f.name + '</span>' +
+                            '<div class="ability">✦ ' + l.desc + '</div>' +
+                          '</div>' +
+                        '</div>';
+                      }).join('');
+                      el.innerHTML = '<div class="leader-select">' +
+                        '<h2>🌐 多人对战 · 选择主将</h2>' +
+                        '<p class="subtitle">'+(isHost ? '你是主机' : '你是客机')+(mp.peerName ? ' · 对手: ' + mp.peerName : '')+' — 请先点击一张卡片</p>' +
+                        '<div class="leader-grid">' + cardsHtml + '</div>' +
+                        '<div style="text-align:center;margin:20px">' +
+                          '<button class="btn btn-primary btn-confirm-leader" onclick="multiplayerPickLeader()" '+(G._selectedLeader?'':'disabled')+'>'+(G._selectedLeader?'确认选择':'请先选择主将')+'</button>' +
+                        '</div>' +
+                        '</div>';
+                      return;
+                    }
 
-          // --- MULLIGAN ---
-          if (phase === 'mulligan') {
-            var hnd = (G.players[0].hand || []).filter(function(c) { return c; });
-            var sel = G.mulliganSelected;
-            el.innerHTML = '<div class="hot-seat-mulligan" style="text-align:center;padding:20px">' +
-              '<h2 style="color:#E0D0F0;margin-bottom:15px">🔄 换牌</h2>' +
-              '<p style="color:#B8A88A">先选出<b>要留下的牌</b>，然后确认换掉其余</p>' +
-              '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px 30px;max-height:45vh;overflow-y:auto">' +
-              hnd.map(function(c, i) {
-                var picked = sel && sel.has(i);
-                var f = FACTIONS[c.faction];
-                return '<div style="cursor:pointer;width:110px;border:2px solid ' +
-                  (picked ? '#FFD700' : '#444') +
-                  ';border-radius:8px;padding:6px;text-align:center;background:rgba(20,15,35,0.9)"' +
-                  ' onclick="toggleMulligan(' + i + ');render()">' +
-                  '<div style="color:' + f.color + ';font-weight:bold;font-size:0.9em">' + c.name + '</div>' +
-                  '<div style="color:#888;font-size:0.75em">' + ROW_NAMES[c.row] + ' ⚔' + c.strength + '</div>' +
-                  (picked ? '<div style="color:#FFD700;font-size:0.7em;margin-top:3px">💎 留下</div>' : '') +
-                  '</div>';
-              }).join('') + '</div>' +
-              '<div style="margin:15px">' +
-                '<button class="btn btn-primary" onclick="multiplayerMulliganConfirm(0)">确认换牌</button>' +
-              '</div>' +
-              '</div>';
-            return;
-          }
+                    // --- MULLIGAN ---
+                    if (phase === 'mulligan') {
+                      var hnd = (G.players[0].hand || []).filter(function(c) { return c; });
+                      var sel = G.mulliganSelected;
+                      var cardsHtml = hnd.map(function(c, i) {
+                        var picked = sel && sel.has(i);
+                        var f = FACTIONS[c.faction];
+                        var cost = getCardCost(c.strength);
+                        var rowName = ROW_NAMES[c.row];
+                        var desc = (c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
+                        return '<div class="card '+(picked?'selected':'')+'" onclick="toggleMulligan(' + i + ');render()" title="'+c.name+' - '+c.desc+'" ' +
+                          'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">' +
+                          '<div class="card-cost">' + cost + '</div>' +
+                          '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+c.name+'"/><div class="card-art-fallback" style="display:none!important">'+c.name+'</div></div>' +
+                          '<div class="card-name">' + c.name + '</div>' +
+                          '<div class="card-tags"><span class="card-type-tag">' + rowName + '</span></div>' +
+                          '<div class="card-ability">' + desc + '</div>' +
+                          '<div class="card-stats-bar"><span class="card-atk">⚔ ' + c.strength + '</span></div>' +
+                          '</div>';
+                      }).join('');
+                      el.innerHTML = '<div class="leader-select">' +
+                        '<h2>🌐 换牌阶段</h2>' +
+                        '<p class="subtitle">点击选择要替换的牌（可换 '+(sel?sel.size:0)+' 张）</p>' +
+                        '<div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">' +
+                        cardsHtml +
+                        '</div>' +
+                        '<div style="text-align:center;margin-top:20px">' +
+                          '<button class="btn btn-primary" onclick="multiplayerMulliganConfirm(0)">确认换牌</button>' +
+                        '</div>' +
+                        '</div>';
+                      return;
+                    }
 
           // --- GAME ---
           if (phase === 'game' || phase === 'playing') {
@@ -2713,30 +2723,37 @@ function timeoutReconnect() {
                           }
               // === MULLIGAN ===
               if(hs==="mulligan"){
-                var a=G.activePlayer;
-                var hnd=G.players[a].hand.filter(function(c){return c;});
-                var sel=G.mulliganSelected;
-                el.innerHTML='<div class="hot-seat-mulligan" style="text-align:center;padding:20px">'+
-                  '<h2 style="color:#E0D0F0;margin-bottom:15px">👥 玩家'+(a+1)+'换牌</h2>'+
-                  '<p style="color:#B8A88A">先选出<b>要留下的牌</b>，然后确认换掉其余</p>'+
-                  '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px 30px;max-height:45vh;overflow-y:auto">'+
-                  hnd.map(function(c,i){
-                    var picked=sel.has(i);
-                    var f=FACTIONS[c.faction];
-                    return'<div style="cursor:pointer;width:110px;border:2px solid '+
-                      (picked?'#FFD700':'#444')+
-                      ';border-radius:8px;padding:6px;text-align:center;background:rgba(20,15,35,0.9)"'+
-                      ' onclick="hotSeatToggleMulligan('+i+')">'+
-                      '<div style="color:'+f.color+';font-weight:bold;font-size:0.9em">'+c.name+'</div>'+
-                      '<div style="color:#888;font-size:0.75em">'+ROW_NAMES[c.row]+' ⚔'+c.strength+'</div>'+
-                      (picked?'<div style="color:#FFD700;font-size:0.7em;margin-top:3px">💎 留下</div>':'')+
-                      '</div>';
-                  }).join('')+'</div>'+
-                  '<div style="margin:15px">'+
-                    '<button class="btn btn-primary" onclick="hotSeatConfirmMulligan()">确认换牌 (选中'+sel.size+'张保留)</button>'+
-                  '</div>';
-                return;
-            }
+                              var a=G.activePlayer;
+                              var hnd=G.players[a].hand.filter(function(c){return c;});
+                              var sel=G.mulliganSelected;
+                              var cardsHtml=hnd.map(function(c,i){
+                                var picked=sel.has(i);
+                                var f=FACTIONS[c.faction];
+                                var cost=getCardCost(c.strength);
+                                var rowName=ROW_NAMES[c.row];
+                                var desc=(c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
+                                return'<div class="card '+(picked?'selected':'')+'" onclick="hotSeatToggleMulligan('+i+')" title="'+c.name+' - '+c.desc+'" '+
+                                  'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">'+
+                                  '<div class="card-cost">'+cost+'</div>'+
+                                  '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+c.name+'"/><div class="card-art-fallback" style="display:none!important">'+c.name+'</div></div>'+
+                                  '<div class="card-name">'+c.name+'</div>'+
+                                  '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
+                                  '<div class="card-ability">'+desc+'</div>'+
+                                  '<div class="card-stats-bar"><span class="card-atk">⚔ '+c.strength+'</span></div>'+
+                                '</div>';
+                              }).join('');
+                              el.innerHTML='<div class="leader-select">'+
+                                '<h2>👥 玩家'+(a+1)+'换牌</h2>'+
+                                '<p class="subtitle">点击选择要替换的牌（可换 '+sel.size+' 张）</p>'+
+                                '<div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">'+
+                                cardsHtml+
+                                '</div>'+
+                                '<div style="text-align:center;margin-top:20px">'+
+                                  '<button class="btn btn-primary" onclick="hotSeatConfirmMulligan()">确认换牌 (选中'+sel.size+'张保留)</button>'+
+                                '</div>'+
+                              '</div>';
+                              return;
+                          }
             // === GAME ===
             if(hs==="game"){
                 renderHotSeatGame(el);
