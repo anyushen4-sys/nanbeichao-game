@@ -2679,37 +2679,45 @@ function timeoutReconnect() {
                                     }
 
             function renderHotSeatPlaying(el){
-              var hs=G._hsPhase||"";
-              // --- LEADER SELECT ---
-              if(hs==="leader_select"){
-                var p=G.activePlayer;
-                var avail=LEADERS_DATA.filter(function(l){return !G._hsLeaderPicks.some(function(x){return x&&x.id===l.id})});
-                var cardsHtml=avail.map(function(l){
-                  return'<div class="leader-card" style="cursor:pointer;border:2px solid '+
-                    (G._selectedLeader===l.id?'#FFD700':'#4A3060')+
-                    ';border-radius:10px;padding:12px;width:200px;background:rgba(30,20,50,0.9);text-align:center"'+
-                    ' onclick="G._selectedLeader='+l.id+';render()">'+
-                    '<div style="font-size:1.1em;color:#FFD700;font-weight:bold">'+l.name+'</div>'+
-                    '<div style="color:#B8A88A;font-size:0.85em">'+l.era+'</div>'+
-                    '<div style="color:#C0A8D4;font-size:0.8em;margin-top:4px">'+l.desc+'</div>'+
-                    '</div>';
-                }).join('');
-                el.innerHTML='<div class="hot-seat-leader-select">'+
-                  '<h2 style="color:#E0D0F0;text-align:center;margin:20px 0">🎭 热座模式 · 玩家'+(p+1)+'选择主将</h2>'+
-                  '<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:10px 20px">'+
-                  cardsHtml+'</div>'+
-                  (G._selectedLeader?'<div style="text-align:center;margin:20px">'+
-                    '<button class="btn btn-primary" onclick="hotSeatPickLeader()">玩家'+(p+1)+'确认选择</button>'+
-                  '</div>':'');
-                return;
-              }
+                          var hs=G._hsPhase||"";
+                          // --- LEADER SELECT ---
+                          if(hs==="leader_select"){
+                            var p=G.activePlayer;
+                            var avail=LEADERS_DATA.filter(function(l){return !G._hsLeaderPicks.some(function(x){return x&&x.id===l.id})});
+                            var cardsHtml=avail.map(function(l){
+                              var f=FACTIONS[l.faction];
+                              var fc=f.color;
+                              var sel=G._selectedLeader===l.id;
+                              return'<div class="leader-card'+(sel?' selected':'')+'" style="--fc:'+fc+';--fc22:'+fc+'22;--fc11:'+fc+'11;cursor:pointer" onclick="G._selectedLeader='+l.id+';render()">'+
+                                '<div class="leader-portrait">'+
+                                  '<img src="assets/leaders/leader_L'+l.id+'.png" alt="'+l.name+'" onerror="leaderImgFallback(this,\'assets/leaders/leader_L'+l.id+'.png\',\''+fc+'\',\''+l.name[0]+'\')" loading="eager" decoding="async"/>'+
+                                  '<div class="placeholder-block">'+l.name[0]+'</div>'+
+                                '</div>'+
+                                '<div class="leader-info">'+
+                                  '<div class="era">'+l.era+'</div>'+
+                                  '<div class="name">'+l.name+'</div>'+
+                                  '<span class="faction-tag">'+f.name+'</span>'+
+                                  '<div class="ability">✦ '+l.desc+'</div>'+
+                                '</div>'+
+                              '</div>';
+                            }).join('');
+                            el.innerHTML='<div class="leader-select">'+
+                              '<h2>👥 同机对战 · 玩家'+(p+1)+'选择主将</h2>'+
+                              '<p class="subtitle">你的主将将决定阵营与特殊能力</p>'+
+                              '<div class="leader-grid">'+cardsHtml+'</div>'+
+                              (G._selectedLeader?'<div style="text-align:center;margin:20px">'+
+                                '<button class="btn btn-primary btn-confirm-leader" onclick="hotSeatPickLeader()">玩家'+(p+1)+'确认选择</button>'+
+                              '</div>':'')+
+                            '</div>';
+                            return;
+                          }
               // === MULLIGAN ===
               if(hs==="mulligan"){
                 var a=G.activePlayer;
                 var hnd=G.players[a].hand.filter(function(c){return c;});
                 var sel=G.mulliganSelected;
                 el.innerHTML='<div class="hot-seat-mulligan" style="text-align:center;padding:20px">'+
-                  '<h2 style="color:#E0D0F0;margin-bottom:15px">🔄 玩家'+(a+1)+'换牌</h2>'+
+                  '<h2 style="color:#E0D0F0;margin-bottom:15px">👥 玩家'+(a+1)+'换牌</h2>'+
                   '<p style="color:#B8A88A">先选出<b>要留下的牌</b>，然后确认换掉其余</p>'+
                   '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px 30px;max-height:45vh;overflow-y:auto">'+
                   hnd.map(function(c,i){
