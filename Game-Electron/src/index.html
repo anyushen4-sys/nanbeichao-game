@@ -994,6 +994,7 @@ function renderMenu(el){
       </div>
       <button class="menu-btn" onclick="G.phase='tutorial';render()">开始游戏</button>
       <button class="menu-btn" onclick="initHotSeat()" style="background:linear-gradient(135deg,#7B2FBE,#E23E57);">热座对战 (同机双人)</button>
+      <button class="menu-btn" onclick="showMultiplayerMenu()" style="background:linear-gradient(135deg,#2E86AB,#A23B72);">Steam 多人对战</button>
       <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
     </div>
     <div class="menu-bottom-deco">
@@ -1499,9 +1500,10 @@ function renderGameResult(el){
               (status === 'connected' ? '<button class="menu-btn" onclick="startLeaderSelect()">开始选择主将</button>' : '') +
             '</div>' +
             '<button class="menu-btn" onclick="stopMultiplayerPolling();resetGame()" style="margin-top:10px">返回菜单</button>' +
-            '</div>';
+                        '</div>';
+                    }
 
-        function renderMultiplayerPlaying(el){
+                    function renderMultiplayerPlaying(el){
           // 多人 playing：根据 mpPhase 渲染不同阶段
           var mp = G._mpState || {};
           var phase = G._mpPhase || mp._mpPhase || 'mulligan';
@@ -1854,6 +1856,12 @@ function renderGameResult(el){
                                                   // 发送自己的 RNG 值给 guest
                                                   var pkt = packMessage('action', { type: 'rng_value', payload: { v: '' + arr[0] } });
                                                   sendP2P(pkt, G._mpState.peerId);
+                                                  if (G._mpState._host === 'host') {
+                                                    // host: set up RNG, wait for guest
+                                                    var seed = Math.floor(Math.random() * 2147483647);
+                                                    G._rng = rngFromSeed(seed);
+                                                    G._mpSeed = seed;
+                                                  }
                                                   showNotification('已发送随机数...等待对方', 2000);
                                                 }
 
@@ -1876,40 +1884,36 @@ function renderGameResult(el){
                                                   if (!mp) return;
 
                                                   // --- RNG 比大小阶段 ---
-                                                  if (type === 'action' && payload.type === 'rng') {
-                                                    if (mp._host !== 'guest' && !mp._host) {
-                                                      // 我是 guest/generic，收到 host 的 RNG 值
-                                                      var arr = new Uint32Array(1);
-                                                      crypto.getRandomValues(arr);
-                                                      mp.peerRngValue = payload.v;
-                                                      mp.myRNGValue = arr[0];
-                                                      mp.isHost = (arr[0] > payload.v);
-                                                      // 发回我的 RNG 值
-                                                      var pkt = packMessage('action', { type: 'rng', payload: { v: arr[0] } });
-                                                      sendP2P(pkt, mp.peerId);
-                                                      // 如果是 host 端收到了 guest 的 rng 回复
-                                                      if (!mp.isHost) {
-                                                        mp._host = 'guest';
-                                                        // guest 等待 host 的 state_init
-                                                        showNotification('等待主机初始化对战...', 2500);
-                                                      }
-                                                      return;
-                                                    }
-                                                    // host 收到 guest 的 RNG 值回复
-                                                    mp.peerRngValue = payload.v;
-                                                    // 确定 host（大者胜）
-                                                    mp.isHost = (mp.myRngValue > mp.peerRngValue);
-                                                    if (mp.isHost) {
-                                                      mp._host = 'host';
-                                                      // host 端: 双方 leader 选完后发送 state_init
-                                                      showNotification('你是主机！初始化对局中...', 2000);
-                                                      sendMultiplayerStateInit();
-                                                    } else {
-                                                      mp._host = 'guest';
-                                                      showNotification('你是客机，等待主机初始化...', 2500);
-                                                    }
-                                                    return;
-                                                  }
+                                                                                                    // 收到对方的 rng_value
+                                                                                                    if (type === 'action' && (payload.type === 'rng_value')) {
+                                                                                                      var v = payload.v || (payload.payload && payload.payload.v);
+                                                                                                      if (!mp._host || mp._host === 'guest') {
+                                                                                                        // I'm guest, got host's rng value
+                                                                                                        var arr = new Uint32Array(1);
+                                                                                                        crypto.getRandomValues(arr);
+                                                                                                        mp.peerRngValue = v;
+                                                                                                        mp.myRNGValue = arr[0];
+                                                                                                        mp.isHost = (arr[0] > v);
+                                                                                                        mp._host = mp.isHost ? 'host' : 'guest';
+                                                                                                        // 发回我的 RNG 值
+                                                                                                        var pkt = packMessage('action', { type: 'rng_value', payload: { v: arr[0] } });
+                                                                                                        sendP2P(pkt, mp.peerId);
+                                                                                                        showNotification('已回复随机数...', 2000);
+                                                                                                        return;
+                                                                                                      }
+                                                                                                      // host got guest's rng_value reply
+                                                                                                      mp.peerRngValue = v;
+                                                                                                      mp.isHost = (mp.myRngValue > v);
+                                                                                                      mp._host = mp.isHost ? 'host' : 'guest';
+                                                                                                      if (mp.isHost) {
+                                                                                                        showNotification('你是主机！初始化对局中...', 2000);
+                                                                                                        sendMultiplayerStateInit();
+                                                                                                      } else {
+                                                                                                        mp._host = 'guest';
+                                                                                                        showNotification('你是客机，等待主机初始化...', 2500);
+                                                                                                      }
+                                                                                                      return;
+                                                                                                    }
 
                                                   // --- state_init 握手 ---
                                                   if (type === 'state_init') {
@@ -2864,6 +2868,79 @@ function timeoutReconnect() {
                             delete G._p2pState;
               render();
             }
+
+// 全局多人辅助函数
+function toggleMulligan(idx) {
+  if (!G.mulliganSelected) G.mulliganSelected = new Set();
+  if (G.mulliganSelected.has(idx)) G.mulliganSelected.delete(idx);
+  else G.mulliganSelected.add(idx);
+  // No auto render — caller must render
+}
+
+function dismissSettlementToast() {
+  var t = document.querySelector('.mp-settlement-toast');
+  if (t) t.remove();
+}
+
+function startMultiplayerHost() {
+  G._mpState = G._mpState || {};
+  G._mpState._host = 'host';
+  G._mpState._status = 'connecting';
+  G._mpState._myLocalIdx = 0;
+  G._mpState.peerId = null;
+  G.phase = 'multiplayer_lobby';
+  startMultiplayerPolling();
+  // Try to open invite dialog
+  if (typeof electronAPI !== 'undefined' && electronAPI.multiplayer) {
+    electronAPI.multiplayer.openInviteDialog().then(function(r) {
+      if (r.ok) {
+        G._mpState._status = 'waiting_invite';
+      } else {
+        G._mpState._status = 'idle';
+      }
+      render();
+    }).catch(function() {
+      G._mpState._status = 'idle';
+      render();
+    });
+  } else {
+    G._mpState._status = 'idle';
+    render();
+  }
+}
+
+function joinMultiplayerRoom() {
+  G._mpState = G._mpState || {};
+  G._mpState._host = 'guest';
+  G._mpState._status = 'connecting';
+  G._mpState._myLocalIdx = 0;
+  G.phase = 'multiplayer_lobby';
+  startMultiplayerPolling();
+  render();
+  showNotification('等待游戏邀请...', 2500);
+}
+
+function cancelMultiplayerInvite() {
+  if (G._mpState) G._mpState._status = 'idle';
+  stopMultiplayerPolling();
+  render();
+}
+
+function startLeaderSelect() {
+  G._mpState._status = 'picking_leader';
+  G._mpPhase = 'leader_select';
+  startMultiplayerPolling();
+  G.phase = 'multiplayer_playing';
+  render();
+}
+
+function showMultiplayerMenu() {
+  G._mpState = G._mpState || {};
+  G._mpState._status = 'idle';
+  G._mpState._myLocalIdx = 0;
+  G.phase = 'multiplayer_lobby';
+  render();
+}
 
 function showConfirmModal(title, msg, onYes){
   const overlay = document.createElement('div');
