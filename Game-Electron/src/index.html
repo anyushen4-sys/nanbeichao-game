@@ -183,9 +183,9 @@ let uid=0;
 function makeCard(c){return{...c,uid:++uid}}
 function getCardCost(s){return Math.ceil(s/3)}
 
-// ===== 02: state-migration-expand — 引入 players[] 数组 + 保留旧别名 =====
-// players[0] = 玩家, players[1] = AI
-// 旧别名 playerHand/aiHand/... 通过 Object.defineProperty getter/setter 桥接到 players[idx]
+// ===== 02: state-migration-expand — 引入 players[] 数组 =====
+// players[0] = 玩家, players[1] = AI (多人模式: P1/P2)
+// 旧别名 (playerHand/aiHand 等) 已于 T4 删除 — 所有 call sites 直接读 G.players[idx].*
 window.G={
 players:[
   {deck:[],hand:[],board:{infantry:[],cavalry:[],navy:[],strategy:[]},leader:null,passed:false},
@@ -1482,58 +1482,64 @@ function renderGameResult(el){
 
             // ===== 08: hot-seat — 同机双人完整流程 =====
             function initHotSeat(){
-              const seed=Math.floor(Math.random()*2147483647);
-              G._rng=rngFromSeed(seed);
-              G.phase='hot_seat_playing';
-              G.activePlayer=0;
-              G._hsPhase='leader_select';
-              G._hsLeaderPicks=[null,null];
-              G.scores=[0,0]; G.round=0;
-              G.provisions=[30,30];
-              G.leaderAbilityUsed=[false,false];
-              render();
-            }
+                          // RNG seed 在双方 leader 选完后生成 (spec T8 §5)
+                          delete G._rng;  // 清除旧 seed，leader_select 后用 Math.random()
+                          G.phase='hot_seat_playing';
+                          G.activePlayer=0;
+                          G._hsPhase='leader_select';
+                          G._hsLeaderPicks=[null,null];
+                          G.scores=[0,0]; G.round=0;
+                          G.provisions=[30,30];
+                          G.leaderAbilityUsed=[false,false];
+                          render();
+                        }
 
             function hotSeatPickLeader(){
-      if(!G._selectedLeader)return;
-      var p=G.activePlayer;
-      var l=LEADERS_DATA.find(function(x){return x.id===G._selectedLeader});
-      G._hsLeaderPicks[p]=l;
-      G.players[p].leader=l;
-      G._selectedLeader=null;
-      if(p===0){
-        G.activePlayer=1;
-        showHotSeatPassModal('请将设备交给玩家2选择主将');
-        render();
-        return;
-      }
-      // Both done: setup game
-      hotSeatSetup();
-    }
+                          if(!G._selectedLeader)return;
+                          var p=G.activePlayer;
+                          var l=LEADERS_DATA.find(function(x){return x.id===G._selectedLeader});
+                          G._hsLeaderPicks[p]=l;
+                          G.players[p].leader=l;
+                          G._selectedLeader=null;
+                          if(p===0){
+                            G.activePlayer=1;
+                            showTransferModal(1, '请将设备交给玩家 2 选择主将', 'leaderselect');
+                            render();
+                            return;
+                          }
+                          // Both done: setup game
+                          hotSeatSetup();
+                        }
 
     function hotSeatSetup(){
-              // Called after both leaders confirmed
-              const p0=G.players[0].leader, p1=G.players[1].leader;
-              G.players[0].deck=buildDeck(p0.faction);
-              G.players[1].deck=buildDeck(p1.faction);
-              applyLeaderDeckAbility(p0,G.players[0].deck);
-              applyLeaderDeckAbility(p1,G.players[1].deck);
-              G.scores=[0,0]; G.round=0;
-              G.players[0].passed=false; G.players[1].passed=false;
-              G.selectedCard=null; G.logs=[]; G.turnCount=0;
-              G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
-                playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
-              G.graveyard=[];
-              G.mulliganSelected=new Set();
-              G.leaderAbilityUsed=[false,false];
-              G.activePlayer=0;
-              // Mulligan-like: both draw 7
-              drawCards(0,7); drawCards(1,7);
-              G._hsPhase='mulligan';
-              addLog('═══ 热座模式：双方换牌 ═══');
-              addLog('玩家1先换牌');
-              render();
-            }
+                  // Called after both leaders confirmed
+                  // RNG seed: 双方 leader 选完后再生成 (spec T8 §5)
+                  const p0=G.players[0].leader, p1=G.players[1].leader;
+                  G.players[0].deck=buildDeck(p0.faction);
+                  G.players[1].deck=buildDeck(p1.faction);
+                  applyLeaderDeckAbility(p0,G.players[0].deck);
+                  applyLeaderDeckAbility(p1,G.players[1].deck);
+                  G.scores=[0,0]; G.round=0;
+                  G.players[0].passed=false; G.players[1].passed=false;
+                  G.selectedCard=null; G.logs=[]; G.turnCount=0;
+                  G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
+                    playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+                  G.graveyard=[];
+                  G.mulliganSelected=new Set();
+                  G.leaderAbilityUsed=[false,false];
+                  // 随机决定先手方 (0=玩家1, 1=玩家2)
+                  G.activePlayer=Math.floor(Math.random()*2);
+                  // 生成确定性 RNG seed（用于对局内所有随机调用）
+                  const seed=Math.floor(Math.random()*2147483647);
+                  G._rng=rngFromSeed(seed);
+                  // Mulligan-like: both draw 7
+                  drawCards(0,7); drawCards(1,7);
+                  G._hsPhase='mulligan';
+                  G._firstPlayer=G.activePlayer;
+                  addLog('═══ 热座模式：双方换牌 ═══');
+                  addLog('玩家'+(G.activePlayer+1)+'先换牌');
+                  render();
+                }
 
             function hotSeatConfirmMulligan(){
                           var p=G.activePlayer;
@@ -1541,7 +1547,8 @@ function renderGameResult(el){
                           // Selected = keep; swap the rest
                           var keeperIdx=new Set();
                           G.mulliganSelected.forEach(function(idx){if(idx<hand.length)keeperIdx.add(idx)});
-                          var i=0; while(i<hand.length){
+                          var i=0;
+                          while(i<hand.length){
                             if(keeperIdx.has(i)){i++;continue}
                             hand.splice(i,1);
                           }
@@ -1551,14 +1558,13 @@ function renderGameResult(el){
                           G.mulliganSelected=new Set();
                           if(G.activePlayer===0){
                             G.activePlayer=1;
+                            showTransferModal(1,'换牌阶段 — 请将设备交给玩家 2','mulligan');
                             render();
-                            showHotSeatPassModal('换牌阶段 — 请将设备交给玩家2');
                             return;
                           }
-                          // Both done mulligan
+                          // Both done mulligan — use _firstPlayer for game start
                           G._hsPhase='game';
-                          G.activePlayer=0;
-                          G.currentTurn='player';
+                          G.activePlayer=G._firstPlayer||0;
                           G.players[0].passed=false; G.players[1].passed=false;
                           G.selectedCard=null;
                           G.turnCount=0;
@@ -1573,20 +1579,19 @@ function renderGameResult(el){
             }
 
             function hotSeatPassTurn(){
-              const a=G.activePlayer;
-              G.players[a].passed=true;
-              addLog((a===0?'玩家1':'玩家2')+'放弃了本局');
-              G.selectedCard=null;
-              const b=1-a;
-              if(G.players[b].passed){
-                hotSeatEndRound();
-              }else{
-                G.activePlayer=b;
-            if(a===0) showHotSeatPassModal('请将设备交给玩家2');
-            else if(b===0) showHotSeatPassModal('请将设备交还给玩家1');
-                render();
-              }
-            }
+                          const a=G.activePlayer;
+                          G.players[a].passed=true;
+                          addLog((a===0?'玩家1':'玩家2')+'放弃了本局');
+                          G.selectedCard=null;
+                          const b=1-a;
+                          if(G.players[b].passed){
+                            hotSeatEndRound();
+                          }else{
+                            G.activePlayer=b;
+                            showTransferModal(b,'请将设备交给玩家'+(b+1),'turnevent');
+                            render();
+                          }
+                        }
 
             function hotSeatEndRound(){
               const pP=getBoardPower(G.players[0].board,0);
@@ -1662,30 +1667,35 @@ function renderGameResult(el){
                 return;
                 }
                 G.activePlayer=next;
-                if(a===0) showHotSeatPassModal('请将设备交给玩家2');
-                else showHotSeatPassModal('请将设备交还给玩家1');
-                render();
+                                showTransferModal(next,'请将设备交给玩家'+(next+1),'turnevent');
+                                render();
               }
             }
 
-            function showHotSeatPassModal(msg){
-              const overlay=document.createElement('div');
-              overlay.className='confirm-modal-overlay';
-              overlay.id='hs-pass-overlay';
-              overlay.innerHTML='<div class="confirm-modal" style="background:#1a1025;border:2px solid #7B2FBE;">'+
-                '<div class="confirm-title" style="color:#C4A8D4">📱 传递设备</div>'+
-                '<div class="confirm-msg" style="font-size:1.2em;color:#E0D0F0">'+msg+'</div>'+
-                '<div class="confirm-btns">'+
-                  '<button class="confirm-btn confirm-yes" onclick="hotSeatPassConfirm()">已就绪</button>'+
-                '</div></div>';
-              document.body.appendChild(overlay);
-            }
-
-            function hotSeatPassConfirm(){
-                          var overlay=document.getElementById('hs-pass-overlay');
-                          if(overlay) overlay.remove();
-                          render();
+            function showTransferModal(playerIdx, msg, reason){
+                          // transfer-modal: 全屏遮罩 + 玩家 N 头像 + 「开始我的回合」按钮 (spec T8 §3)
+                          const overlay=document.createElement('div');
+                          overlay.className='transfer-modal-overlay';
+                          overlay.id='hs-transfer-overlay';
+                          const colors=['#4A90D9','#E23E57'];
+                          const icons=['🔵','🔴'];
+                          overlay.innerHTML='<div class="transfer-modal">'+
+                            '<div class="transfer-player-icon" style="color:'+colors[playerIdx]+'">'+
+                            icons[playerIdx]+'</div>'+
+                            '<div class="transfer-title" style="color:'+colors[playerIdx]+'">'+
+                            '玩家 '+(playerIdx+1)+'</div>'+
+                            '<div class="transfer-msg">'+msg+'</div>'+
+                            '<button class="transfer-btn" onclick="transferConfirm()">'+
+                            '开始我的回合</button>'+
+                            '</div>';
+                          document.body.appendChild(overlay);
                         }
+
+                        function transferConfirm(){
+                                      var overlay=document.getElementById('hs-transfer-overlay');
+                                      if(overlay) overlay.remove();
+                                      render();
+                                    }
 
             function renderHotSeatPlaying(el){
               var hs=G._hsPhase||"";
@@ -1756,7 +1766,7 @@ function renderGameResult(el){
                     '<div><div style="color:#E23E57;font-size:1.4em;font-weight:bold">玩家2</div>'+
                       '<div style="color:#FFD700;font-size:1.8em">'+rr.aiPower+'战力</div></div>'+
                   '</div>'+
-                  '<div style="color:#FFD700;font-size:1.2em;margin:15px 0">'+winnerText+'</div>'+
+                  '<div style="color:#FFD700;font-size:1.2em;margin:15px 0">'+wTxt+'</div>'+
                   '<div style="margin:25px 0">比分: <span style="color:#4A90D9;font-size:1.2em">'+G.scores[0]+'</span> : '+
                     '<span style="color:#E23E57;font-size:1.2em">'+G.scores[1]+'</span></div>'+
                   '<button class="btn btn-primary" onclick="hotSeatCheckGameEnd()">继续</button>'+
@@ -1854,26 +1864,46 @@ function renderGameResult(el){
                 '<span class="'+handClass+'">'+appearText+'</span>'+
                 (p0.passed&&!p1.passed?'<span class="waiting"> · 对手已放弃，等待你</span>':'')+
               '</div>'+
-              '<div class="hand-area">'+
-                '<div class="hand-label">— '+(isP1?'玩家1':'玩家2')+' 的手牌 ('+G.players[act].hand.length+'张) —</div>'+
-                '<div class="hand-cards '+(G.players[act].hand.length===0?'empty':'')+
-                  (G.players[act].hand.length>=5?' many-cards':'')+
-                  (G.players[act].hand.length>=7?' overflow-cards':'')+'">'+
-                  (G.players[act].hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
-                    G.players[act].hand.map(function(c,i){return renderHandCard(c,i)}).join(''))+
-                '</div>'+
+                            '<div class="hand-area">'+
+                            '<div class="hand-label">— 玩家1 的手牌 —</div>'+
+                            '<div class="hand-cards'+(p0.hand.length===0?' empty':'')+
+                                (p0.hand.length>=5?' many-cards':'')+
+                                (p0.hand.length>=7?' overflow-cards':'')+'">'+
+                                (act!==0?
+                                  '<div class="hs-hidden-hand">'+
+                                    '<div class="hs-hidden-icon">🔒</div>'+
+                                    '<div class="hs-hidden-text">对方回合中</div>'+
+                                    '<div class="hs-hidden-count">'+p0.hand.length+' 张手牌</div>'+
+                                  '</div>':
+                                  (p0.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
+                                                                      p0.hand.map(function(c,i){return handleHotSeatHandCard(c,i,act)}).join('')))
+                              '</div>'+
+                            '</div>'+
+                            '<div class="hand-area">'+
+                                          '<div class="hand-label">— 玩家2 的手牌 ('+p1.hand.length+'张) —</div>'+
+                                          '<div class="hand-cards'+(p1.hand.length===0?' empty':'')+
+                                            (p1.hand.length>=5?' many-cards':'')+
+                                            (p1.hand.length>=7?' overflow-cards':'')+'">'+
+                                            (act!==1?
+                                              '<div class="hs-hidden-hand">'+
+                                                '<div class="hs-hidden-icon">🔒</div>'+
+                                                '<div class="hs-hidden-text">对方回合中</div>'+
+                                                '<div class="hs-hidden-count">'+p1.hand.length+' 张手牌</div>'+
+                                              '</div>':
+                                              (p1.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
+                                                p1.hand.map(function(c,i){return handleHotSeatHandCard(c,i,1)}).join('')))+
+                                          '</div>'+
+                                        '</div>'+
+                                        '<div class="action-bar">'+
+                                          '<button class="btn btn-sm btn-primary" onclick="useLeaderAbility('+act+')" '+
+                                            (G.leaderAbilityUsed[act]?'disabled':'')+'>'+
+                                            (G.leaderAbilityUsed[act]?'已使用':'主将技能')+' · '+G.players[act].leader.name+'</button>'+
+                                          '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">放弃本局</button>'+
+                                        '</div>'+
               '</div>'+
-              '<div class="action-bar">'+
-                '<button class="btn btn-sm btn-primary" onclick="useLeaderAbility('+act+')" '+
-                  (G.leaderAbilityUsed[act]?'disabled':'')+'>'+
-                  (G.leaderAbilityUsed[act]?'已使用':'主将技能')+' · '+G.players[act].leader.name+'</button>'+
-                '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">放弃本局</button>'+
-              '</div>'+
-              '<div class="log-area">'+
-                (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
-              '</div>';
-            var logsEl=document.getElementById('logs');
-            if(logsEl)logsEl.scrollTop=logsEl.scrollHeight;
+                            '<div class="log-area">'+
+                              (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
+                            '</div>';
         }
 
         function handleHotSeatHandCard(card,idx,activeIdx){
@@ -1899,22 +1929,25 @@ function renderGameResult(el){
         }
 
             function resetGame(){
-  uid=0;
-  G.phase='menu';G.round=0;G.scores=[0,0];
-  G.players[0].leader=null;G.players[1].leader=null;
-  G.players[0].deck=[];G.players[1].deck=[];
-  G.players[0].hand=[];G.players[1].hand=[];
-  G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
-  G.provisions=[30,30];G.currentTurn='player';
-  G.players[0].passed=false;G.players[1].passed=false;
-  G.selectedCard=null;G.logs=[];G.turnCount=0;
-  G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
-  G.graveyard=[];
-  G._selectedLeader=null;G._roundResult=null;G._lastPlayedBy=null;
-  G.mulliganSelected=new Set();G.leaderAbilityUsed=[false,false];
-  render();
-}
+              uid=0;
+              G.phase='menu';G.round=0;G.scores=[0,0];
+              G.players[0].leader=null;G.players[1].leader=null;
+              G.players[0].deck=[];G.players[1].deck=[];
+              G.players[0].hand=[];G.players[1].hand=[];
+              G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+              G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+              G.provisions=[30,30];G.currentTurn='player';
+              G.players[0].passed=false;G.players[1].passed=false;
+              G.selectedCard=null;G.logs=[];G.turnCount=0;
+              G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+              G.graveyard=[];
+              G._selectedLeader=null;G._roundResult=null;G._lastPlayedBy=null;
+              G.mulliganSelected=new Set();G.leaderAbilityUsed=[false,false];
+              // Clear hot-seat state
+              delete G.activePlayer; delete G._hsPhase; delete G._hsLeaderPicks;
+              delete G._rng; delete G._firstPlayer;
+              render();
+            }
 
 function showConfirmModal(title, msg, onYes){
   const overlay = document.createElement('div');
