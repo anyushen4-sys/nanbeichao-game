@@ -1,6 +1,6 @@
 # Daily Triage Report
 
-**Generated:** 2026-07-27T12:11:55Z
+**Generated:** 2026-07-28T11:08:56Z
 
 ## 1. High-Priority Items (act on these)
 
@@ -16,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: 8f1cd47 | feat(T7-cron): ipc-bridge — 7 个 multiplayer.* IPC channels (main.js + preload.js) | 2026-07-27T11:04:12Z
-- Next triage: 2026-07-28T12:11:55Z
+- Latest commit: c5c849b | chore: daily triage report 2026-07-27 | 2026-07-27T12:11:56Z
+- Next triage: 2026-07-29T11:08:56Z
