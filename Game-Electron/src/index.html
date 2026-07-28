@@ -1477,10 +1477,137 @@ function renderGameResult(el){
             }
 
             function renderMultiplayerPlaying(el){
-              el.innerHTML='<div class="multiplayer-playing"><h2>多人对战</h2><p>即将推出...</p></div>';
-            }
+                          el.innerHTML='<div class="multiplayer-playing"><h2>多人对战</h2><p>即将推出...</p></div>';
+                        }
 
-            // ===== 08: hot-seat — 同机双人完整流程 =====
+                        // ===== 10: p2p-protocol — 消息协议层 (7 种消息) =====
+                        // spec: 10-redo-p2p-protocol.md + spec.md §消息协议
+                        const MSG_SCHEMA = {
+                          state_init:       { fields: ['rngSeed','deckHashP0','deckHashP1','leaderP0','leaderP1','firstTurnIdx'] },
+                          action:           { fields: ['type','payload'] },
+                          state_diff:       { fields: ['seq','beforeHash','afterHash','publicEffects'] },
+                          ack:              { fields: ['ref_seq','ok','error'] },
+                          match_result:     { fields: ['winnerIdx','finalScore','settlementHash'] },
+                          concede:          { fields: ['reason'] },
+                          reconnect_resume: { fields: ['missedSeqs','catchupDiffs'] }
+                        };
+
+                        var MAX_STATE_DIFF_BYTES = 4096;
+                        var MAX_STATE_INIT_BYTES = 256;
+
+                        function ensureP2PState() {
+                          if (!G._p2pState) G._p2pState = { clientSeq: {}, missedSeqs: {}, lastReceivedSeq: {} };
+                        }
+
+                        function getNextSeq(steamId64) {
+                          ensureP2PState();
+                          if (!G._p2pState.clientSeq[steamId64]) G._p2pState.clientSeq[steamId64] = 0;
+                          return ++G._p2pState.clientSeq[steamId64];
+                        }
+
+                        function recordReceivedSeq(steamId64, seq) {
+                          ensureP2PState();
+                          var last = G._p2pState.lastReceivedSeq[steamId64] || 0;
+                          G._p2pState.lastReceivedSeq[steamId64] = seq;
+                          if (seq > last + 1) {
+                            var missed = [];
+                            for (var s = last + 1; s < seq; s++) missed.push(s);
+                            if (!G._p2pState.missedSeqs[steamId64]) G._p2pState.missedSeqs[steamId64] = [];
+                            G._p2pState.missedSeqs[steamId64].push.apply(G._p2pState.missedSeqs[steamId64], missed);
+                          }
+                        }
+
+                        /**
+                         * packMessage(type, payload) → JSON string
+                         * 序列化一条消息。校验类型合法性 + 大小预算。
+                         * @param {string} type — 7 种消息类型之一
+                         * @param {object} payload — 消息体
+                         * @returns {string} JSON 字符串
+                         * @throws {Error} 未知类型 / state_diff > 4KB / state_init > 256B
+                         */
+                        function packMessage(type, payload) {
+                          if (!MSG_SCHEMA[type]) throw new Error('packMessage: unknown message type "' + type + '"');
+                          var json = JSON.stringify({ type: type, payload: payload, ts: Date.now() });
+                          if (type === 'state_diff' && json.length > MAX_STATE_DIFF_BYTES)
+                            throw new Error('packMessage: state_diff exceeds 4 KB (' + json.length + ' bytes)');
+                          if (type === 'state_init' && json.length > MAX_STATE_INIT_BYTES)
+                            throw new Error('packMessage: state_init exceeds 256 bytes (' + json.length + ' bytes)');
+                          return json;
+                        }
+
+                        /**
+                         * unpackMessage(input) → { type, payload, ts }
+                         * 反序列化消息。支持 string / Buffer / ArrayBuffer 三种输入。
+                         * @param {string|Buffer|ArrayBuffer} input
+                         * @returns {{ type: string, payload: object, ts: number }}
+                         * @throws {Error} JSON 解析失败 / 空输入 / 缺 type 字段
+                         */
+                        function unpackMessage(input) {
+                          if (!input) throw new Error('unpackMessage: empty input');
+                          if (typeof input === 'string') {
+                            if (input.length === 0) throw new Error('unpackMessage: empty input');
+                            var parsed; try { parsed = JSON.parse(input); } catch (e) {
+                              throw new Error('unpackMessage: JSON parse error — ' + e.message);
+                            }
+                            if (!parsed || typeof parsed !== 'object') throw new Error('unpackMessage: parsed value is not an object');
+                            if (!parsed.type || typeof parsed.type !== 'string') throw new Error('unpackMessage: missing or invalid "type" field');
+                            return { type: parsed.type, payload: parsed.payload || {}, ts: parsed.ts || 0 };
+                          }
+                          var buf;
+                          if (typeof Buffer !== 'undefined' && input instanceof Buffer) buf = input;
+                          else if (input instanceof ArrayBuffer) buf = Buffer.from(new Uint8Array(input));
+                          else throw new Error('unpackMessage: unsupported input type: ' + typeof input);
+                          var jsonStr = buf.toString('utf-8');
+                          if (jsonStr.length === 0) throw new Error('unpackMessage: empty buffer');
+                          var parsed; try { parsed = JSON.parse(jsonStr); } catch (e) {
+                            throw new Error('unpackMessage: JSON parse error — ' + e.message);
+                          }
+                          if (!parsed || typeof parsed !== 'object') throw new Error('unpackMessage: parsed value is not an object');
+                          if (!parsed.type || typeof parsed.type !== 'string') throw new Error('unpackMessage: missing or invalid "type" field');
+                          return { type: parsed.type, payload: parsed.payload || {}, ts: parsed.ts || 0 };
+                        }
+
+                        /**
+                         * packStateInit(seed, deckHashP0, deckHashP1, leaderP0, leaderP1, firstTurnIdx) → JSON
+                         * 打包 state_init 消息，携带 RNG seed + deck hash + leader info + firstTurnIdx。
+                         */
+                        function packStateInit(seed, hash0, hash1, leader0, leader1, firstIdx) {
+                          return packMessage('state_init', {
+                            rngSeed: seed, deckHashP0: hash0 || '', deckHashP1: hash1 || '',
+                            leaderP0: leader0 || '', leaderP1: leader1 || '', firstTurnIdx: firstIdx
+                          });
+                        }
+
+                        /**
+                         * host 端：发送 state_diff
+                         * @param {string} beforeHash
+                         * @param {string} afterHash
+                         * @param {Array} publicEffects
+                         * @param {string} steamId64 — 目标玩家 Steam ID
+                         */
+                        function sendStateDiff(beforeHash, afterHash, publicEffects, steamId64) {
+                          if (!steamId64) return null;
+                          return packMessage('state_diff', {
+                            seq: getNextSeq(steamId64),
+                            beforeHash: beforeHash || '',
+                            afterHash: afterHash || '',
+                            publicEffects: publicEffects || []
+                          });
+                        }
+
+                        /**
+                         * guest 端：收到 state_diff 后调用
+                         * @param {object} msg — unpacked message, 需要 _fromSteamId 字段
+                         * @param {function} handler — 处理 publicEffects 的回调
+                         */
+                        function onStateDiff(msg, handler) {
+                          var p = msg.payload;
+                          if (!p || !p.seq) return;
+                          recordReceivedSeq(msg._fromSteamId || '', p.seq);
+                          if (typeof handler === 'function') { try { handler(p.publicEffects || []); } catch (e) {} }
+                        }
+
+                        // ===== 08: hot-seat — 同机双人完整流程 =====
             function initHotSeat(){
                           // RNG seed 在双方 leader 选完后生成 (spec T8 §5)
                           delete G._rng;  // 清除旧 seed，leader_select 后用 Math.random()
@@ -1944,8 +2071,10 @@ function renderGameResult(el){
               G._selectedLeader=null;G._roundResult=null;G._lastPlayedBy=null;
               G.mulliganSelected=new Set();G.leaderAbilityUsed=[false,false];
               // Clear hot-seat state
-              delete G.activePlayer; delete G._hsPhase; delete G._hsLeaderPicks;
-              delete G._rng; delete G._firstPlayer;
+                            delete G.activePlayer; delete G._hsPhase; delete G._hsLeaderPicks;
+                            delete G._rng; delete G._firstPlayer;
+                            // Clear p2p state
+                            delete G._p2pState;
               render();
             }
 
