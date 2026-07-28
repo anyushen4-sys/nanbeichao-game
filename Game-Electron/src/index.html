@@ -971,43 +971,61 @@ function renderMenu(el){
   // 子页面：模式选择
   if(G._menuScreen==='mode_select'){
     el.innerHTML=`
-  <div class="menu-screen">
-    <div class="menu-battlefield">
-      <img src="assets/cover-battlefield.jpg" alt="古战场"/>
-    </div>
-    <div class="poetry-left">
-      <div class="poetry-line">余 霞 散 成 绮</div>
-      <div class="poetry-line">池 塘 生 春 草</div>
-      <div class="poetry-line">大 江 流 日 夜</div>
-    </div>
-    <div class="poetry-right">
-      <div class="poetry-line">澄 江 静 如 练</div>
-      <div class="poetry-line">客 心 悲 未 央</div>
-      <div class="poetry-line">鸟 鸣 山 更 幽</div>
-    </div>
-    <div class="menu-content-wrap">
-      <div class="menu-seal">天下对弈</div>
-      <div class="menu-title">南北朝 · 天下对弈</div>
-      <div class="menu-subtitle">— 选择对战模式 —</div>
-      <div class="menu-line"></div>
-      <button class="menu-btn" onclick="G.phase='tutorial';render()" style="background:linear-gradient(135deg,#C44,#800);">⚔ AI 对战</button>
-      <button class="menu-btn" onclick="initHotSeat()" style="background:linear-gradient(135deg,#7B2FBE,#E23E57);">👥 同机对战</button>
-      <button class="menu-btn" onclick="showMultiplayerMenu()" style="background:linear-gradient(135deg,#2E86AB,#A23B72);">🌐 联机对战</button>
-      <button class="menu-btn menu-btn-back" onclick="G._menuScreen='main';render()" style="background:transparent;border:1px solid #8B7355;color:#8B7355;margin-top:8px;">← 返回</button>
-      <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
-    </div>
-    <div class="menu-bottom-deco">
-      <div class="deco-line"></div>
-      <div class="deco-dots">
-        <span class="deco-dot north"></span>
-        <span class="deco-dot north"></span>
-        <span class="deco-dot north"></span>
-        <span class="deco-dot north"></span>
-        <span class="deco-dot north"></span>
-        <span class="deco-dot south"></span>
-        <span class="deco-dot south"></span>
-        <span class="deco-dot south"></span>
-        <span class="deco-dot south"></span>
+  <div class="mode-select-screen">
+    <div class="mode-select-bg"></div>
+    <div class="mode-select-content">
+      <div class="mode-select-header">
+        <div class="mode-select-emblem">⚔</div>
+        <div class="mode-select-title">选择对战模式</div>
+        <div class="mode-select-desc">择一对手，逐鹿天下</div>
+        <div class="mode-select-divider">
+          <span class="mode-divider-line"></span>
+          <span class="mode-divider-diamond">◆</span>
+          <span class="mode-divider-line"></span>
+        </div>
+      </div>
+
+      <div class="mode-select-cards">
+        <!-- AI 对战 -->
+        <div class="mode-card" onclick="G.phase='tutorial';render()">
+          <div class="mode-card-icon mode-card-icon-ai">
+            <span class="mode-card-icon-text">🤖</span>
+          </div>
+          <div class="mode-card-body">
+            <div class="mode-card-title">AI 对战</div>
+            <div class="mode-card-desc">单人挑战 · 随机领袖 · 三局两胜</div>
+          </div>
+          <div class="mode-card-arrow">→</div>
+        </div>
+
+        <!-- 同机对战 -->
+        <div class="mode-card" onclick="initHotSeat()">
+          <div class="mode-card-icon mode-card-icon-hotseat">
+            <span class="mode-card-icon-text">👥</span>
+          </div>
+          <div class="mode-card-body">
+            <div class="mode-card-title">同机对战</div>
+            <div class="mode-card-desc">好友对弈 · 同一屏幕 · 轮流操作</div>
+          </div>
+          <div class="mode-card-arrow">→</div>
+        </div>
+
+        <!-- 联机对战 -->
+        <div class="mode-card" onclick="showMultiplayerMenu()">
+          <div class="mode-card-icon mode-card-icon-online">
+            <span class="mode-card-icon-text">🌐</span>
+          </div>
+          <div class="mode-card-body">
+            <div class="mode-card-title">联机对战</div>
+            <div class="mode-card-desc">Steam 好友 · 远程对决 · 实时同步</div>
+          </div>
+          <div class="mode-card-arrow">→</div>
+        </div>
+      </div>
+
+      <div class="mode-select-back" onclick="G._menuScreen='main';render()">
+        <span class="mode-back-arrow">←</span>
+        <span>返回首页</span>
       </div>
     </div>
   </div>`;

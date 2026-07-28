@@ -2648,3 +2648,169 @@ html, body {
 .mp-host { color: #FFD700; }
 .mp-guest { color: #4A90D9; }
 @keyframes armorPlate { 0% { transform: scale(0); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(1.2) rotate(15deg); } }
+
+/* ===== 模式选择页 ===== */
+.mode-select-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0D0A08;
+}
+.mode-select-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(120, 60, 30, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 30% 70%, rgba(40, 20, 10, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 70% 70%, rgba(40, 20, 10, 0.2) 0%, transparent 50%),
+    url("assets/cover-battlefield.jpg") center / cover no-repeat;
+  opacity: 0.35;
+  filter: blur(1px) brightness(0.6);
+}
+.mode-select-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* 标题区 */
+.mode-select-header {
+  text-align: center;
+}
+.mode-select-emblem {
+  font-size: 2.4em;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 12px rgba(200,150,80,0.5));
+}
+.mode-select-title {
+  font-family: 'Noto Sans SC','STSong',serif;
+  font-size: 1.7em;
+  font-weight: 700;
+  color: #E8D5B0;
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 12px rgba(180, 120, 40, 0.4);
+  margin-bottom: 4px;
+}
+.mode-select-desc {
+  font-size: 0.85em;
+  color: #9A8B7A;
+  letter-spacing: 0.1em;
+}
+.mode-select-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.mode-divider-line {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8B7355, transparent);
+}
+.mode-divider-diamond {
+  color: #8B7355;
+  font-size: 0.55em;
+}
+
+/* 模式卡片 */
+.mode-select-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.mode-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  background: rgba(20, 14, 8, 0.85);
+  border: 1px solid rgba(140, 110, 70, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.mode-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: 12px;
+}
+.mode-card:nth-child(1)::before { background: linear-gradient(135deg, rgba(180,60,40,0.15), rgba(140,30,10,0.08)); }
+.mode-card:nth-child(2)::before { background: linear-gradient(135deg, rgba(120,40,160,0.15), rgba(200,70,100,0.08)); }
+.mode-card:nth-child(3)::before { background: linear-gradient(135deg, rgba(40,120,180,0.15), rgba(140,60,160,0.08)); }
+.mode-card:hover {
+  border-color: rgba(200,160,100,0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+.mode-card:hover::before { opacity: 1; }
+
+.mode-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mode-card-icon-ai { background: linear-gradient(135deg, #C44, #800); box-shadow: 0 0 16px rgba(200,60,40,0.3); }
+.mode-card-icon-hotseat { background: linear-gradient(135deg, #7B2FBE, #E23E57); box-shadow: 0 0 16px rgba(180,70,100,0.3); }
+.mode-card-icon-online { background: linear-gradient(135deg, #2E86AB, #A23B72); box-shadow: 0 0 16px rgba(40,120,180,0.3); }
+.mode-card-icon-text { font-size: 1.3em; }
+
+.mode-card-body { flex: 1; }
+.mode-card-title {
+  font-size: 1.05em;
+  font-weight: 700;
+  color: #E8D5B0;
+  margin-bottom: 3px;
+  letter-spacing: 0.05em;
+}
+.mode-card-desc {
+  font-size: 0.75em;
+  color: #8A7B6A;
+}
+.mode-card-arrow {
+  font-size: 1.1em;
+  color: #6B5B4A;
+  transition: all 0.25s ease;
+}
+.mode-card:hover .mode-card-arrow {
+  color: #C8A870;
+  transform: translateX(3px);
+}
+
+/* 返回 */
+.mode-select-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  color: #6B5B4A;
+  font-size: 0.85em;
+  cursor: pointer;
+  border: 1px solid rgba(140,110,70,0.2);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.mode-select-back:hover {
+  color: #A89070;
+  border-color: rgba(180,150,100,0.4);
+}
+.mode-back-arrow { font-size: 1em; }
