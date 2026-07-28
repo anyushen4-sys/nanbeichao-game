@@ -193,7 +193,7 @@ players:[
 ],
 
 // 顶层属性（无需桥接 — 不属于单个玩家）
-phase:'menu',round:0,scores:[0,0],
+phase:'menu',_menuScreen:'main',round:0,scores:[0,0],
 provisions:[30,30],
 currentTurn:'player',
 selectedCard:null,logs:[],turnCount:0,
@@ -968,6 +968,51 @@ function render(){
 }
 
 function renderMenu(el){
+  // 子页面：模式选择
+  if(G._menuScreen==='mode_select'){
+    el.innerHTML=`
+  <div class="menu-screen">
+    <div class="menu-battlefield">
+      <img src="assets/cover-battlefield.jpg" alt="古战场"/>
+    </div>
+    <div class="poetry-left">
+      <div class="poetry-line">余 霞 散 成 绮</div>
+      <div class="poetry-line">池 塘 生 春 草</div>
+      <div class="poetry-line">大 江 流 日 夜</div>
+    </div>
+    <div class="poetry-right">
+      <div class="poetry-line">澄 江 静 如 练</div>
+      <div class="poetry-line">客 心 悲 未 央</div>
+      <div class="poetry-line">鸟 鸣 山 更 幽</div>
+    </div>
+    <div class="menu-content-wrap">
+      <div class="menu-seal">天下对弈</div>
+      <div class="menu-title">南北朝 · 天下对弈</div>
+      <div class="menu-subtitle">— 选择对战模式 —</div>
+      <div class="menu-line"></div>
+      <button class="menu-btn" onclick="G.phase='tutorial';render()" style="background:linear-gradient(135deg,#C44,#800);">⚔ AI 对战</button>
+      <button class="menu-btn" onclick="initHotSeat()" style="background:linear-gradient(135deg,#7B2FBE,#E23E57);">👥 同机对战</button>
+      <button class="menu-btn" onclick="showMultiplayerMenu()" style="background:linear-gradient(135deg,#2E86AB,#A23B72);">🌐 联机对战</button>
+      <button class="menu-btn menu-btn-back" onclick="G._menuScreen='main';render()" style="background:transparent;border:1px solid #8B7355;color:#8B7355;margin-top:8px;">← 返回</button>
+      <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
+    </div>
+    <div class="menu-bottom-deco">
+      <div class="deco-line"></div>
+      <div class="deco-dots">
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot north"></span>
+        <span class="deco-dot south"></span>
+        <span class="deco-dot south"></span>
+        <span class="deco-dot south"></span>
+        <span class="deco-dot south"></span>
+      </div>
+    </div>
+  </div>`;
+    return;
+  }
   el.innerHTML=`
   <div class="menu-screen">
     <div class="menu-battlefield">
@@ -992,9 +1037,7 @@ function renderMenu(el){
         四行布阵 · 三局两胜<br/>
         运筹帷幄 · 决胜千里
       </div>
-      <button class="menu-btn" onclick="G.phase='tutorial';render()">开始游戏</button>
-      <button class="menu-btn" onclick="initHotSeat()" style="background:linear-gradient(135deg,#7B2FBE,#E23E57);">热座对战 (同机双人)</button>
-      <button class="menu-btn" onclick="showMultiplayerMenu()" style="background:linear-gradient(135deg,#2E86AB,#A23B72);">Steam 多人对战</button>
+      <button class="menu-btn" onclick="G._menuScreen='mode_select';render()">开始游戏</button>
       <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
     </div>
     <div class="menu-bottom-deco">
@@ -2848,7 +2891,7 @@ function timeoutReconnect() {
 
             function resetGame(){
               uid=0;
-              G.phase='menu';G.round=0;G.scores=[0,0];
+              G.phase='menu';G._menuScreen='main';G.round=0;G.scores=[0,0];
               G.players[0].leader=null;G.players[1].leader=null;
               G.players[0].deck=[];G.players[1].deck=[];
               G.players[0].hand=[];G.players[1].hand=[];
