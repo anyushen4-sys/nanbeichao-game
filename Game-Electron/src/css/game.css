@@ -571,24 +571,26 @@ html, body {
 
 /* 手牌区 */
 .hand-area {
-    padding: 6px 0;
+    padding: 10px 0;
     position: relative;
     z-index: 2;
 }
 .hand-label {
-    font-size: .8em;
+    font-size: .85em;
     color: #8B7355;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     text-align: center;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    font-family: 'Noto Sans SC',sans-serif;
+    font-weight: 500;
 }
 .hand-cards {
     display: flex;
-    gap: 6px;
+    gap: 10px;
     justify-content: flex-start;
     flex-wrap: wrap;
-    min-height: 70px;
-    padding: 4px;
+    min-height: 80px;
+    padding: 8px;
     align-items: flex-start;
 }
 .hand-cards.empty {
@@ -2049,28 +2051,6 @@ html, body {
     box-shadow: none;
 }
 
-/* 手牌区域增强 */
-.hand-area {
-    padding: 10px 0;
-}
-.hand-label {
-    font-size: .85em;
-    color: #8B7355;
-    margin-bottom: 8px;
-    text-align: center;
-    letter-spacing: 3px;
-    font-family: 'Noto Sans SC',sans-serif;
-    font-weight: 500;
-}
-.hand-cards {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-    min-height: 80px;
-    padding: 8px;
-}
-
 /* 菜单按钮增强 */
 .menu-screen .btn {
     height: 50px;
@@ -2598,4 +2578,73 @@ html, body {
 
 /* 铠甲 */
 .armor-plate { position: absolute; width: 24px; height: 24px; border: 2px solid #8B7355; background: linear-gradient(135deg, #A09070, #6B5B47); border-radius: 2px; box-shadow: 0 0 6px rgba(139,115,85,.5), inset 0 0 4px rgba(160,144,112,.3); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: armorPlate .6s ease-out forwards; opacity: 0; }
+
+/* ===== 11: Multiplayer — 多人对战样式 ===== */
+
+.multiplayer-lobby {
+  text-align: center;
+  padding: 40px 20px;
+  color: #E0D0F0;
+  background: linear-gradient(180deg, rgba(20,12,8,.95), rgba(30,18,14,.9));
+  min-height: 100vh;
+}
+.multiplayer-lobby h2 { font-size: 1.8em; color: #FFD700; margin: 20px 0; }
+.multiplayer-lobby .mp-lobby-status {
+  color: #B8A88A;
+  font-size: 1em;
+  margin: 20px 0;
+  min-height: 2em;
+}
+.multiplayer-lobby .mp-lobby-buttons { margin: 20px 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+.multiplayer-playing {
+  text-align: center;
+  padding: 0;
+  color: #E0D5F0;
+  min-height: 100vh;
+}
+
+/* settlement toast */
+.mp-settlement-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #2C1810, #3D2016);
+  border: 2px solid #FFD700;
+  border-radius: 10px;
+  padding: 16px 20px;
+  color: #fff;
+  z-index: 10000;
+  box-shadow: 0 8px 24px rgba(0,0,0,.6);
+  min-width: 280px;
+  animation: mpToastIn .3s ease-out;
+}
+@keyframes mpToastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.mp-toast-title { font-size: 1.1em; color: #FFD700; font-weight: bold; margin-bottom: 6px; }
+.mp-toast-msg { font-size: .9em; color: #C0A8D4; margin-bottom: 4px; }
+.mp-toast-details { font-size: .75em; color: #888; margin-bottom: 10px; font-family: monospace; }
+.mp-toast-btn { background: #4A3060; border: 1px solid #7B5EA7; color: #E0D5F0; padding: 6px 18px; border-radius: 6px; cursor: pointer; font-size: .85em; }
+.mp-toast-btn:hover { background: #7B5EA7; }
+
+/* reconnect overlay */
+.mp-reconnect-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,10,5,.85);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.mp-reconnect-title { font-size: 1.4em; color: #FFD700; margin-bottom: 12px; }
+.mp-reconnect-countdown { font-size: 3em; color: #E23E57; font-weight: bold; margin: 10px 0; }
+.mp-reconnect-btn { background: #C83C3C; border: none; color: #fff; padding: 10px 30px; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 15px; }
+.mp-reconnect-btn:hover { background: #E23E57; }
+
+/* lobby chat/status */
+.mp-lobby-peer { color: #4A90D9; font-weight: bold; }
+.mp-host { color: #FFD700; }
+.mp-guest { color: #4A90D9; }
 @keyframes armorPlate { 0% { transform: scale(0); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(1.2) rotate(15deg); } }

@@ -1319,7 +1319,10 @@ function renderPips(current,max,playerClass){
 function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
   const playerIdx=isPlayer?0:1;
   const power=getRowPower(cards,playerIdx);
-  const highlight=isPlayer&&G.currentTurn==='player'&&!G.players[0].passed&&G.selectedCard!==null;
+  const isHotSeat=G._hsPhase==='game';
+  const act=isHotSeat?G.activePlayer:(isPlayer?0:1);
+  const isMyTurn=isHotSeat?(act===playerIdx):(G.currentTurn==='player'&&isPlayer);
+  const highlight=isMyTurn&&!G.players[playerIdx].passed&&G.selectedCard!==null;
       const canPlay=highlight;
     const cardsHtml=cards.length===0?'<span style="color:#B8A88A;font-size:.75em">空</span>':
       cards.map(c=>{
@@ -1331,7 +1334,7 @@ function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
           <div class="c-str">${c.strength}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
         </div>`;
       }).join('');
-    const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.players[0].hand[G.selectedCard]&&G.players[0].hand[G.selectedCard].row===rowType;
+    const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.players[playerIdx].hand[G.selectedCard]&&G.players[playerIdx].hand[G.selectedCard].row===rowType;
   const canPlayRow=isMatch&&canPlay;
   return`<div class="row ${canPlayRow?'highlight':''}" ${canPlay?`onclick="onRowClick('${rowType}')"`:''}>
     <div class="row-label">${ROW_NAMES[rowType]}</div>
@@ -1472,13 +1475,233 @@ function renderGameResult(el){
         }
 
         // ===== 06: mode-router — 多人模式 / 热座模式渲染空壳 =====
-                function renderMultiplayerLobby(el){
-              el.innerHTML='<div class="multiplayer-lobby"><h2>多人对战大厅</h2><p>即将推出...</p></div>';
-            }
+        function renderMultiplayerLobby(el){
+          // 多人配对大厅：Steam 邀请 + 等待连接
+          var mp = G._mpState || {};
+          var isHost = mp._host === 'host';
+          var peerName = mp._peerName || '对方';
+          var status = mp._status || '';
 
-            function renderMultiplayerPlaying(el){
-                          el.innerHTML='<div class="multiplayer-playing"><h2>多人对战</h2><p>即将推出...</p></div>';
-                        }
+          el.innerHTML = '<div class="multiplayer-lobby">' +
+            '<h2>🏰 多人对战大厅</h2>' +
+            '<div class="mp-lobby-status">' +
+              (status === 'connecting' ? '正在连接 Steam 服务...' :
+               status === 'waiting_invite' ? '等待好友接受邀请...' :
+               status === 'connected' ? ('已配对 · ' + peerName + (isHost ? ' <span class="mp-host">(主机)</span>' : '')) :
+               status === 'picking_leader' ? '双方正在选择主将...' :
+               status === 'rng_exchange' ? '交换随机数，确定主机...' :
+               '正在初始化...') +
+            '</div>' +
+            '<div class="mp-lobby-buttons">' +
+              (status === 'idle' || !status ? '<button class="menu-btn" onclick="startMultiplayerHost()" style="background:linear-gradient(135deg,#DAA520,#C83C3C)">创建房间</button>' +
+                '<button class="menu-btn" onclick="joinMultiplayerRoom()">加入房间</button>' : '') +
+              (status === 'waiting_invite' ? '<button class="menu-btn" onclick="cancelMultiplayerInvite()">取消等待</button>' : '') +
+              (status === 'connected' ? '<button class="menu-btn" onclick="startLeaderSelect()">开始选择主将</button>' : '') +
+            '</div>' +
+            '<button class="menu-btn" onclick="stopMultiplayerPolling();resetGame()" style="margin-top:10px">返回菜单</button>' +
+            '</div>';
+
+        function renderMultiplayerPlaying(el){
+          // 多人 playing：根据 mpPhase 渲染不同阶段
+          var mp = G._mpState || {};
+          var phase = G._mpPhase || mp._mpPhase || 'mulligan';
+          var isHost = mp.isHost || mp._host === 'host';
+          var isGuest = mp._host === 'guest';
+
+          // --- LEADER SELECT ---
+          if (phase === 'leader_select') {
+            var avail = LEADERS_DATA.filter(function(l) { return !mp._peerLeaderSelected || mp._peerLeaderSelected !== l.id; });
+            var cardsHtml = avail.map(function(l) {
+              return '<div class="leader-card" style="cursor:pointer;border:2px solid ' +
+                (G._selectedLeader === l.id ? '#FFD700' : '#4A3060') +
+                ';border-radius:10px;padding:12px;width:200px;background:rgba(30,20,50,0.9);text-align:center"' +
+                ' onclick="G._selectedLeader=' + l.id + ';render()">' +
+                '<div style="font-size:1.1em;color:#FFD700;font-weight:bold">' + l.name + '</div>' +
+                '<div style="color:#B8A88A;font-size:0.85em">' + l.era + '</div>' +
+                '<div style="color:#C0A8D4;font-size:0.8em;margin-top:4px">' + l.desc + '</div>' +
+                '</div>';
+            }).join('');
+            el.innerHTML = '<div class="hot-seat-leader-select">' +
+              '<h2 style="color:#E0D0F0;text-align:center;margin:20px 0">🎭 多人对战 · 选择主将</h2>' +
+              '<div style="color:#8A8A6A;text-align:center;font-size:0.9em">' +
+                (isHost ? '你是主机' : '你是客机') +
+                (mp.peerName ? ' · 对手: ' + mp.peerName : '') +
+                '</div>' +
+              '<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:10px 20px">' +
+              cardsHtml + '</div>' +
+              (G._selectedLeader ? '<div style="text-align:center;margin:20px">' +
+                '<button class="btn btn-primary" onclick="multiplayerPickLeader()">确认选择</button>' +
+                '</div>' : '');
+            return;
+          }
+
+          // --- MULLIGAN ---
+          if (phase === 'mulligan') {
+            var hnd = (G.players[0].hand || []).filter(function(c) { return c; });
+            var sel = G.mulliganSelected;
+            el.innerHTML = '<div class="hot-seat-mulligan" style="text-align:center;padding:20px">' +
+              '<h2 style="color:#E0D0F0;margin-bottom:15px">🔄 换牌</h2>' +
+              '<p style="color:#B8A88A">先选出<b>要留下的牌</b>，然后确认换掉其余</p>' +
+              '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px 30px;max-height:45vh;overflow-y:auto">' +
+              hnd.map(function(c, i) {
+                var picked = sel && sel.has(i);
+                var f = FACTIONS[c.faction];
+                return '<div style="cursor:pointer;width:110px;border:2px solid ' +
+                  (picked ? '#FFD700' : '#444') +
+                  ';border-radius:8px;padding:6px;text-align:center;background:rgba(20,15,35,0.9)"' +
+                  ' onclick="toggleMulligan(' + i + ');render()">' +
+                  '<div style="color:' + f.color + ';font-weight:bold;font-size:0.9em">' + c.name + '</div>' +
+                  '<div style="color:#888;font-size:0.75em">' + ROW_NAMES[c.row] + ' ⚔' + c.strength + '</div>' +
+                  (picked ? '<div style="color:#FFD700;font-size:0.7em;margin-top:3px">💎 留下</div>' : '') +
+                  '</div>';
+              }).join('') + '</div>' +
+              '<div style="margin:15px">' +
+                '<button class="btn btn-primary" onclick="multiplayerMulliganConfirm(0)">确认换牌</button>' +
+              '</div>' +
+              '</div>';
+            return;
+          }
+
+          // --- GAME ---
+          if (phase === 'game' || phase === 'playing') {
+            renderMultiplayerGame(el);
+            return;
+          }
+
+          // --- ROUND RESULT ---
+          if (phase === 'round_result') {
+            var rr = G._roundResult || {};
+            var wTxt = rr.winner === 0 ? '你胜利！' : rr.winner === 1 ? '对方胜利！' : '平局！';
+            el.innerHTML = '<div class="round-result" style="text-align:center;padding:30px 20px">' +
+              '<h2 style="color:#E0D0F0;margin:15px 0">第' + (G.round) + '局结束</h2>' +
+              '<div style="display:flex;justify-content:center;gap:50px;margin:20px 0">' +
+                '<div><div style="color:#4A90D9;font-size:1.4em;font-weight:bold">我方</div>' +
+                  '<div style="color:#FFD700;font-size:1.8em">' + (rr.playerPower||0) + '战力</div></div>' +
+                '<div><div style="color:#E23E57;font-size:1.4em;font-weight:bold">对方</div>' +
+                  '<div style="color:#FFD700;font-size:1.8em">' + (rr.aiPower||0) + '战力</div></div>' +
+              '</div>' +
+              '<div style="color:#FFD700;font-size:1.2em;margin:15px 0">' + wTxt + '</div>' +
+              '<div style="margin:25px 0">比分: <span style="color:#4A90D9;font-size:1.2em">' + G.scores[0] + '</span> : ' +
+                '<span style="color:#E23E57;font-size:1.2em">' + G.scores[1] + '</span></div>' +
+              '<button class="btn btn-primary" onclick="checkMultiplayerGameEnd()">继续</button>' +
+              '</div>';
+            return;
+          }
+
+          // --- GAME RESULT ---
+          if (phase === 'game_result') {
+            var winner = G.scores[0] > G.scores[1] ? 0 : G.scores[0] === G.scores[1] ? -1 : 1;
+            el.innerHTML = '<div class="game-result" style="text-align:center;padding:40px 20px">' +
+              '<h2 style="color:#FFD700;margin:20px 0">⚔️ 对战结束 ⚔️</h2>' +
+              '<div style="color:#C0A8D4;margin:20px">' +
+                '<p>你 · ' + (G.players[0].leader ? G.players[0].leader.name : '') + ' (' + (FACTIONS[G.players[0].leader.faction]||{}).name + ')</p>' +
+                '<p>对方 · ' + (G.players[1].leader ? G.players[1].leader.name : '') + ' (' + (FACTIONS[G.players[1].leader.faction]||{}).name + ')</p>' +
+              '</div>' +
+              '<div style="font-size:2em;color:#FFD700;margin:20px">' + G.scores[0] + ' : ' + G.scores[1] + '</div>' +
+              (winner === 0 ? '<div style="font-size:1.3em;color:#4A90D9">你赢得了天下！</div>' :
+               winner === 1 ? '<div style="font-size:1.3em;color:#E23E57">对方赢得了天下！</div>' :
+               '<div style="font-size:1.3em;color:#888">棋逢对手，不分胜负！</div>') +
+              (G._mpRemoteHash ? '<div style="margin:15px;font-size:0.8em;color:#888;font-family:monospace">结算哈希: ' + G._mpRemoteHash + (G._mpRemoteHash !== G._mpLocalHash ? ' ⚠️ 不一致' : '') + '</div>' : '') +
+              '<button class="btn btn-primary" onclick="stopMultiplayerPolling();resetGame()">返回菜单</button>' +
+              '</div>';
+            return;
+          }
+
+          // Default loader
+          el.innerHTML = '<div class="multiplayer-playing"><h2 style="color:#FFD700;margin-top:40vh">多人对战</h2><p style="color:#888">加载中...</p></div>';
+        }
+
+        function renderMultiplayerGame(el){
+          var act = G._mpState && G._mpState.isHost ? (G.playerTurn ? 0 : 1) : 0;
+          var p0 = G.players[0], p1 = G.players[1];
+          var f0 = FACTIONS[(p0.leader||{}).faction] || FACTIONS.common;
+          var f1 = FACTIONS[(p1.leader||{}).faction] || FACTIONS.common;
+          var pow0 = getBoardPower(p0.board, 0), pow1 = getBoardPower(p1.board, 1);
+          var appearText = act === 0 ? '你的回合' : '对方出牌中...';
+          var lastUid = G._lastPlayedUid || null;
+          var lastR = G._lastPlayedBy || null;
+
+          function renderPips(v, m, cls) {
+            var h = '';
+            for (var i = 0; i < m; i++) {
+              h += '<div class="pip ' + (i < v ? 'filled ' + cls : '') + '"></div>';
+            }
+            return h;
+          }
+
+          // 检查是否对方断连
+          if (G._mpReconnectTimer && G._mpReconnectCountdown) {
+            el.innerHTML = '<div class="mp-reconnect-overlay">' +
+              '<div class="mp-reconnect-title">⌛ 对方未响应</div>' +
+              '<div class="mp-reconnect-countdown">' + G._mpReconnectCountdown + 's</div>' +
+              '<div class="mp-reconnect-btn" onclick="multipConcede()">我认输</div>' +
+              '</div>';
+            return;
+          }
+
+          el.innerHTML = '<div class="game-header">' +
+            '<div class="player-info" style="text-align:left">' +
+              '<div class="name" style="color:' + f0.color + '">你</div>' +
+              '<div class="leader">' + (p0.leader ? p0.leader.name : '') + '</div>' +
+              '<div class="provisions-bar">' +
+                '<span class="label">粮草</span>' +
+                '<div class="pips">' + renderPips(G.provisions[0], 30, 'player') + '</div>' +
+                '<span class="count">' + G.provisions[0] + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="score-center">' +
+              '<div class="rounds">第 ' + (G.round+1) + ' / 3 局</div>' +
+              '<div class="score">' + G.scores[0] + ' : ' + G.scores[1] + '</div>' +
+            '</div>' +
+            '<div class="player-info" style="text-align:right">' +
+              '<div class="name" style="color:' + f1.color + '">对方</div>' +
+              '<div class="leader">' + (p1.leader ? p1.leader.name : '') + '</div>' +
+              '<div class="provisions-bar">' +
+                '<span class="label">粮草</span>' +
+                '<div class="pips">' + renderPips(G.provisions[1], 30, 'ai') + '</div>' +
+                '<span class="count">' + G.provisions[1] + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="battlefield-wrap game-content">' +
+            '<div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>' +
+            '<div class="battlefield">' +
+              '<div class="board-section ai-rows"><div class="section-label">— 对方阵营 · 战力 ' + pow1 + ' —</div>' +
+                renderRow('navy', p1.board.navy, false, lastUid, lastR) +
+                renderRow('cavalry', p1.board.cavalry, false, lastUid, lastR) +
+                renderRow('infantry', p1.board.infantry, false, lastUid, lastR) +
+                renderRow('strategy', p1.board.strategy, false, lastUid, lastR) +
+              '</div>' +
+              '<div class="decorative-line"></div>' +
+              '<div class="board-section player-rows">' +
+                '<div class="section-label">— 己方阵营 · 战力 ' + pow0 + ' —</div>' +
+                renderRow('infantry', p0.board.infantry, true, lastUid, lastR) +
+                renderRow('cavalry', p0.board.cavalry, true, lastUid, lastR) +
+                renderRow('navy', p0.board.navy, true, lastUid, lastR) +
+                renderRow('strategy', p0.board.strategy, true, lastUid, lastR) +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="turn-indicator"><span>' + appearText + '</span></div>' +
+          '<div class="hand-area">' +
+            '<div class="hand-label">— 你的手牌 —</div>' +
+            '<div class="hand-cards' + (p0.hand.length === 0 ? ' empty' : '') +
+                (p0.hand.length >= 5 ? ' many-cards' : '') +
+                (p0.hand.length >= 7 ? ' overflow-cards' : '') + '">' +
+              (p0.hand.length === 0 ? '<span style="color:#B8A88A">无手牌</span>' :
+               p0.hand.map(function(c, i) { return handleHotSeatHandCard(c, i, 0); }).join('')) +
+            '</div>' +
+          '</div>' +
+          '<div class="action-bar">' +
+            '<button class="btn btn-sm btn-primary" onclick="useLeaderAbility(0)" ' +
+              (G.leaderAbilityUsed[0] ? 'disabled' : '') + '>' +
+              (G.leaderAbilityUsed[0] ? '已使用' : '主将技能') + ' · ' + (p0.leader ? p0.leader.name : '') + '</button>' +
+            '<button class="btn btn-sm btn-pass" onclick="multiplayerPassTurn()">放弃本局</button>' +
+          '</div>' +
+          '<div class="log-area">' +
+            (G.logs || []).slice(-4).map(function(l) { return '<div class="log-entry">' + l + '</div>'; }).join('') +
+          '</div>';
+        }
 
                         // ===== 10: p2p-protocol — 消息协议层 (7 种消息) =====
                         // spec: 10-redo-p2p-protocol.md + spec.md §消息协议
@@ -1607,7 +1830,573 @@ function renderGameResult(el){
                           if (typeof handler === 'function') { try { handler(p.publicEffects || []); } catch (e) {} }
                         }
 
-                        // ===== 08: hot-seat — 同机双人完整流程 =====
+                                                // ===== 11: host-authority — 多人对战主流程 =====
+                                                // spec: 11-redo-host-authority-full.md
+                                                // 组合 T8 (hot-seat) + T9 (steam-invite IPC) + T10 (p2p-protocol)
+                                                // 流程: Steam连接 → RNG比大小决定host → state_init握手 → 回合循环 → 结算
+
+                                                /**
+                                                 * 初始化多人模式：建立连接 → RNG比大小 → state_init握手
+                                                 * host 调用 initMultiplayerHost()，guest 调用 initMultiplayerGuest()
+                                                 * 在 lobby 阶段双方 leader 选完后自动推进
+                                                 */
+                                                function initMultiplayerHost() {
+                                                  if (!G._mpState || !G._mpState.peerId) {
+                                                    showNotification('连接尚未建立', 2000);
+                                                    return;
+                                                  }
+                                                  // 生成 host RNG 值 (crypto.getRandomValues)
+                                                  var arr = new Uint32Array(1);
+                                                  crypto.getRandomValues(arr);
+                                                  G._mpState.myRngValue = arr[0];
+                                                  G._mpState.isHost = null;
+                                                  G._mpState._mpPhase = 'rng_exchange';
+                                                  // 发送自己的 RNG 值给 guest
+                                                  var pkt = packMessage('action', { type: 'rng_value', payload: { v: '' + arr[0] } });
+                                                  sendP2P(pkt, G._mpState.peerId);
+                                                  showNotification('已发送随机数...等待对方', 2000);
+                                                }
+
+                                                function initMultiplayerGuest() {
+                                                  if (!G._mpState || !G._mpState.peerId) {
+                                                    showNotification('连接尚未建立', 2000);
+                                                    return;
+                                                  }
+                                                  G._mpState._host = 'guest';
+                                                  showNotification('已加入房间，等待主机确认...', 2000);
+                                                }
+
+                                                /**
+                                                 * 处理 P2P 消息：根据当前 mpPhase 路由
+                                                 */
+                                                function handleMultiplayerMessage(msg) {
+                                                  var type = msg.type;
+                                                  var payload = msg.payload || {};
+                                                  var mp = G._mpState;
+                                                  if (!mp) return;
+
+                                                  // --- RNG 比大小阶段 ---
+                                                  if (type === 'action' && payload.type === 'rng') {
+                                                    if (mp._host !== 'guest' && !mp._host) {
+                                                      // 我是 guest/generic，收到 host 的 RNG 值
+                                                      var arr = new Uint32Array(1);
+                                                      crypto.getRandomValues(arr);
+                                                      mp.peerRngValue = payload.v;
+                                                      mp.myRNGValue = arr[0];
+                                                      mp.isHost = (arr[0] > payload.v);
+                                                      // 发回我的 RNG 值
+                                                      var pkt = packMessage('action', { type: 'rng', payload: { v: arr[0] } });
+                                                      sendP2P(pkt, mp.peerId);
+                                                      // 如果是 host 端收到了 guest 的 rng 回复
+                                                      if (!mp.isHost) {
+                                                        mp._host = 'guest';
+                                                        // guest 等待 host 的 state_init
+                                                        showNotification('等待主机初始化对战...', 2500);
+                                                      }
+                                                      return;
+                                                    }
+                                                    // host 收到 guest 的 RNG 值回复
+                                                    mp.peerRngValue = payload.v;
+                                                    // 确定 host（大者胜）
+                                                    mp.isHost = (mp.myRngValue > mp.peerRngValue);
+                                                    if (mp.isHost) {
+                                                      mp._host = 'host';
+                                                      // host 端: 双方 leader 选完后发送 state_init
+                                                      showNotification('你是主机！初始化对局中...', 2000);
+                                                      sendMultiplayerStateInit();
+                                                    } else {
+                                                      mp._host = 'guest';
+                                                      showNotification('你是客机，等待主机初始化...', 2500);
+                                                    }
+                                                    return;
+                                                  }
+
+                                                  // --- state_init 握手 ---
+                                                  if (type === 'state_init') {
+                                                    // guest 收到：用 host 给的 seed 初始化本地 RNG，同步初始 state
+                                                    G._rng = rngFromSeed(payload.rngSeed);
+                                                    G._mpState.rngSeed = payload.rngSeed;
+                                                    G._mpState._host = 'guest';
+                                                    G.players[0].leader = LEADERS_DATA.find(function(l) {
+                                                                                                        return (l.name||'') === (payload.leaderP0||'') || l.id === payload.leaderP0;
+                                                                                                      }) || G.players[0].leader;
+                                                                                                      G.players[1].leader = LEADERS_DATA.find(function(l) {
+                                                                                                        return (l.name||'') === (payload.leaderP1||'') || l.id === payload.leaderP1;
+                                                                                                      }) || G.players[1].leader;
+                                                                                                      G.activePlayer = payload.firstTurnIdx || 0;
+                                                                                                      G._firstPlayer = G.activePlayer;
+                                                                                                      G.currentTurn = G.activePlayer === 0 ? 'player' : 'player';
+                                                                                                      _setupMultiplayerGameState();
+                                                                                                      // 发 ack
+                                                    var ack = packMessage('ack', { ref_seq: 0, ok: true, error: '' });
+                                                    sendP2P(ack, G._mpState.peerId);
+                                                    G.phase = 'multiplayer_playing';
+                                                    G._mpPhase = 'mulligan';
+                                                    render();
+                                                    return;
+                                                  }
+
+                                                  // --- action (guest → host) ---
+                                                                                                    if (type === 'action' && mp._host === 'host') {
+                                                                                                      handleMultiplayerAction(payload);
+                                                                                                      return;
+                                                                                                    }
+
+                                                  // --- state_diff (host → guest) ---
+                                                  if (type === 'state_diff' && mp._host === 'guest') {
+                                                    onStateDiff(msg, function(effects) {
+                                                      applyMultiplayerEffects(effects);
+                                                    });
+                                                    return;
+                                                  }
+
+                                                  // --- ack (host 收到 guest 确认) ---
+                                                                                                    if (type === 'ack' && mp._host === 'host') {
+                                                                                                      // Host 收到 guest 的 ack — 推进回合
+                                                                                                      if (!payload.ok && payload.error) {
+                                                                                                        showNotification('对方出错: ' + payload.error, 3000);
+                                                                                                      }
+                                                                                                      // guest confirmed — check next player
+                                                                                                      checkBothPassed();
+                                                                                                      return;
+                                                                                                    }
+
+                                                  // --- match_result (guest 收到) ---
+                                                  if (type === 'match_result' && mp._host === 'guest') {
+                                                    processMatchResult(payload);
+                                                    return;
+                                                  }
+
+                                                  // --- concede ---
+                                                  if (type === 'concede') {
+                                                    showNotification('对手投降！', 3000);
+                                                    G._multiForfeit = true;
+                                                    if (mp._host === 'host') G.scores[0] = 2;
+                                                    else G.scores[1] = 2;
+                                                    G._mpPhase = 'game_result';
+                                                    G.phase = 'multiplayer_playing';
+                                                    render();
+                                                    return;
+                                                  }
+                                                }
+
+                                                /**
+                                                 * host 端：双方 leader 都选好后，发送 state_init 给 guest
+                                                 */
+                                                function sendMultiplayerStateInit() {
+                                                  var mp = G._mpState;
+                                                  if (!mp || !mp.isHost) return;
+                                                  var seed = Math.floor(Math.random() * 2147483647);
+                                                  G._rng = rngFromSeed(seed);
+                                                  G._mpSeed = seed;
+                                                  // 随机先手方
+                                                  G.activePlayer = G._rng.next() < 0.5 ? 0 : 1;
+                                                  G._firstPlayer = G.activePlayer;
+                                                  G.currentTurn = G.activePlayer === 0 ? 'player' : 'player';
+                                                  var p0 = G.players[0], p1 = G.players[1];
+                                                  var msg = packStateInit(seed, '', '', p0.leader.id||p0.leader.name, p1.leader.id||p1.leader.name, G.activePlayer);
+                                                  sendP2P(msg, mp.peerId);
+                                                  _setupMultiplayerGameState();
+                                                  G.phase = 'multiplayer_playing';
+                                                  G._mpPhase = 'mulligan';
+                                                  showNotification('state_init 已发送！对局开始', 2000);
+                                                  render();
+                                                }
+
+                                                function _setupMultiplayerGameState() {
+                                                  var p0 = G.players[0], p1 = G.players[1];
+                                                  p0.deck = buildDeck(p0.leader.faction);
+                                                  p1.deck = buildDeck(p1.leader.faction);
+                                                  applyLeaderDeckAbility(p0.leader, p0.deck);
+                                                  applyLeaderDeckAbility(p1.leader, p1.deck);
+                                                  G.scores = [0, 0]; G.round = 0;
+                                                  G.players[0].passed = false; G.players[1].passed = false;
+                                                  G.selectedCard = null; G.logs = []; G.turnCount = 0;
+                                                  G.globalBuffs = {playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
+                                                    playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+                                                  G.graveyard = [];
+                                                  G.mulliganSelected = new Set();
+                                                  G.leaderAbilityUsed = [false, false];
+                                                  drawCards(0, 7); drawCards(1, 7);
+                                                  G.provisions = [30, 30];
+                                                  G._mpPhase = 'mulligan';
+                                                  addLog('═══ 多人对战 · 换牌阶段 ═══');
+                                                }
+
+                                                /**
+                                                 * guest 端：收到 state_init 后调用
+                                                 */
+                                                function _handleMultiplayerStateInit(payload) {
+                                                  G._rng = rngFromSeed(payload.rngSeed);
+                                                  G._mpSeed = payload.rngSeed;
+                                                  G.activePlayer = payload.firstTurnIdx || 0;
+                                                  G._firstPlayer = G.activePlayer;
+                                                  G.currentTurn = G.activePlayer === 0 ? 'player' : 'player';
+                                                  _setupMultiplayerGameState();
+                                                  G.phase = 'multiplayer_playing';
+                                                  G._mpPhase = 'mulligan';
+                                                  render();
+                                                }
+
+                                                /**
+                                                 * host 端：收到 guest 的 action 后处理
+                                                 */
+                                                function handleMultiplayerAction(payload) {
+                                                  var mp = G._mpState;
+                                                  if (!mp || !mp.isHost) return;
+                                                  var actType = payload.action;
+                                                  var data = payload.data || {};
+
+                                                  if (actType === 'play_card') {
+                                                    var cardIdx = data.cardIdx, row = data.row;
+                                                    var hand = G.players[1].hand.filter(function(c) { return c; });
+                                                    if (cardIdx < hand.length) {
+                                                      playCard(1, cardIdx, row);
+                                                      G.turnCount++;
+                                                    }
+                                                  } else if (actType === 'pass') {
+                                                    G.players[1].passed = true;
+                                                    addLog('客机放弃本局');
+                                                  } else if (actType === 'use_leader_ability') {
+                                                    useLeaderAbility(1);
+                                                  } else if (actType === 'mulligan_confirm') {
+                                                                                                      // guest 换牌确认 — host 侧处理
+                                                                                                      multiplayerMulliganConfirm(1);
+                                                                                                    }
+
+                                                  // 生成 state_diff (simplified: send all public state)
+                                                  var effects = collectPublicEffects();
+                                                  var diff = sendStateDiff('', '', effects, mp.peerId);
+                                                  if (diff) sendP2P(diff, mp.peerId);
+                                                  render();
+                                                }
+
+                                                function collectPublicEffects() {
+                                                  return {
+                                                    t: G.turnCount,
+                                                    p: G.players[1].passed ? 1 : 0,
+                                                    b: G.players[1].board,
+                                                    h: G.players[1].hand.length,
+                                                    prov: G.provisions[1],
+                                                    la: G.leaderAbilityUsed[1] ? 1 : 0,
+                                                    logs: (G.logs || []).slice(-3)
+                                                  };
+                                                }
+
+                                                /**
+                                                 * guest 端应用 state_diff 带来的 effects
+                                                 */
+                                                function applyMultiplayerEffects(effects) {
+                                                  if (!effects) return;
+                                                  if (effects.t !== undefined) G.turnCount = effects.t;
+                                                  if (effects.p !== undefined) G.players[1].passed = effects.p === 1;
+                                                  if (effects.b) G.players[1].board = effects.b;
+                                                  if (effects.h !== undefined) { /* hand count only — privacy */ }
+                                                  if (effects.prov !== undefined) G.provisions[1] = effects.prov;
+                                                  if (effects.la !== undefined) G.leaderAbilityUsed[1] = effects.la === 1;
+                                                  if (effects.logs) { effects.logs.forEach(function(l) { addLog(l); }); }
+                                                }
+
+                                                function sendP2P(data, steamId64) {
+                                                  if (!steamId64) return;
+                                                  var api = typeof electronAPI !== 'undefined' && electronAPI.multiplayer;
+                                                  if (!api) return;
+                                                  var str = typeof data === 'string' ? data : JSON.stringify(data);
+                                                  api.sendP2PMessage(steamId64, str).catch(function(e) {
+                                                    console.log('[P2P] send failed:', e.message);
+                                                  });
+                                                }
+
+                                                /**
+                                                 * 定时轮询 P2P 消息
+                                                 */
+                                                function startMultiplayerPolling() {
+                                                  if (G._mpPollTimer) return;
+                                                  G._mpPollTimer = setInterval(function() {
+                                                    var api = typeof electronAPI !== 'undefined' && electronAPI.multiplayer;
+                                                    if (!api) return;
+                                                    api.onP2PMessage().then(function(r) {
+                                                      if (r.ok && r.messages) {
+                                                        r.messages.forEach(function(m) {
+                                                          var msg;
+                                                          try {
+                                                            msg = typeof m.data === 'string' ? JSON.parse(m.data) : m.data;
+                                                          } catch (e) { return; }
+                                                          msg._fromSteamId = m.steamId;
+                                                          handleMultiplayerMessage(msg);
+                                                        });
+                                                      }
+                                                    }).catch(function() {});
+                                                  }, 100);
+                                                }
+
+                                                function stopMultiplayerPolling() {
+                                                  if (G._mpPollTimer) {
+                                                    clearInterval(G._mpPollTimer);
+                                                    G._mpPollTimer = null;
+                                                  }
+                                                }
+
+                                                /**
+                                                 * 多人 leader select / mulligan 流程
+                                                 */
+                                                function multiplayerPickLeader() {
+                                                  if (!G._selectedLeader) return;
+                                                  var mp = G._mpState;
+                                                  var l = LEADERS_DATA.find(function(x) { return x.id === G._selectedLeader; });
+                                                  G.players[mp._myLocalIdx].leader = l;
+                                                  G._selectedLeader = null;
+                                                  // 本地 leader 确认
+                                                  var pkt = packMessage('action', { type: 'leader_pick', payload: { leader: l.id, n: l.name } });
+                                                  sendP2P(pkt, mp.peerId);
+                                                  // 等待对方
+                                                  G._mpLeaderPhase = 1;
+                                                  showNotification('主将已选，等待对方...', 2000);
+                                                  render();
+                                                }
+
+                                                /**
+                                                 * 玩家换牌确认 (host-authority)
+                                                 */
+                                                function multiplayerMulliganConfirm(p) {
+                                                  var sel = G.mulliganSelected;
+                                                  var hand = getHand(p);
+                                                  var keeperIdx = new Set();
+                                                  sel.forEach(function(idx) { if (idx < hand.length) keeperIdx.add(idx); });
+                                                  var i = 0;
+                                                  while (i < hand.length) {
+                                                    if (keeperIdx.has(i)) { i++; continue; }
+                                                    hand.splice(i, 1);
+                                                  }
+                                                  var cnt = 7 - keeperIdx.size;
+                                                  if (cnt > 0) drawCards(p, cnt);
+                                                  addLog('换了' + cnt + '张牌');
+                                                  G.mulliganSelected = new Set();
+                                                  if (p === 0 && G._mpState.isHost) {
+                                                    // host 等 guest mulligan
+                                                    showNotification('等待对方换牌...', 2000);
+                                                    return;
+                                                  }
+
+                                                  // 广播换牌结果
+                                                  var pkt = packMessage('action', {
+                                                    type: 'mulligan_done',
+                                                    payload: { idx: p, r: cnt }
+                                                  });
+                                                  sendP2P(pkt, G._mpState.peerId);
+                                                  if (G.otherMulliganDone || p !== 0) {
+                                                    startMultiplayerGame();
+                                                  }
+                                                }
+
+                                                function startMultiplayerGame() {
+                                                  G._mpPhase = 'game';
+                                                  G.activePlayer = G._firstPlayer || 0;
+                                                  G.players[0].passed = false; G.players[1].passed = false;
+                                                  G.selectedCard = null;
+                                                  G.turnCount = 0;
+                                                  G.playerTurn = G.activePlayer === 0;
+                                                  // 记录 settlement 中…
+                                                  G._settlementLogs = [];
+                                                  // host 不等待 guest 确认时跳过
+                                                  if (!G._mpState.isHost) {
+                                                    // guest 等待 host 的 state_diff
+                                                  }
+                                                  addLog('═══ 对战开始 ═══');
+                                                  render();
+                                                }
+
+                                                function handleMultiplayerPlayCard(handIdx, row) {
+                                                  if (!G.players[0].passed && !G.players[1].passed) {
+                                                    if (G._mpState && G.playerTurn) {
+                                                      var card = getHand(0)[handIdx];
+                                                      if (!card) return;
+                                                      if (getCardCost(card.strength) > G.provisions[0]) return;
+                                                      if (card.row !== row) return;
+                                                      playCard(0, handIdx, row);
+                                                      G.selectedCard = null;
+                                                      G.turnCount++;
+                                                      G._playerTurn = false;
+                                                      // 如果是 guest，需要发送 action 到 host
+                                                      if (G._mpState && !G._mpState.isHost) {
+                                                        sendP2P(packMessage('action', {
+                                                          type: 'play_card', payload: { cardId: card.id, row: row, handIdx: handIdx }
+                                                        }), G._mpState.peerId);
+                                                      }
+                                                      checkBothPassed();
+                                                    }
+                                                  }
+                                                }
+
+                                                function multiplayerPassTurn() {
+                                                  var p = 0;
+                                                  G.players[p].passed = true;
+                                                  addLog('放弃本局');
+                                                  G.selectedCard = null;
+                                                  if (G._mpState && !G._mpState.isHost) {
+                                                    sendP2P(packMessage('action', { type: 'pass', payload: { i: p } }), G._mpState.peerId);
+                                                  }
+                                                  checkBothPassed();
+                                                }
+
+                                                function checkBothPassed() {
+                                                  if (G.players[0].passed && G.players[1].passed) {
+                                                    endMultiplayerRound();
+                                                  } else {
+                                                    render();
+                                                  }
+                                                }
+
+                                                function endMultiplayerRound() {
+                                                  var pP = getBoardPower(G.players[0].board, 0);
+                                                  var aP = getBoardPower(G.players[1].board, 1);
+                                                  var winner;
+                                                  if (pP > aP) { winner = 0; G.scores[0]++; }
+                                                  else if (aP > pP) { winner = 1; G.scores[1]++; }
+                                                  else { winner = -1; }
+                                                  addLog('═══ 第' + (G.round+1) + '局结束 ═══');
+                                                  if (winner === 0) addLog('你战力:' + pP + ' vs 对方:' + aP + ' → 你胜利！');
+                                                  else if (winner === 1) addLog('你战力:' + pP + ' vs 对方:' + aP + ' → 对方胜利！');
+                                                  else addLog('你战力:' + pP + ' vs 对方:' + aP + ' → 平局！');
+                                                  G._roundResult = { playerPower: pP, aiPower: aP, winner: winner };
+
+                                                  // host sends match_result
+                                                  if (G._mpState.isHost) {
+                                                    var gameOver = G.scores[0] >= 2 || G.scores[1] >= 2 || G.round >= 3;
+                                                    var sh = gameOver ? _computeSettlementHash() : '';
+                                                    var msg = packMessage('match_result', {
+                                                      winnerIdx: winner,
+                                                      finalScore: G.scores,
+                                                      settlementHash: sh
+                                                    });
+                                                    sendP2P(msg, G._mpState.peerId);
+                                                  }
+
+                                                  G._mpPhase = 'round_result';
+                                                  render();
+                                                }
+
+                                                function checkMultiplayerGameEnd() {
+                                                  if (G.scores[0] >= 2 || G.scores[1] >= 2 || G.round >= 3) {
+                                                    G._mpPhase = 'game_result';
+                                                    render();
+                                                    var txt = G.scores[0] > G.scores[1] ? '你赢得了天下！' :
+                                                      G.scores[0] === G.scores[1] ? '棋逢对手，不分胜负！' : '对方赢得了天下！';
+                                                    showNotification(txt, 4000);
+                                                    return true;
+                                                  } else {
+                                                    G.round++;
+                                                    G.players[0].passed = false; G.players[1].passed = false;
+                                                    G.selectedCard = null; G.turnCount = 0;
+                                                    G.players[0].board = {infantry:[],cavalry:[],navy:[],strategy:[]};
+                                                    G.players[1].board = {infantry:[],cavalry:[],navy:[],strategy:[]};
+                                                    G.globalBuffs = {playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
+                                                      playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+                                                    G.graveyard = [];
+                                                    G.logs = [];
+                                                    G.leaderAbilityUsed = [false, false];
+                                                    G.activePlayer = 0;
+                                                    G.currentTurn = 'player';
+                                                    var drawCount = G.round <= 1 ? 0 : 4;
+                                                    if (drawCount > 0) { drawCards(0, drawCount); drawCards(1, drawCount); }
+                                                    applyRoundStartAbilities();
+                                                    addLog('═══ 第' + (G.round) + '局开始 ═══');
+                                                    if (drawCount > 0) addLog('双方各抽' + drawCount + '张牌');
+                                                    G._mpPhase = 'playing';
+                                                    render();
+                                                    return false;
+                                                  }
+                                                }
+
+                                                function _computeSettlementHash() {
+                                                  var s = '';
+                                                  G.logs.slice(-20).forEach(function(l) { s += l; });
+                                                  s += 'score:' + G.scores[0] + '-' + G.scores[1];
+                                                  return _quickHash(s);
+                                                }
+
+                                                function _quickHash(s) {
+                                                  var hash = 0;
+                                                  for (var i = 0; i < s.length; i++) {
+                                                    hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
+                                                  }
+                                                  return 'h' + (hash >>> 0).toString(36);
+                                                }
+
+                                                function processMatchResult(payload) {
+                                                  // guest 端校验 settlement hash
+                                                  G._remoteWinner = payload.winnerIdx;
+                                                  var remoteHash = payload.settlementHash || '';
+                                                  var localHash = _computeSettlementHash();
+                                                  G._mpRemoteHash = remoteHash;
+                                                  G._mpLocalHash = localHash;
+                                                  if (remoteHash !== localHash) {
+                                                    showSettlementToast(remoteHash, localHash);
+                                                  }
+                                                  G._mpPhase = 'game_result';
+                                                  G.scores = payload.finalScore || G.scores;
+                                                  G.phase = 'multiplayer_playing';
+                                                  render();
+                                                }
+
+                                                function showSettlementToast(remoteHash, localHash) {
+                                                  // 非阻塞 toast
+                                                  var toast = document.createElement('div');
+                                                  toast.className = 'mp-settlement-toast';
+                                                  toast.innerHTML = '<div class="mp-toast-title">🛡 结算不一致</div>' +
+                                                    '<div class="mp-toast-msg">对手终局战力与你的回合过程不一致</div>' +
+                                                    '<div class="mp-toast-details">对方: ' + remoteHash + ' vs 你: ' + localHash + '</div>' +
+                                                    '<div class="mp-toast-actions">' +
+                                                      '<button class="mp-toast-btn" onclick="dismissSettlementToast()">我知道了</button>' +
+                                                    '</div>';
+                                                  document.body.appendChild(toast);
+                                                  setTimeout(function() { if (toast.parentNode) toast.remove(); }, 12000);
+                                                }
+
+                                                // 30s 重连等待 UI + concede 投降
+                                                G._mpReconnectTimer = null;
+
+                                                function startReconnectWaiting() {
+                                                  if (G._mpReconnectTimer) return;
+                                                  G._mpReconnectCountdown = 30;
+                                                  G._mpReconnectTimer = setInterval(function() {
+                                                    G._mpReconnectCountdown--;
+                                                    if (G._mpReconnectCountdown <= 0) {
+                                                      timeoutReconnect();
+                                                    }
+                                                    render();
+                                                  }, 1000);
+                                                }
+
+                                                function stopReconnectTimer() {
+  if (G._mpReconnectTimer) {
+    clearInterval(G._mpReconnectTimer);
+    G._mpReconnectTimer = null;
+  }
+}
+
+function timeoutReconnect() {
+                                                  stopReconnectTimer();
+                                                  showNotification('对方超时未响应，判定你获胜', 5000);
+                                                  // concede host
+                                                  var msg = packMessage('concede', { reason: 'timeout' });
+                                                  sendP2P(msg, G._mpState.peerId);
+                                                  G.scores[0] = 2;
+                                                  G._mpPhase = 'game_result';
+                                                  G.phase = 'multiplayer_playing';
+                                                  render();
+                                                }
+
+                                                function multipConcede() {
+                                                  var msg = packMessage('concede', { reason: 'forfeit' });
+                                                  sendP2P(msg, G._mpState.peerId);
+                                                  G.scores[1] = 2;
+                                                  G._mpPhase = 'game_result';
+                                                  G.phase = 'multiplayer_playing';
+                                                  render();
+                                                }
+
+                                                // ===== 08: hot-seat — 同机双人完整流程 =====
             function initHotSeat(){
                           // RNG seed 在双方 leader 选完后生成 (spec T8 §5)
                           delete G._rng;  // 清除旧 seed，leader_select 后用 Math.random()
@@ -1950,7 +2739,7 @@ function renderGameResult(el){
                     '<div class="pips">'+renderPips(G.provisions[0],30,'player')+'</div>'+
                     '<span class="count">'+G.provisions[0]+'</span>'+
                   '</div>'+
-                  '<div style="font-size:0.85em;color:#B8B8D1;font-weight:500">🃏 '+p0.hand.length+' 张手牌</div>'+
+                  '<div style="font-size:0.85em;color:#B8B8D1;font-weight:500">🃏 '+(act===0?p0.hand.length+' 张手牌':'')+'</div>'+
                 '</div>'+
                 '<div class="score-center">'+
                   '<div class="rounds">第 '+G.round+' / 3 局</div>'+
@@ -1965,7 +2754,7 @@ function renderGameResult(el){
                     '<div class="pips">'+renderPips(G.provisions[1],30,'ai')+'</div>'+
                     '<span class="count">'+G.provisions[1]+'</span>'+
                   '</div>'+
-                  '<div style="font-size:0.85em;color:#B8C9D1;font-weight:500">🃏 '+p1.hand.length+' 张手牌</div>'+
+                  '<div style="font-size:0.85em;color:#B8C9D1;font-weight:500">🃏 '+(act===1?p1.hand.length+' 张手牌':'')+'</div>'+
                 '</div>'+
               '</div>'+
               '<div class="battlefield-wrap game-content">'+
@@ -1992,7 +2781,7 @@ function renderGameResult(el){
                 (p0.passed&&!p1.passed?'<span class="waiting"> · 对手已放弃，等待你</span>':'')+
               '</div>'+
                             '<div class="hand-area">'+
-                            '<div class="hand-label">— 玩家1 的手牌 —</div>'+
+                            ((act===0)?'<div class="hand-label">— 玩家1 的手牌 —</div>':'')+
                             '<div class="hand-cards'+(p0.hand.length===0?' empty':'')+
                                 (p0.hand.length>=5?' many-cards':'')+
                                 (p0.hand.length>=7?' overflow-cards':'')+'">'+
@@ -2000,14 +2789,13 @@ function renderGameResult(el){
                                   '<div class="hs-hidden-hand">'+
                                     '<div class="hs-hidden-icon">🔒</div>'+
                                     '<div class="hs-hidden-text">对方回合中</div>'+
-                                    '<div class="hs-hidden-count">'+p0.hand.length+' 张手牌</div>'+
                                   '</div>':
                                   (p0.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
                                                                       p0.hand.map(function(c,i){return handleHotSeatHandCard(c,i,act)}).join('')))
                               '</div>'+
                             '</div>'+
                             '<div class="hand-area">'+
-                                          '<div class="hand-label">— 玩家2 的手牌 ('+p1.hand.length+'张) —</div>'+
+                                          ((act===1)?'<div class="hand-label">— 玩家2 的手牌 ('+p1.hand.length+'张) —</div>':'')+
                                           '<div class="hand-cards'+(p1.hand.length===0?' empty':'')+
                                             (p1.hand.length>=5?' many-cards':'')+
                                             (p1.hand.length>=7?' overflow-cards':'')+'">'+
@@ -2015,7 +2803,6 @@ function renderGameResult(el){
                                               '<div class="hs-hidden-hand">'+
                                                 '<div class="hs-hidden-icon">🔒</div>'+
                                                 '<div class="hs-hidden-text">对方回合中</div>'+
-                                                '<div class="hs-hidden-count">'+p1.hand.length+' 张手牌</div>'+
                                               '</div>':
                                               (p1.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
                                                 p1.hand.map(function(c,i){return handleHotSeatHandCard(c,i,1)}).join('')))+
