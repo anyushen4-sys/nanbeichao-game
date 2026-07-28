@@ -2702,13 +2702,13 @@ function timeoutReconnect() {
                               '</div>';
                             }).join('');
                             el.innerHTML='<div class="leader-select">'+
-                              '<h2>👥 同机对战 · 玩家'+(p+1)+'选择主将</h2>'+
-                              '<p class="subtitle">你的主将将决定阵营与特殊能力</p>'+
-                              '<div class="leader-grid">'+cardsHtml+'</div>'+
-                              (G._selectedLeader?'<div style="text-align:center;margin:20px">'+
-                                '<button class="btn btn-primary btn-confirm-leader" onclick="hotSeatPickLeader()">玩家'+(p+1)+'确认选择</button>'+
-                              '</div>':'')+
-                            '</div>';
+                                                          '<h2>👥 同机对战 · 玩家'+(p+1)+'选择主将</h2>'+
+                                                          '<p class="subtitle">'+(G._selectedLeader?'点击下方「确认选择」按钮完成选择':'你的主将将决定阵营与特殊能力 — 请先点击一张卡片')+'</p>'+
+                                                          '<div class="leader-grid">'+cardsHtml+'</div>'+
+                                                          '<div style="text-align:center;margin:20px">'+
+                                                            '<button class="btn btn-primary btn-confirm-leader" onclick="hotSeatPickLeader()" '+(G._selectedLeader?'':'disabled')+'>玩家'+(p+1)+(G._selectedLeader?' 确认选择':' 请先选择主将')+'</button>'+
+                                                          '</div>'+
+                                                        '</div>';
                             return;
                           }
               // === MULLIGAN ===
