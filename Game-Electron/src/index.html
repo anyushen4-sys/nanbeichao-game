@@ -2872,9 +2872,10 @@ function timeoutReconnect() {
                 return h;
             }
 
-            el.innerHTML='<div class="game-header">'+
-                '<div class="player-info" style="text-align:left">'+
-                  '<div class="name" style="color:'+f0.color+'">玩家1</div>'+
+            el.innerHTML='<div class="hot-seat-playing" style="display:flex;flex-direction:column;height:100%">'+
+                            '<div class="game-header">'+
+                            '<div class="player-info" style="text-align:left">'+
+                              '<div class="name" style="color:'+f0.color+'">玩家1</div>'+
                   '<div class="leader">'+p0.leader.name+'</div>'+
                   '<div class="provisions-bar">'+
                     '<span class="label">粮草</span>'+
@@ -2957,10 +2958,11 @@ function timeoutReconnect() {
                                           '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">放弃本局</button>'+
                                         '</div>'+
               '</div>'+
-                            '<div class="log-area">'+
-                              (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
-                            '</div>';
-        }
+                                          '<div class="log-area">'+
+                                            (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
+                                          '</div>'+
+                                        '</div>';
+                      }
 
         function handleHotSeatHandCard(card,idx,activeIdx){
             var f=FACTIONS[card.faction];

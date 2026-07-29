@@ -283,13 +283,44 @@ html, body {
     display: flex;
     flex-direction: column;
 }
+/* Hot-seat 模式根容器 — flex column 撑满父级 */
+.hot-seat-playing {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
 
-#game-screen .game-content {
-    flex: 1 1 auto;
+/* Hot-seat 模式 — row 缩到 36px 让两个 hand-area 都能在视口内 */
+.hot-seat-playing .row {
+    min-height: 36px;
+    padding: 2px 8px;
+    margin-bottom: 2px;
+}
+.hot-seat-playing .hand-cards .card {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+    flex: 0 0 80px;
+}
+.hot-seat-playing .hand-cards {
+    min-height: 100px;
+}
+.hot-seat-playing .hand-area {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+}
+.hot-seat-playing .action-bar,
+.hot-seat-playing .log-area {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+}
+
+/* 战场区是核心可滚动区域 — 给定最大高度 */
+.hot-seat-playing .battlefield-wrap {
+    flex: 0 0 auto;
+    max-height: calc(100vh - 480px);
     overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 0;
-    max-height: calc(100vh - 320px); /* 给 hand-area + action-bar + log-area 留 320px */
 }
 
 #game-screen .hand-area,
