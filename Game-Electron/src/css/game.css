@@ -150,6 +150,28 @@ html, body {
     animation: sealPulse 3s ease-in-out infinite;
     transition: transform .4s ease;
 }
+
+/* Hot-seat 4-char seal — horizontal, no rotation */
+.menu-seal-hs {
+    display: inline-block;
+    background: #C41E3A;
+    border-radius: 6px;
+    color: #F5F0E8;
+    font-size: 1.7em;
+    font-weight: bold;
+    writing-mode: horizontal-tb;
+    letter-spacing: 6px;
+    padding: 16px 24px;
+    min-width: 140px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(196,30,58,.5), inset 0 0 0 2px rgba(245,240,232,.15);
+    margin-top: -36px;
+    margin-bottom: 16px;
+    border: 2px solid rgba(245,240,232,.25);
+    position: relative;
+    z-index: 3;
+}
+
 .menu-seal::after {
     content:'';
     position:absolute;

@@ -2856,7 +2856,7 @@ function timeoutReconnect() {
                             var p2Win=winner===1;
                             var tie=winner===-1;
                             el.innerHTML='<div class="game-result">'+
-                              '<div class="menu-seal" style="margin:0 auto 30px;writing-mode:horizontal-tb;letter-spacing:4px;width:auto;min-width:120px;padding:0 12px">'+(p1Win?'玩家1胜利':p2Win?'玩家2胜利':'平局')+'</div>'+
+                              '<div class="menu-seal-hs" style="margin:0 auto 30px">'+(p1Win?'玩家1胜利':p2Win?'玩家2胜利':'平局')+'</div>'+
                               '<h1 class="'+(p1Win?'victory':p2Win?'defeat':'draw')+'">'+(p1Win?'玩家1 天下归一':p2Win?'玩家2 天下归一':'棋逢对手')+'</h1>'+
                               '<div class="final-score">'+G.scores[0]+' : '+G.scores[1]+'</div>'+
                               '<div class="detail">'+
