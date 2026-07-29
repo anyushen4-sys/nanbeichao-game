@@ -227,7 +227,9 @@ function createWindow() {
 
   // 加载游戏页面
   const page = process.env.DEV_PAGE || 'index.html';
-  mainWindow.loadFile(path.join(__dirname, 'src', page));
+  // 加载页面 (URL query: ?mockmp=1 启用联机 Dev Mock)
+  const urlQuery = process.env.DEV_MOCKMP === '1' ? '?mockmp=1' : '';
+  mainWindow.loadURL('file://' + path.join(__dirname, 'src', page).replace(/\\/g, '/') + urlQuery);
 
   // 窗口准备好后再显示
   mainWindow.once('ready-to-show', () => {
