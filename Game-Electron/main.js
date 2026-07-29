@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
+if(process.env.ELECTRON_USER_DATA_DIR)app.setPath('userData',process.env.ELECTRON_USER_DATA_DIR);
 
 // ===== Steamworks 集成 =====
 // steamworks.js: https://github.com/ceifa/steamworks.js
