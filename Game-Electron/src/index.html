@@ -2599,15 +2599,17 @@ function timeoutReconnect() {
                                                                   return;
                                                                 }
                                                                 // 玩家2 换完 → 随机决定先手 + 进入 game
-                                                                G._firstPlayer=Math.floor(Math.random()*2);
-                                                                G._hsPhase='game';
-                                                                G.activePlayer=G._firstPlayer;
-                                                                G.players[0].passed=false; G.players[1].passed=false;
-                                                                G.selectedCard=null;
-                                                                G.turnCount=0;
-                                                                addLog('═══ 换牌结束，玩家'+(G._firstPlayer+1)+'先手 ═══');
-                                                                render();
-                                                              }
+                                                                                                  G._firstPlayer=Math.floor(Math.random()*2);
+                                                                                                  G._hsPhase='game';
+                                                                                                  G.activePlayer=G._firstPlayer;
+                                                                                                  G.players[0].passed=false; G.players[1].passed=false;
+                                                                                                  G.selectedCard=null;
+                                                                                                  G.turnCount=0;
+                                                                                                  addLog('═══ 换牌结束，玩家'+(G._firstPlayer+1)+'先手 ═══');
+                                                                                                  render();
+                                                                                                  // 双方移交控制: 先手方需点"开始我的回合"才能进入主界面
+                                                                                                  showTransferModal(G._firstPlayer,'对局开始 — 请将设备交给玩家'+(G._firstPlayer+1),'gamestart');
+                                                                                                }
 
             function hotSeatToggleMulligan(idx){
               if(G.mulliganSelected.has(idx)) G.mulliganSelected.delete(idx);
