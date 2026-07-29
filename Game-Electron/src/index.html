@@ -2571,37 +2571,43 @@ function timeoutReconnect() {
                                   }
 
                               function hotSeatConfirmMulligan(){
-                                            var p=G.activePlayer;
-                                            var hand=getHand(p);
-                                            // Selected = keep; swap the rest
-                                            var keeperIdx=new Set();
-                                            G.mulliganSelected.forEach(function(idx){if(idx<hand.length)keeperIdx.add(idx)});
-                                            var i=0;
-                                            while(i<hand.length){
-                                              if(keeperIdx.has(i)){i++;continue}
-                                              hand.splice(i,1);
-                                            }
-                                            var cnt=7-keeperIdx.size;
-                                            if(cnt>0)drawCards(p,cnt);
-                                            addLog((p===0?'玩家1':'玩家2')+'换了'+cnt+'张牌');
-                                            G.mulliganSelected=new Set();
-                                            // 玩家1 换完 → 切到玩家2
-                                            if(G.activePlayer===0){
-                                              G.activePlayer=1;
-                                              showTransferModal(1,'换牌阶段 — 请将设备交给玩家 2','mulligan');
-                                              render();
-                                              return;
-                                            }
-                                            // 玩家2 换完 → 随机决定先手 + 进入 game
-                                            G._firstPlayer=Math.floor(Math.random()*2);
-                                            G._hsPhase='game';
-                                            G.activePlayer=G._firstPlayer;
-                                            G.players[0].passed=false; G.players[1].passed=false;
-                                            G.selectedCard=null;
-                                            G.turnCount=0;
-                                            addLog('═══ 换牌结束，玩家'+(G._firstPlayer+1)+'先手 ═══');
-                                            render();
-                                          }
+                                                                var p=G.activePlayer;
+                                                                var hand=getHand(p);
+                                                                // 玩家 1 模式: 删除未保留的牌 + 每删一张补一张 (与 AI 对战 confirmMulligan 一致)
+                                                                var sortedIdx=Array.from(G.mulliganSelected||new Set()).sort(function(a,b){return b-a});
+                                                                var cnt=sortedIdx.length;
+                                                                if(cnt>0){
+                                                                  sortedIdx.forEach(function(idx){
+                                                                    if(hand.length>idx) hand.splice(idx,1);
+                                                                    drawCards(p,1);
+                                                                  });
+                                                                }else{
+                                                                  // 玩家没选任何保留 — 按 spec 默认换 3 张
+                                                                  for(var k=0;k<3&&hand.length>0;k++){
+                                                                    hand.splice(0,1);
+                                                                    drawCards(p,1);
+                                                                  }
+                                                                  cnt=3;
+                                                                }
+                                                                addLog((p===0?'玩家1':'玩家2')+'换了'+cnt+'张牌');
+                                                                G.mulliganSelected=new Set();
+                                                                // 玩家1 换完 → 切到玩家2
+                                                                if(G.activePlayer===0){
+                                                                  G.activePlayer=1;
+                                                                  showTransferModal(1,'换牌阶段 — 请将设备交给玩家 2','mulligan');
+                                                                  render();
+                                                                  return;
+                                                                }
+                                                                // 玩家2 换完 → 随机决定先手 + 进入 game
+                                                                G._firstPlayer=Math.floor(Math.random()*2);
+                                                                G._hsPhase='game';
+                                                                G.activePlayer=G._firstPlayer;
+                                                                G.players[0].passed=false; G.players[1].passed=false;
+                                                                G.selectedCard=null;
+                                                                G.turnCount=0;
+                                                                addLog('═══ 换牌结束，玩家'+(G._firstPlayer+1)+'先手 ═══');
+                                                                render();
+                                                              }
 
             function hotSeatToggleMulligan(idx){
               if(G.mulliganSelected.has(idx)) G.mulliganSelected.delete(idx);
@@ -2793,7 +2799,7 @@ function timeoutReconnect() {
                                 cardsHtml+
                                 '</div>'+
                                 '<div style="text-align:center;margin-top:20px">'+
-                                  '<button class="btn btn-primary" onclick="hotSeatConfirmMulligan()">确认换牌 (选中'+sel.size+'张保留)</button>'+
+                                  '<button class="btn btn-primary" onclick="hotSeatConfirmMulligan()">确认换牌 (选中 '+sel.size+' 张要换)</button>'+
                                 '</div>'+
                               '</div>';
                               return;
