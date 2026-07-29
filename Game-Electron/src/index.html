@@ -2633,56 +2633,61 @@ function timeoutReconnect() {
             }
 
             function hotSeatPlayCard(handIdx,row){
-              if(G._hsPhase!=='game')return;
-              const a=G.activePlayer;
-              const card=getHand(a)[handIdx];
-              if(!card)return;
-              if(getCardCost(card.strength)>G.provisions[a])return;
-              if(card.row!==row)return;
-              playCard(a,handIdx,row);
-              G.selectedCard=null;
-              G.turnCount++;
-              // check if opponent has any playable card
-              const opp=1-a;
-              if(!hasPlayableCard(opp)){
-                G.players[opp].passed=true;
-                addLog('玩家'+(opp+1)+'无牌可出，自动放弃');
-              }
-              if(G.players[0].passed&&G.players[1].passed){
-                hotSeatEndRound();
-              }else{
-                // Switch player
-                let next=1-a;
-                // Skip passed player
-                if(G.players[next].passed) next=1-next;
-                if(G.players[next].passed){
-                  hotSeatEndRound();
-                return;
-                }
-                G.activePlayer=next;
-                                showTransferModal(next,'请将设备交给玩家'+(next+1),'turnevent');
-                                render();
-              }
+                          if(G._hsPhase!=='game')return;
+                          const a=G.activePlayer;
+                          const card=getHand(a)[handIdx];
+                          if(!card)return;
+                          if(getCardCost(card.strength)>G.provisions[a])return;
+                          if(card.row!==row)return;
+                          playCard(a,handIdx,row);
+                          G.selectedCard=null;
+                          G.turnCount++;
+                          // check if opponent has any playable card
+                          const opp=1-a;
+                          if(!hasPlayableCard(opp)){
+                            G.players[opp].passed=true;
+                            addLog('玩家'+(opp+1)+'无牌可出，自动放弃');
+                          }
+                          if(G.players[0].passed&&G.players[1].passed){
+                            hotSeatEndRound();
+                          }else{
+                            // Switch player
+                            let next=1-a;
+                            // Skip passed player
+                            if(G.players[next].passed) next=1-next;
+                            if(G.players[next].passed){
+                              hotSeatEndRound();
+                            return;
+                            }
+                            G.activePlayer=next;
+                            // force re-render game + modal overlay
+                            render();
+                            showTransferModal(next,'请将设备交给玩家'+(next+1),'turnevent');
+                          }
+                        }
             }
 
             function showTransferModal(playerIdx, msg, reason){
-                          // transfer-modal: 全屏遮罩 + 玩家 N 头像 + 「开始我的回合」按钮 (spec T8 §3)
-                          const overlay=document.createElement('div');
-                          overlay.className='transfer-modal-overlay';
-                          overlay.id='hs-transfer-overlay';
-                          const colors=['#4A90D9','#E23E57'];
-                          const icons=['🔵','🔴'];
-                          overlay.innerHTML='<div class="transfer-modal">'+
-                            '<div class="transfer-player-icon" style="color:'+colors[playerIdx]+'">'+
-                            icons[playerIdx]+'</div>'+
-                            '<div class="transfer-title" style="color:'+colors[playerIdx]+'">'+
-                            '玩家 '+(playerIdx+1)+'</div>'+
-                            '<div class="transfer-msg">'+msg+'</div>'+
-                            '<button class="transfer-btn" onclick="transferConfirm()">'+
-                            '开始我的回合</button>'+
-                            '</div>';
-                          document.body.appendChild(overlay);
-                        }
+                                      // transfer-modal: 全屏遮罩 + 玩家 N 头像 + 「开始我的回合」按钮 (spec T8 §3)
+                                      // 防御: 先删除旧 overlay 防止重复
+                                      const old=document.getElementById('hs-transfer-overlay');
+                                      if(old) old.remove();
+                                      const overlay=document.createElement('div');
+                                      overlay.className='transfer-modal-overlay';
+                                      overlay.id='hs-transfer-overlay';
+                                      const colors=['#4A90D9','#E23E57'];
+                                      const icons=['🔵','🔴'];
+                                      overlay.innerHTML='<div class="transfer-modal">'+
+                                        '<div class="transfer-player-icon" style="color:'+colors[playerIdx]+'">'+
+                                        icons[playerIdx]+'</div>'+
+                                        '<div class="transfer-title" style="color:'+colors[playerIdx]+'">'+
+                                        '玩家 '+(playerIdx+1)+'</div>'+
+                                        '<div class="transfer-msg">'+msg+'</div>'+
+                                        '<button class="transfer-btn" onclick="transferConfirm()">'+
+                                        '开始我的回合</button>'+
+                                        '</div>';
+                                      document.body.appendChild(overlay);
+                                    }
 
                         function transferConfirm(){
                                       var overlay=document.getElementById('hs-transfer-overlay');
