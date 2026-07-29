@@ -158,7 +158,9 @@ function setupMultiplayerIPC() {
   if (steamClient) {
     setInterval(() => {
       try {
-        const rawPacket = steamClient.networking.readP2PPacket(0);
+        const available = steamClient.networking.isP2PPacketAvailable();
+        if (!available) return;
+        const rawPacket = steamClient.networking.readP2PPacket(available);
         if (rawPacket && rawPacket.data) {
           const parsed = JSON.parse(rawPacket.data.toString('utf-8'));
           p2pMessageQueue.push({
@@ -168,6 +170,12 @@ function setupMultiplayerIPC() {
         }
       } catch (_) { /* no packet available or parse error; silently skip */ }
     }, 50);
+  }
+
+  if (steamClient && steamClient.callback && steamClient.callback.register) {
+    steamClient.callback.register('P2PSessionRequest', (steamId64) => {
+      steamClient.networking.acceptP2PSession(steamId64);
+    });
   }
 
   // --- 6. onSessionRequest (callback registration) ---

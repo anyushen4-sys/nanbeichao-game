@@ -178,6 +178,7 @@ const LEADERS_DATA=[
 {id:8,name:'北齐文宣帝高洋',faction:'beiqi',ability:{type:'double_edge',value:3},desc:'最强行+3，最弱行-1（双刃暴君）',era:'北朝·北齐'},
 {id:9,name:'北周武帝宇文邕',faction:'beizhou',ability:{type:'hand_boost',value:2},desc:'手牌随机2张+2（整军经武）',era:'北朝·北周'}
 ];
+window.LEADERS_DATA=LEADERS_DATA;
 
 let uid=0;
 function makeCard(c){return{...c,uid:++uid}}
@@ -1925,7 +1926,11 @@ function renderGameResult(el){
                                                   G._mpState.isHost = null;
                                                   G._mpState._mpPhase = 'rng_exchange';
                                                   // 发送自己的 RNG 值给 guest
-                                                  var pkt = packMessage('action', { type: 'rng_value', payload: { v: '' + arr[0] } });
+                                                  var pkt = packMessage('action', { action: 'rng_value', data: {
+                                                    v: '' + arr[0],
+                                                    leaderP0: G.players[0].leader && (G.players[0].leader.id || G.players[0].leader.name),
+                                                    leaderP1: G.players[1].leader && (G.players[1].leader.id || G.players[1].leader.name)
+                                                  } });
                                                   sendP2P(pkt, G._mpState.peerId);
                                                   if (G._mpState._host === 'host') {
                                                     // host: set up RNG, wait for guest
@@ -1955,9 +1960,16 @@ function renderGameResult(el){
                                                   if (!mp) return;
 
                                                   // --- RNG 比大小阶段 ---
-                                                                                                    // 收到对方的 rng_value
-                                                                                                    if (type === 'action' && (payload.type === 'rng_value')) {
-                                                                                                      var v = payload.v || (payload.payload && payload.payload.v);
+                                                  // 收到对方的 rng_value
+                                                  if (type === 'action' && (payload.type === 'rng_value' || payload.action === 'rng_value')) {
+                                                    var v = payload.v || (payload.payload && payload.payload.v) || (payload.data && payload.data.v);
+                                                    var rngData = payload.data || payload.payload || payload;
+                                                    if (!G.players[0].leader && rngData.leaderP0) {
+                                                      G.players[0].leader = LEADERS_DATA.find(function(l) { return l.id === rngData.leaderP0 || l.name === rngData.leaderP0; }) || null;
+                                                    }
+                                                    if (!G.players[1].leader && rngData.leaderP1) {
+                                                      G.players[1].leader = LEADERS_DATA.find(function(l) { return l.id === rngData.leaderP1 || l.name === rngData.leaderP1; }) || null;
+                                                    }
                                                                                                       if (!mp._host || mp._host === 'guest') {
                                                                                                         // I'm guest, got host's rng value
                                                                                                         var arr = new Uint32Array(1);
@@ -1967,9 +1979,14 @@ function renderGameResult(el){
                                                                                                         mp.isHost = (arr[0] > v);
                                                                                                         mp._host = mp.isHost ? 'host' : 'guest';
                                                                                                         // 发回我的 RNG 值
-                                                                                                        var pkt = packMessage('action', { type: 'rng_value', payload: { v: arr[0] } });
+                                                                                                        var pkt = packMessage('action', { action: 'rng_value', data: { v: arr[0] } });
                                                                                                         sendP2P(pkt, mp.peerId);
-                                                                                                        showNotification('已回复随机数...', 2000);
+                                                                                                        if (mp.isHost) {
+                                                                                                          showNotification('你是主机！初始化对局中...', 2000);
+                                                                                                          sendMultiplayerStateInit();
+                                                                                                        } else {
+                                                                                                          showNotification('已回复随机数，等待主机初始化...', 2000);
+                                                                                                        }
                                                                                                         return;
                                                                                                       }
                                                                                                       // host got guest's rng_value reply
@@ -1990,7 +2007,9 @@ function renderGameResult(el){
                                                   if (type === 'state_init') {
                                                     // guest 收到：用 host 给的 seed 初始化本地 RNG，同步初始 state
                                                     G._rng = rngFromSeed(payload.rngSeed);
+                                                    G._mpSeed = payload.rngSeed;
                                                     G._mpState.rngSeed = payload.rngSeed;
+                                                    G._mpState.isHost = false;
                                                     G._mpState._host = 'guest';
                                                     G.players[0].leader = LEADERS_DATA.find(function(l) {
                                                                                                         return (l.name||'') === (payload.leaderP0||'') || l.id === payload.leaderP0;
@@ -2022,6 +2041,7 @@ function renderGameResult(el){
                                                     onStateDiff(msg, function(effects) {
                                                       applyMultiplayerEffects(effects);
                                                     });
+                                                    sendP2P(packMessage('ack', { ref_seq: payload.seq || 0, ok: true, error: '' }), mp.peerId);
                                                     return;
                                                   }
 
@@ -2069,7 +2089,9 @@ function renderGameResult(el){
                                                   G._firstPlayer = G.activePlayer;
                                                   G.currentTurn = G.activePlayer === 0 ? 'player' : 'player';
                                                   var p0 = G.players[0], p1 = G.players[1];
-                                                  var msg = packStateInit(seed, '', '', p0.leader.id||p0.leader.name, p1.leader.id||p1.leader.name, G.activePlayer);
+                                                  var deckHashP0 = _multiplayerDeckHash(buildDeck(p0.leader.faction));
+                                                  var deckHashP1 = _multiplayerDeckHash(buildDeck(p1.leader.faction));
+                                                  var msg = packStateInit(seed, deckHashP0, deckHashP1, p0.leader.id||p0.leader.name, p1.leader.id||p1.leader.name, G.activePlayer);
                                                   sendP2P(msg, mp.peerId);
                                                   _setupMultiplayerGameState();
                                                   G.phase = 'multiplayer_playing';
@@ -2098,6 +2120,18 @@ function renderGameResult(el){
                                                   addLog('═══ 多人对战 · 换牌阶段 ═══');
                                                 }
 
+                                                function _multiplayerDeckHash(deck) {
+                                                  var text = (deck || []).map(function(card) {
+                                                    return [card.id, card.name, card.strength, card.row, card.faction].join(':');
+                                                  }).join('|');
+                                                  var hash = 2166136261;
+                                                  for (var i = 0; i < text.length; i++) {
+                                                    hash ^= text.charCodeAt(i);
+                                                    hash = Math.imul(hash, 16777619);
+                                                  }
+                                                  return ('00000000' + (hash >>> 0).toString(16)).slice(-8);
+                                                }
+
                                                 /**
                                                  * guest 端：收到 state_init 后调用
                                                  */
@@ -2119,11 +2153,11 @@ function renderGameResult(el){
                                                 function handleMultiplayerAction(payload) {
                                                   var mp = G._mpState;
                                                   if (!mp || !mp.isHost) return;
-                                                  var actType = payload.action;
-                                                  var data = payload.data || {};
+                                                  var actType = payload.action || payload.type;
+                                                  var data = payload.data || payload.payload || {};
 
                                                   if (actType === 'play_card') {
-                                                    var cardIdx = data.cardIdx, row = data.row;
+                                                    var cardIdx = data.handIdx !== undefined ? data.handIdx : data.cardIdx, row = data.row;
                                                     var hand = G.players[1].hand.filter(function(c) { return c; });
                                                     if (cardIdx < hand.length) {
                                                       playCard(1, cardIdx, row);
@@ -2222,7 +2256,7 @@ function renderGameResult(el){
                                                   G.players[mp._myLocalIdx].leader = l;
                                                   G._selectedLeader = null;
                                                   // 本地 leader 确认
-                                                  var pkt = packMessage('action', { type: 'leader_pick', payload: { leader: l.id, n: l.name } });
+                                                  var pkt = packMessage('action', { action: 'leader_pick', data: { leader: l.id, n: l.name } });
                                                   sendP2P(pkt, mp.peerId);
                                                   // 等待对方
                                                   G._mpLeaderPhase = 1;
@@ -2255,8 +2289,8 @@ function renderGameResult(el){
 
                                                   // 广播换牌结果
                                                   var pkt = packMessage('action', {
-                                                    type: 'mulligan_done',
-                                                    payload: { idx: p, r: cnt }
+                                                    action: 'mulligan_done',
+                                                    data: { idx: p, r: cnt }
                                                   });
                                                   sendP2P(pkt, G._mpState.peerId);
                                                   if (G.otherMulliganDone || p !== 0) {
@@ -2284,20 +2318,23 @@ function renderGameResult(el){
                                                 function handleMultiplayerPlayCard(handIdx, row) {
                                                   if (!G.players[0].passed && !G.players[1].passed) {
                                                     if (G._mpState && G.playerTurn) {
-                                                      var card = getHand(0)[handIdx];
+                                                      var localIdx = G._mpState.localPlayerIdx !== undefined ? G._mpState.localPlayerIdx :
+                                                        (G._mpState._myLocalIdx !== undefined ? G._mpState._myLocalIdx : 0);
+                                                      var card = getHand(localIdx)[handIdx];
                                                       if (!card) return;
-                                                      if (getCardCost(card.strength) > G.provisions[0]) return;
+                                                      if (getCardCost(card.strength) > G.provisions[localIdx]) return;
                                                       if (card.row !== row) return;
-                                                      playCard(0, handIdx, row);
+                                                      if (!G._mpState.isHost) {
+                                                        sendP2P(packMessage('action', {
+                                                          type: 'play_card',
+                                                          payload: { cardId: card.id, row: row, handIdx: handIdx }
+                                                        }), G._mpState.peerId);
+                                                        return;
+                                                      }
+                                                      playCard(localIdx, handIdx, row);
                                                       G.selectedCard = null;
                                                       G.turnCount++;
                                                       G._playerTurn = false;
-                                                      // 如果是 guest，需要发送 action 到 host
-                                                      if (G._mpState && !G._mpState.isHost) {
-                                                        sendP2P(packMessage('action', {
-                                                          type: 'play_card', payload: { cardId: card.id, row: row, handIdx: handIdx }
-                                                        }), G._mpState.peerId);
-                                                      }
                                                       checkBothPassed();
                                                     }
                                                   }
@@ -2309,7 +2346,7 @@ function renderGameResult(el){
                                                   addLog('放弃本局');
                                                   G.selectedCard = null;
                                                   if (G._mpState && !G._mpState.isHost) {
-                                                    sendP2P(packMessage('action', { type: 'pass', payload: { i: p } }), G._mpState.peerId);
+                                                    sendP2P(packMessage('action', { action: 'pass', data: { i: p } }), G._mpState.peerId);
                                                   }
                                                   checkBothPassed();
                                                 }
@@ -2456,7 +2493,8 @@ function timeoutReconnect() {
                                                   // concede host
                                                   var msg = packMessage('concede', { reason: 'timeout' });
                                                   sendP2P(msg, G._mpState.peerId);
-                                                  G.scores[0] = 2;
+                                                  var localIdx = G._mpState && G._mpState.localPlayerIdx !== undefined ? G._mpState.localPlayerIdx : 0;
+                                                  G.scores[localIdx] = 2;
                                                   G._mpPhase = 'game_result';
                                                   G.phase = 'multiplayer_playing';
                                                   render();
@@ -2665,7 +2703,6 @@ function timeoutReconnect() {
                             showTransferModal(next,'请将设备交给玩家'+(next+1),'turnevent');
                           }
                         }
-            }
 
             function showTransferModal(playerIdx, msg, reason){
                                       // transfer-modal: 全屏遮罩 + 玩家 N 头像 + 「开始我的回合」按钮 (spec T8 §3)
