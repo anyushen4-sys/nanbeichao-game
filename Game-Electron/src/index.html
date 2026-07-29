@@ -2940,8 +2940,8 @@ function timeoutReconnect() {
         p1.hand.map(function(c,i){return handleHotSeatHandCard(c,i,1)}).join('')))+
   '</div>'+
 '</div>'+
-'<div class="action-bar">''<div class="action-bar">'+
-                                          '<button class="btn btn-sm btn-primary" onclick="useLeaderAbility('+act+')" '+
+'<div class="action-bar">'+
+                                          '<button class="btn btn-sm btn-primary
                                             (G.leaderAbilityUsed[act]?'disabled':'')+'>'+
                                             (G.leaderAbilityUsed[act]?'已使用':'主将技能')+' · '+G.players[act].leader.name+'</button>'+
                                           '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">放弃本局</button>'+
