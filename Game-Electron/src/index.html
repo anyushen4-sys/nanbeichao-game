@@ -2958,13 +2958,12 @@ function timeoutReconnect() {
                                             (G.leaderAbilityUsed[act]?'disabled':'')+'>'+
                                             (G.leaderAbilityUsed[act]?'已使用':'主将技能')+' · '+G.players[act].leader.name+'</button>'+
                                           '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">放弃本局</button>'+
-                                        '</div>'+
-              '</div>'+
-                                          '<div class="log-area">'+
-                                            (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
-                                          '</div>'+
-                                        '</div>';
-                      }
+                                                                                   '</div>'+
+                                                                                   '<div class="log-area">'+
+                                                                                                                                                 (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
+                                                                                                                                               '</div>'+
+                                                                                                                                                                                             '</div>';
+                                                                                                                                                                     }
 
         function handleHotSeatHandCard(card,idx,activeIdx){
             var f=FACTIONS[card.faction];
