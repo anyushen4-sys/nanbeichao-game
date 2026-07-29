@@ -2926,34 +2926,21 @@ function timeoutReconnect() {
                 (p0.passed&&!p1.passed?'<span class="waiting"> · 对手已放弃，等待你</span>':'')+
               '</div>'+
                             '<div class="hand-area">'+
-                            ((act===0)?'<div class="hand-label">— 玩家1 的手牌 —</div>':'')+
-                            '<div class="hand-cards'+(p0.hand.length===0?' empty':'')+
-                                (p0.hand.length>=5?' many-cards':'')+
-                                (p0.hand.length>=7?' overflow-cards':'')+'">'+
-                                (act!==0?
-                                  '<div class="hs-hidden-hand">'+
-                                    '<div class="hs-hidden-icon">🔒</div>'+
-                                    '<div class="hs-hidden-text">对方回合中</div>'+
-                                  '</div>':
-                                  (p0.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
-                                                                      p0.hand.map(function(c,i){return handleHotSeatHandCard(c,i,act)}).join('')))
-                              '</div>'+
-                            '</div>'+
-                            '<div class="hand-area">'+
-                                          ((act===1)?'<div class="hand-label">— 玩家2 的手牌 ('+p1.hand.length+'张) —</div>':'')+
-                                          '<div class="hand-cards'+(p1.hand.length===0?' empty':'')+
-                                            (p1.hand.length>=5?' many-cards':'')+
-                                            (p1.hand.length>=7?' overflow-cards':'')+'">'+
-                                            (act!==1?
-                                              '<div class="hs-hidden-hand">'+
-                                                '<div class="hs-hidden-icon">🔒</div>'+
-                                                '<div class="hs-hidden-text">对方回合中</div>'+
-                                              '</div>':
-                                              (p1.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
-                                                p1.hand.map(function(c,i){return handleHotSeatHandCard(c,i,1)}).join('')))+
-                                          '</div>'+
-                                        '</div>'+
-                                        '<div class="action-bar">'+
+  ((act===0)?'<div class="hand-label">— 玩家1 的手牌 ('+p0.hand.length+'张) —</div>':
+               '<div class="hand-label">— 玩家2 的手牌 ('+p1.hand.length+'张) —</div>')+
+  '<div class="hand-cards'+
+    ((act===0?(p0.hand.length===0?' empty':''):(p1.hand.length===0?' empty':''))+
+    (act===0?(p0.hand.length>=5?' many-cards':''):(p1.hand.length>=5?' many-cards':''))+
+    (act===0?(p0.hand.length>=7?' overflow-cards':''):(p1.hand.length>=7?' overflow-cards':'')))+
+    '">'+
+    (act===0?
+      (p0.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
+        p0.hand.map(function(c,i){return handleHotSeatHandCard(c,i,0)}).join('')):
+      (p1.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
+        p1.hand.map(function(c,i){return handleHotSeatHandCard(c,i,1)}).join('')))+
+  '</div>'+
+'</div>'+
+'<div class="action-bar">''<div class="action-bar">'+
                                           '<button class="btn btn-sm btn-primary" onclick="useLeaderAbility('+act+')" '+
                                             (G.leaderAbilityUsed[act]?'disabled':'')+'>'+
                                             (G.leaderAbilityUsed[act]?'已使用':'主将技能')+' · '+G.players[act].leader.name+'</button>'+
@@ -2963,7 +2950,9 @@ function timeoutReconnect() {
                                                                                                                                                  (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
                                                                                                                                                '</div>'+
                                                                                                                                                                                              '</div>';
-                                                                                                                                                                     }
+                                                                                                                                                                     
+                    
+}
 
         function handleHotSeatHandCard(card,idx,activeIdx){
             var f=FACTIONS[card.faction];

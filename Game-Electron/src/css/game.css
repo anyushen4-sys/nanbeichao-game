@@ -319,7 +319,6 @@ html, body {
 /* 战场区是核心可滚动区域 — 给定最大高度 */
 .hot-seat-playing .battlefield-wrap {
     flex: 0 0 auto;
-    max-height: calc(100vh - 480px);
     overflow-y: auto;
 }
 
