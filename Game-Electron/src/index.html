@@ -1301,7 +1301,8 @@ function renderGame(el,lastUid,lastBy){
   const turnClass=G.currentTurn==='player'?'your-turn':'ai-turn';
 
   el.innerHTML=`
-  <div class="game-header">
+    <div id="game-screen">
+    <div class="game-header">
     <div class="player-info">
       <div class="name" style="color:${pF.color}">你</div>
       <div class="leader">${G.players[0].leader.name}</div>
@@ -1363,10 +1364,11 @@ function renderGame(el,lastUid,lastBy){
     <button class="btn btn-sm btn-primary" onclick="useLeaderAbility(0)" ${G.currentTurn!=='player'||G.players[0].passed||G.leaderAbilityUsed[0]?'disabled':''}>${G.leaderAbilityUsed[0]?'已使用':'主将技能'} · ${G.players[0].leader?G.players[0].leader.name:''}</button>
         ${G.players[0].leader&&!G.leaderAbilityUsed[0]?`<div class="skill-desc">${G.players[0].leader.desc}</div>`:''}
         <button class="btn btn-sm btn-pass" onclick="playerPass()" ${G.currentTurn!=='player'||G.players[0].passed?'disabled':''}>放弃本局</button>
-  </div>
-  <div class="log-area">
-    ${G.logs.slice(-3).map(l=>`<div class="log-entry">${l}</div>`).join('')}
-  </div>`;
+          </div>
+          <div class="log-area">
+            ${G.logs.slice(-3).map(l=>`<div class="log-entry">${l}</div>`).join('')}
+          </div>
+          </div>`;
 const logsEl=document.getElementById('logs');if(logsEl)logsEl.scrollTop=logsEl.scrollHeight;
 }
 
@@ -2853,29 +2855,29 @@ function timeoutReconnect() {
         }
 
         function renderHotSeatGame(el){
-            var act=G.activePlayer;
-            var p0=G.players[0], p1=G.players[1];
-            var f0=FACTIONS[p0.leader.faction], f1=FACTIONS[p1.leader.faction];
-            var pow0=getBoardPower(p0.board,0), pow1=getBoardPower(p1.board,1);
-            var isP1=act===0;
-            var appearText=isP1?'玩家1的回合':'玩家2的回合';
-            var handClass=isP1?'your-turn':'ai-turn';
-            var lastUid=G._lastPlayedUid||null;
-            var lastR=G._lastPlayedBy||null;
+                    var act=G.activePlayer;
+                    var p0=G.players[0], p1=G.players[1];
+                    var f0=FACTIONS[p0.leader.faction], f1=FACTIONS[p1.leader.faction];
+                    var pow0=getBoardPower(p0.board,0), pow1=getBoardPower(p1.board,1);
+                    var isP1=act===0;
+                    var appearText=isP1?'玩家1的回合':'玩家2的回合';
+                    var handClass=isP1?'your-turn':'ai-turn';
+                    var lastUid=G._lastPlayedUid||null;
+                    var lastR=G._lastPlayedBy||null;
 
-            function renderPips(v,m,cls){
-                var h='';
-                for(var i=0;i<m;i++){
-                    var filled=i<v?'filled '+cls:'';
-                    h+='<div class="pip '+filled+'"></div>';
-                }
-                return h;
-            }
+                    function renderPips(v,m,cls){
+                        var h='';
+                        for(var i=0;i<m;i++){
+                            var filled=i<v?'filled '+cls:'';
+                            h+='<div class="pip '+filled+'"></div>';
+                        }
+                        return h;
+                    }
 
-            el.innerHTML='<div class="hot-seat-playing" style="display:flex;flex-direction:column;height:100%">'+
-                            '<div class="game-header">'+
-                            '<div class="player-info" style="text-align:left">'+
-                              '<div class="name" style="color:'+f0.color+'">玩家1</div>'+
+                    el.innerHTML='<div id="game-screen" class="hot-seat-playing">'+
+                        '<div class="game-header">'+
+                        '<div class="player-info" style="text-align:left">'+
+                          '<div class="name" style="color:'+f0.color+'">玩家1</div>'+
                   '<div class="leader">'+p0.leader.name+'</div>'+
                   '<div class="provisions-bar">'+
                     '<span class="label">粮草</span>'+
