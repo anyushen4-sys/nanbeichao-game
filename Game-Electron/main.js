@@ -230,7 +230,9 @@ function createWindow() {
   const page = process.env.DEV_PAGE || 'index.html';
   // 加载页面 (URL query: ?mockmp=1 启用联机 Dev Mock)
   const urlQuery = process.env.DEV_MOCKMP === '1' ? '?mockmp=1' : '';
-  mainWindow.loadURL('file://' + path.join(__dirname, 'src', page).replace(/\\/g, '/') + urlQuery);
+  // 使用 pathToFileURL 以正确处理 Windows 路径和 URL query
+  const fileUrl = require('url').pathToFileURL(path.join(__dirname, 'src', page)).href;
+  mainWindow.loadURL(fileUrl + urlQuery);
 
   // 窗口准备好后再显示
   mainWindow.once('ready-to-show', () => {
