@@ -58,16 +58,14 @@
     },
     multiplayer:{
       openInviteDialog:function(){
-        // 模拟立刻"已邀请", 双方状态都更新
+        // 模拟: 200ms 后"已邀请", 进入 connected 状态
         setTimeout(function(){
-          G._mpState._peerName='Mock对手(guest)';
-          G._mpState.peerId='mock-guest';
-          G._mpState._status='connected';
-          // 同步到对方视角
-          peerState._peerName='Mock对手(host)';
-          peerState.peerId='mock-host';
-          peerState._status='connected';
-          render();
+          if(G._mpState){
+            G._mpState._peerName='Mock对手(guest)';
+            G._mpState.peerId='mock-guest';
+            G._mpState._status='connected';
+            render();
+          }
         },200);
         return Promise.resolve({ok:true});
       },
@@ -1643,6 +1641,8 @@ function renderGameResult(el){
 
         // ===== 06: mode-router — 多人模式 / 热座模式渲染空壳 =====
         function renderMultiplayerLobby(el){
+          console.log('[MP] renderMultiplayerLobby, status=',(G._mpState||{})._status);
+
           // 多人配对大厅：Steam 邀请 + 等待连接
           var mp = G._mpState || {};
           var isHost = mp._host === 'host';
@@ -3155,6 +3155,7 @@ function startMultiplayerHost() {
   G._mpState.peerId = null;
   G.phase = 'multiplayer_lobby';
   startMultiplayerPolling();
+  render(); // 立即同步 UI (connecting 状态)
   // Try to open invite dialog
   if (typeof electronAPI !== 'undefined' && electronAPI.multiplayer) {
     electronAPI.multiplayer.openInviteDialog().then(function(r) {
