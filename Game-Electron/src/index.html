@@ -2602,6 +2602,7 @@ function timeoutReconnect() {
                                                                 }
                                                                 // 玩家2 换完 → 随机决定先手 + 进入 game
                                                                                                   G._firstPlayer=Math.floor(Math.random()*2);
+                                                                                                  G.round=1;
                                                                                                   G._hsPhase='game';
                                                                                                   G.activePlayer=G._firstPlayer;
                                                                                                   G.players[0].passed=false; G.players[1].passed=false;
@@ -2814,25 +2815,40 @@ function timeoutReconnect() {
                 return;
             }
             // === ROUND RESULT ===
-            if(hs==="round_result"){
-                var rr=G._roundResult;
-                var wTxt=rr.winner===0?'玩家1胜利！':rr.winner===1?'玩家2胜利！':'平局！';
-                G.phase='hot_seat_playing';
-                el.innerHTML='<div class="round-result" style="text-align:center;padding:30px 20px">'+
-                  '<h2 style="color:#E0D0F0;margin:15px 0">第'+G.round+'局结束</h2>'+
-                  '<div style="display:flex;justify-content:center;gap:50px;margin:20px 0">'+
-                    '<div><div style="color:#4A90D9;font-size:1.4em;font-weight:bold">玩家1</div>'+
-                      '<div style="color:#FFD700;font-size:1.8em">'+rr.playerPower+'战力</div></div>'+
-                    '<div><div style="color:#E23E57;font-size:1.4em;font-weight:bold">玩家2</div>'+
-                      '<div style="color:#FFD700;font-size:1.8em">'+rr.aiPower+'战力</div></div>'+
-                  '</div>'+
-                  '<div style="color:#FFD700;font-size:1.2em;margin:15px 0">'+wTxt+'</div>'+
-                  '<div style="margin:25px 0">比分: <span style="color:#4A90D9;font-size:1.2em">'+G.scores[0]+'</span> : '+
-                    '<span style="color:#E23E57;font-size:1.2em">'+G.scores[1]+'</span></div>'+
-                  '<button class="btn btn-primary" onclick="hotSeatCheckGameEnd()">继续</button>'+
-                '</div>';
-                return;
-            }
+                        if(hs==="round_result"){
+                            var rr=G._roundResult;
+                            var pWin=rr.winner===0;
+                            var aWin=rr.winner===1;
+                            var tie=rr.winner===-1;
+                            G.phase='hot_seat_playing';
+                            var wTxt=pWin?'玩家1胜利！':aWin?'玩家2胜利！':'平局！';
+                            el.innerHTML='<div class="round-result">'+
+                              '<h2>第'+G.round+'局 结果</h2>'+
+                              '<div class="power-compare">'+
+                                '<div class="power-row">'+
+                                  '<div class="power-side '+(pWin?'win-side':'lose-side')+'">'+
+                                    '<div class="power-label">玩家1 战力</div>'+
+                                    '<div class="power-val '+(pWin?'win':'lose')+'">'+rr.playerPower+'</div>'+
+                                  '</div>'+
+                                  '<div class="power-vs-wrap">'+
+                                    '<div class="power-vs">VS</div>'+
+                                  '</div>'+
+                                  '<div class="power-side '+(aWin?'win-side':'lose-side')+'">'+
+                                    '<div class="power-label">玩家2 战力</div>'+
+                                    '<div class="power-val '+(aWin?'win':'lose')+'">'+rr.aiPower+'</div>'+
+                                  '</div>'+
+                                '</div>'+
+                                '<div class="power-bar-bg">'+
+                                  '<div class="power-bar-fill '+(pWin?'bar-win':aWin?'bar-lose':'')+'" style="width:'+(pWin?'100%':'0%')+'"></div>'+
+                                  '<div class="power-bar-divider"></div>'+
+                                '</div>'+
+                              '</div>'+
+                              '<div class="result-text '+(pWin?'result-win':aWin?'result-lose':'result-tie')+'">'+wTxt+'</div>'+
+                              '<div class="result-score">当前比分：<span style="color:#4A90D9;font-size:1.2em">'+G.scores[0]+'</span> : <span style="color:#E23E57;font-size:1.2em">'+G.scores[1]+'</span></div>'+
+                              '<button class="btn btn-primary btn-result" onclick="hotSeatCheckGameEnd()">'+(G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续')+'</button>'+
+                            '</div>';
+                            return;
+                        }
             // === GAME RESULT ===
             if(hs==="game_result"){
                 var winner=G.scores[0]>G.scores[1]?0:G.scores[0]===G.scores[1]?-1:1;
