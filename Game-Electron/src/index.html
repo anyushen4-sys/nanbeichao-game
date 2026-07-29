@@ -16,6 +16,81 @@
 <link rel="preload" as="image" href="assets/leaders/leader_L8.png" fetchpriority="auto"/>
 <link rel="preload" as="image" href="assets/leaders/leader_L9.png" fetchpriority="auto"/>
 
+
+<!-- ===== Multiplayer Dev Mock (URL ?mockmp=1) ===== -->
+<script>
+(function(){
+  if(!/mockmp=1/.test(location.search))return;
+  console.log('[MockMP] enabling mock electronAPI');
+  var peerQueue=[];
+  function pushMsg(fromId,data){peerQueue.push({steamId:fromId,data:JSON.stringify(data)});}
+  function consumeQueue(){var q=peerQueue.slice();peerQueue=[];return q;}
+  // 用 BroadcastChannel 跨 tab 模拟
+  var bc=null;
+  try{bc=new BroadcastChannel('mock-mp');}catch(e){}
+  var SELF='local-'+Math.floor(Math.random()*1e9);
+  window.__MOCKMP_SELF=SELF;
+  window.__MOCKMP_PEER=null;
+  if(bc){
+    bc.onmessage=function(ev){
+      var m=ev.data;
+      if(m._to&&m._to!==SELF)return;
+      if(m.type==='hello'){window.__MOCKMP_PEER=m._from;pushMsg(m._from,m.data||{});}
+      else if(m._from)pushMsg(m._from,m);
+    };
+    // 通知其他 tab 我存在
+    bc.postMessage({type:'hello',_from:SELF,_to:null});
+  }
+  // electronAPI mock
+  window.electronAPI={
+    steam:{
+      unlockAchievement:function(id){return Promise.resolve({success:true});},
+      setStat:function(k,v){return Promise.resolve({success:true});}
+    },
+    multiplayer:{
+      openInviteDialog:function(){
+        // 模拟: 立刻"已邀请"成功
+        return new Promise(function(resolve){
+          setTimeout(function(){
+            G._mpState._peerName='Mock对手';
+            G._mpState.peerId='mock-peer-'+Date.now();
+            if(bc){
+              bc.postMessage({type:'hello',_from:SELF,_to:null,data:{hostReady:true}});
+            }
+            resolve({ok:true});
+          },300);
+        });
+      },
+      sendP2PMessage:function(steamId,data){
+        if(bc){
+          var msg=typeof data==='string'?JSON.parse(data):data;
+          bc.postMessage(Object.assign({_from:SELF},msg));
+        }
+        return Promise.resolve({ok:true});
+      },
+      onP2PMessage:function(){
+        return new Promise(function(resolve){
+          // 同步取, poll 路径用
+          resolve({ok:true,messages:consumeQueue()});
+        });
+      },
+      acceptInvite:function(){return Promise.resolve({ok:true});}
+    }
+  };
+  console.log('[MockMP] ready. SELF='+SELF+' BC='+(bc?'on':'off'));
+  window.__MOCKMP_BUS=bc;
+  // Host 启动时自动"假装"有人连进来
+  window.addEventListener('DOMContentLoaded',function(){
+    // 在 lobby 状态显示提示
+    setTimeout(function(){
+      if(G&&G._mpState){
+        console.log('[MockMP] state:',G._mpState._status,'host:',G._mpState._host);
+      }
+    },1500);
+  });
+})();
+</script>
+
 </head>
 <body>
 <div id="app"></div>
@@ -1558,8 +1633,9 @@ function renderGameResult(el){
                '正在初始化...') +
             '</div>' +
             '<div class="mp-lobby-buttons">' +
-              (status === 'idle' || !status ? '<button class="menu-btn" onclick="startMultiplayerHost()" style="background:linear-gradient(135deg,#DAA520,#C83C3C)">创建房间</button>' +
-                '<button class="menu-btn" onclick="joinMultiplayerRoom()">加入房间</button>' : '') +
+              (status === 'idle' || !status ? '<button class="menu-btn" onclick="startMultiplayerHost()" style="background:linear-gradient(135deg,#DAA520,#C83C3C)">创建房间 (host)</button>' +
+                '<button class="menu-btn" onclick="joinMultiplayerRoom()">加入房间 (guest)</button>' +
+                (/mockmp=1/.test(location.search) ? '<div style="margin-top:10px;padding:8px;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);border-radius:6px;font-size:.85em;color:#FFD700">⚙️ Mock 模式:打开两个窗口,一个点创建房间(host),另一个点加入房间(guest),通过 BroadcastChannel 跨窗口模拟</div>' : '') + '' : '') +
               (status === 'waiting_invite' ? '<button class="menu-btn" onclick="cancelMultiplayerInvite()">取消等待</button>' : '') +
               (status === 'connected' ? '<button class="menu-btn" onclick="startLeaderSelect()">开始选择主将</button>' : '') +
             '</div>' +
