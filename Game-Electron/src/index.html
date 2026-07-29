@@ -21,75 +21,102 @@
 <script>
 (function(){
   if(!/mockmp=1/.test(location.search))return;
-  console.log('[MockMP] enabling mock electronAPI');
-  var peerQueue=[];
-  function pushMsg(fromId,data){peerQueue.push({steamId:fromId,data:JSON.stringify(data)});}
-  function consumeQueue(){var q=peerQueue.slice();peerQueue=[];return q;}
-  // 用 BroadcastChannel 跨 tab 模拟
-  var bc=null;
-  try{bc=new BroadcastChannel('mock-mp');}catch(e){}
-  var SELF='local-'+Math.floor(Math.random()*1e9);
-  window.__MOCKMP_SELF=SELF;
-  window.__MOCKMP_PEER=null;
-  if(bc){
-    bc.onmessage=function(ev){
-      var m=ev.data;
-      if(m._to&&m._to!==SELF)return;
-      if(m.type==='hello'){window.__MOCKMP_PEER=m._from;pushMsg(m._from,m.data||{});}
-      else if(m._from)pushMsg(m._from,m);
-    };
-    // 通知其他 tab 我存在
-    bc.postMessage({type:'hello',_from:SELF,_to:null});
+  console.log('[MockMP] single-window mock enabled');
+  // 单窗口内两个虚拟 client 实例, 互发消息
+  var SELF='host'; // 第一个窗口的角色是 host
+  var PEER='guest';
+  var myQueue=[];  // host 的入站队列
+  var peerQueue=[]; // guest 的入站队列 (空)
+  var peerState={
+    _host:'guest',
+    _status:'idle',
+    _myLocalIdx:1,
+    _peerName:'Mock对手(host视角)',
+    peerId:'mock-guest',
+    _selectedLeader:null
+  };
+  var myState={
+    _host:'host',
+    _status:'idle',
+    _myLocalIdx:0,
+    _peerName:'Mock对手(guest视角)',
+    peerId:'mock-host',
+    _selectedLeader:null
+  };
+  // 把消息分发到对方的入站队列
+  function sendToPeer(data){
+    var msg=typeof data==='string'?JSON.parse(data):data;
+    peerQueue.push(msg);
   }
+  function drainMyQueue(){var q=myQueue.slice();myQueue=[];return q;}
+  function drainPeerQueue(){var q=peerQueue.slice();peerQueue=[];return q;}
   // electronAPI mock
   window.electronAPI={
     steam:{
-      unlockAchievement:function(id){return Promise.resolve({success:true});},
-      setStat:function(k,v){return Promise.resolve({success:true});}
+      unlockAchievement:function(){return Promise.resolve({success:true});},
+      setStat:function(){return Promise.resolve({success:true});}
     },
     multiplayer:{
       openInviteDialog:function(){
-        // 模拟: 立刻"已邀请"成功
-        return new Promise(function(resolve){
-          setTimeout(function(){
-            G._mpState._peerName='Mock对手';
-            G._mpState.peerId='mock-peer-'+Date.now();
-            if(bc){
-              bc.postMessage({type:'hello',_from:SELF,_to:null,data:{hostReady:true}});
-            }
-            resolve({ok:true});
-          },300);
-        });
+        // 模拟立刻"已邀请", 双方状态都更新
+        setTimeout(function(){
+          G._mpState._peerName='Mock对手(guest)';
+          G._mpState.peerId='mock-guest';
+          G._mpState._status='connected';
+          // 同步到对方视角
+          peerState._peerName='Mock对手(host)';
+          peerState.peerId='mock-host';
+          peerState._status='connected';
+          render();
+        },200);
+        return Promise.resolve({ok:true});
       },
       sendP2PMessage:function(steamId,data){
-        if(bc){
-          var msg=typeof data==='string'?JSON.parse(data):data;
-          bc.postMessage(Object.assign({_from:SELF},msg));
-        }
+        // 发送到对方的入站队列
+        var msg=typeof data==='string'?JSON.parse(data):data;
+        peerQueue.push(msg);
         return Promise.resolve({ok:true});
       },
       onP2PMessage:function(){
-        return new Promise(function(resolve){
-          // 同步取, poll 路径用
-          resolve({ok:true,messages:consumeQueue()});
-        });
+        // 同步取我的入站队列
+        return Promise.resolve({ok:true,messages:drainMyQueue().map(function(m){
+          return {steamId:'mock-peer',data:typeof m==='string'?m:JSON.stringify(m)};
+        })});
       },
       acceptInvite:function(){return Promise.resolve({ok:true});}
     }
   };
-  console.log('[MockMP] ready. SELF='+SELF+' BC='+(bc?'on':'off'));
-  window.__MOCKMP_BUS=bc;
-  // Host 启动时自动"假装"有人连进来
-  window.addEventListener('DOMContentLoaded',function(){
-    // 在 lobby 状态显示提示
-    setTimeout(function(){
-      if(G&&G._mpState){
-        console.log('[MockMP] state:',G._mpState._status,'host:',G._mpState._host);
-      }
-    },1500);
-  });
+  // Guest 视角函数: 通过 console / 自动切换 G._mpState 模拟 guest 行为
+  window.__MOCKMP={
+    SELF:SELF,
+    PEER:PEER,
+    simulateGuest:function(){
+      // 切到 guest 视角: 在同一窗口创建另一个 G._mpState 副本
+      var saved=JSON.stringify(G._mpState);
+      G._mpState=JSON.parse(JSON.stringify(peerState));
+      // guest 一开始就是 connecting 状态 (等待邀请)
+      G._mpState._status='connecting';
+      G._mpState._host='guest';
+      G._mpState._myLocalIdx=1;
+      G._mpState._peerName='Mock对手(host视角)';
+      render();
+    },
+    simulateHost:function(){
+      G._mpState=JSON.parse(JSON.stringify(myState));
+      render();
+    },
+    // 直接驱动 peer 的发送(模拟对方操作)
+    peerSendPicking:function(){
+      // peer 已经选了某个主将
+      var randLeader=Math.floor(Math.random()*9)+1;
+      sendToPeer({type:'peer_leader_picked',leaderId:randLeader});
+    }
+  };
+  console.log('[MockMP] ready. SELF='+SELF);
+  console.log('[MockMP] use __MOCKMP.simulateGuest() to switch view');
 })();
 </script>
+
 
 </head>
 <body>
