@@ -289,12 +289,14 @@ html, body {
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
+    max-height: calc(100vh - 320px); /* 给 hand-area + action-bar + log-area 留 320px */
 }
 
 #game-screen .hand-area,
 #game-screen .action-bar,
 #game-screen .log-area {
     flex: 0 0 auto;
+    flex-shrink: 0;
 }
 
 #game-header {
