@@ -28,6 +28,7 @@
   console.log('[MockMP] clientId='+clientId);
   var bc=null; // BC 跨实例不通, 用 localStorage 替代 (同 origin 跨 window/iframe 共享)
   console.log('[MockMP] localStorage-based discovery, origin=' + location.origin);
+  console.log('[MockMP] localStorage length=' + (localStorage.length||0) + ', testWrite=' + (function(){try{localStorage.setItem('mock-mp-test','x');return 'ok';}catch(e){return e.message;}}()));
   var knownClients={}; // 已知其他 client ID
   // localStorage 'storage' 事件 - 当其他 tab/window 写入 key='mock-mp-msg' 时触发
   window.addEventListener('storage',function(ev){
@@ -142,18 +143,20 @@
     SELF:SELF,
     PEER:'guest',
     simulateGuest:function(){
-      // 切到 guest 视角: 在同一窗口创建另一个 G._mpState 副本
-      var saved=JSON.stringify(G._mpState);
+      // 切到 guest 视角
       G._mpState=JSON.parse(JSON.stringify(peerState));
-      // guest 一开始就是 connecting 状态 (等待邀请)
       G._mpState._status='connecting';
       G._mpState._host='guest';
       G._mpState._myLocalIdx=1;
       G._mpState._peerName='Mock对手(host视角)';
+      SELF='guest';
+      window.__MOCKMP_AUTO_HOSTED=false; // 允许 AUTO-JOIN 重新触发
       render();
     },
     simulateHost:function(){
       G._mpState=JSON.parse(JSON.stringify(myState));
+      SELF='host';
+      window.__MOCKMP_AUTO_HOSTED=false; // 允许 AUTO-HOST 重新触发
       render();
     },
     // 直接驱动 peer 的发送(模拟对方操作)
@@ -1763,7 +1766,10 @@ function renderGameResult(el){
               (status === 'waiting_invite' ? '<button class="menu-btn" id="mp-cancel-btn">取消等待</button>' : '') +
               (status === 'connected' ? '<button class="menu-btn" id="mp-leader-btn">开始选择主将</button>' : '') +
             '</div>' +
-            '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">返回菜单</button>' +
+            '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">返回菜单</button>
+            <div style="margin-top:12px;text-align:center">
+              <button class="menu-btn" id="mp-switch-self-btn" style="background:rgba(150,150,200,.2);font-size:.85em">⚙️ 切换为 guest 视角</button>
+            </div>' +
                         '</div>';
 
                         // 绑定按钮事件 (onclick 属性替代 inline onclick, 避免重复触发)
@@ -1782,6 +1788,19 @@ function renderGameResult(el){
                           if(lb)lb.onclick=startLeaderSelect;
                           var bb=document.getElementById('mp-back-btn');
                           if(bb)bb.onclick=function(){stopMultiplayerPolling();resetGame()};
+                          var sb=document.getElementById('mp-switch-self-btn');
+                          if(sb)sb.onclick=function(){
+                            // 切换 SELF host<->guest
+                            if(typeof __MOCKMP!=='undefined'){
+                              if(__MOCKMP.SELF==='host'){
+                                __MOCKMP.simulateGuest();
+                                sb.textContent='⚙️ 切换为 host 视角';
+                              } else {
+                                __MOCKMP.simulateHost();
+                                sb.textContent='⚙️ 切换为 guest 视角';
+                              }
+                            }
+                          };
                         }
 
                     function renderMultiplayerPlaying(el){
