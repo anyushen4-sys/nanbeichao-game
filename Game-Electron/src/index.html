@@ -1666,10 +1666,12 @@ function renderGameResult(el){
             '</div>' +
             '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">返回菜单</button>' +
                         '</div>';
+
+                        // 绑定按钮事件 (onclick 属性替代 inline onclick, 避免重复触发)
+                        bindLobbyButtons();
                     }
 
-                        // 绑定按钮事件 (用 onclick 属性替代 inline onclick, 避免重复触发)
-                        setTimeout(function(){
+                    function bindLobbyButtons(){
                           var hb=document.getElementById('mp-host-btn');
                           if(hb)hb.onclick=startMultiplayerHost;
                           var gb=document.getElementById('mp-guest-btn');
@@ -1680,7 +1682,7 @@ function renderGameResult(el){
                           if(lb)lb.onclick=startLeaderSelect;
                           var bb=document.getElementById('mp-back-btn');
                           if(bb)bb.onclick=function(){stopMultiplayerPolling();resetGame()};
-                        },0);
+                        }
 
                     function renderMultiplayerPlaying(el){
           // 多人 playing：根据 mpPhase 渲染不同阶段
@@ -3160,6 +3162,7 @@ function dismissSettlementToast() {
 }
 
 function startMultiplayerHost() {
+  console.log('[MP] startMultiplayerHost ENTRY, status=' + (G._mpState && G._mpState._status));
   G._mpState = G._mpState || {};
   G._mpState._host = 'host';
   G._mpState._status = 'connecting';
