@@ -3213,10 +3213,12 @@ function startMultiplayerHost() {
       // 检测到 peerQueue 中的消息即可触发 connected (mock 会自动 fill peerQueue)
       console.log('[host] openInviteDialog RESOLVED, r.ok=' + r.ok + ', r=' + JSON.stringify(r));
       if (r.ok) {
-        G._mpState._status = 'waiting_invite';
+        // Dev mock: main.js IPC 返回 ok=true, 直接跳 connected (单人模式自模拟)
+        G._mpState._peerName = 'Mock对手(guest)';
+        G._mpState.peerId = 'mock-guest';
+        G._mpState._status = 'connected';
         render();
       }
-      // r.ok=false → 不改状态, polling 会继续
     }).catch(function(e) {
       console.log('[host] CATCH: ' + (e && e.message));
       // IPC 调用失败, polling 也会继续, 等 mock 模拟

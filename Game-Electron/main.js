@@ -103,6 +103,11 @@ function setupMultiplayerIPC() {
 
   // --- 2. openInviteDialog() ---
   ipcMain.handle('multiplayer:openInviteDialog', () => {
+    // Dev Mock 模式 (无 Steam 直接 OK, 渲染端 mock 负责状态同步)
+    if (process.env.DEV_MOCKMP === '1') {
+      console.log('[MockMP-Main] openInviteDialog → mock success');
+      return { ok: true };
+    }
     if (!steamClient) return { ok: false, reason: 'steam_not_running' };
     try {
       steamClient.overlay.activateDialog('Friends');
