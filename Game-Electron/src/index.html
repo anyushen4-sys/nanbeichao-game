@@ -134,7 +134,7 @@
   // Guest 视角函数: 通过 console / 自动切换 G._mpState 模拟 guest 行为
   window.__MOCKMP={
     SELF:SELF,
-    PEER:PEER,
+    PEER:'guest',
     simulateGuest:function(){
       // 切到 guest 视角: 在同一窗口创建另一个 G._mpState 副本
       var saved=JSON.stringify(G._mpState);
