@@ -58,15 +58,12 @@
     },
     multiplayer:{
       openInviteDialog:function(){
-        // 模拟: 200ms 后"已邀请", 进入 connected 状态
-        setTimeout(function(){
-          if(G._mpState){
-            G._mpState._peerName='Mock对手(guest)';
-            G._mpState.peerId='mock-guest';
-            G._mpState._status='connected';
-            render();
-          }
-        },200);
+        // 同步设置 connected 状态 (不再用 setTimeout - 避免 r.ok=true 时序混乱)
+        if(G._mpState){
+          G._mpState._peerName='Mock对手(guest)';
+          G._mpState.peerId='mock-guest';
+          G._mpState._status='connected';
+        }
         return Promise.resolve({ok:true});
       },
       sendP2PMessage:function(steamId,data){
@@ -3162,7 +3159,6 @@ function dismissSettlementToast() {
 }
 
 function startMultiplayerHost() {
-  console.log('[MP] startMultiplayerHost ENTRY, status=' + (G._mpState && G._mpState._status));
   G._mpState = G._mpState || {};
   G._mpState._host = 'host';
   G._mpState._status = 'connecting';
@@ -3173,25 +3169,18 @@ function startMultiplayerHost() {
   render(); // 立即同步 UI (connecting 状态)
   // Try to open invite dialog
   if (typeof electronAPI !== 'undefined' && electronAPI.multiplayer) {
-    console.log('[MP] calling openInviteDialog, mock:', !!(electronAPI.multiplayer.openInviteDialog.toString().indexOf('Mock')>=0));
     electronAPI.multiplayer.openInviteDialog().then(function(r) {
-      console.log('[MP] openInviteDialog RESOLVED, r.ok=' + r.ok + ', r=' + JSON.stringify(r));
+      // r.ok=false 通常是 steam_not_running (dev 模式无 Steam)
+      // 在这种模式下, 我们跳过 waiting_invite 阶段, 但保留 connecting 状态让 polling
+      // 检测到 peerQueue 中的消息即可触发 connected (mock 会自动 fill peerQueue)
       if (r.ok) {
         G._mpState._status = 'waiting_invite';
-      } else {
-        console.log('[MP] openInviteDialog r.ok=false, returning to idle');
-        G._mpState._status = 'idle';
+        render();
       }
-      render();
-    }).catch(function(e) {
-      console.log('[MP] openInviteDialog REJECTED: ' + e);
-      G._mpState._status = 'idle';
-      render();
+      // r.ok=false → 不改状态, polling 会继续
+    }).catch(function() {
+      // IPC 调用失败, polling 也会继续, 等 mock 模拟
     });
-  } else {
-    console.log('[MP] no electronAPI.multiplayer, returning to idle');
-    G._mpState._status = 'idle';
-    render();
   }
 }
 
