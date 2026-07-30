@@ -1,0 +1,586 @@
+{
+  "version": "2.0.0-mvp",
+  "source": "extracted from src/index.html line 306-381 of nanbeichao-game master",
+  "note": "保真抽取, 不改任何字段. PM 主导以避免 worker hallucination.",
+  "factions": [
+    "beiqi",
+    "beiwei",
+    "beizhou",
+    "chen",
+    "common",
+    "dongwei",
+    "liang",
+    "qi",
+    "song",
+    "xiwei"
+  ],
+  "cards": [
+    {
+      "id": 100,
+      "name": "斥候",
+      "faction": "common",
+      "strength": 2,
+      "row": "infantry",
+      "ability": null,
+      "desc": "探听敌情"
+    },
+    {
+      "id": 101,
+      "name": "民兵",
+      "faction": "common",
+      "strength": 3,
+      "row": "infantry",
+      "ability": null,
+      "desc": "保家卫国"
+    },
+    {
+      "id": 102,
+      "name": "弓箭手",
+      "faction": "common",
+      "strength": 4,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "远程射击"
+    },
+    {
+      "id": 103,
+      "name": "辎重",
+      "faction": "common",
+      "strength": 1,
+      "row": "navy",
+      "ability": "gain_provisions:1",
+      "desc": "补给粮草+1"
+    },
+    {
+      "id": 104,
+      "name": "谋士",
+      "faction": "common",
+      "strength": 2,
+      "row": "strategy",
+      "ability": "draw:1",
+      "desc": "运筹帷幄，抽1牌"
+    },
+    {
+      "id": 105,
+      "name": "刺客",
+      "faction": "common",
+      "strength": 5,
+      "row": "cavalry",
+      "ability": "discard:1",
+      "desc": "暗杀行动，对手弃1牌"
+    },
+    {
+      "id": 106,
+      "name": "弩手",
+      "faction": "common",
+      "strength": 6,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "强弓劲弩"
+    },
+    {
+      "id": 107,
+      "name": "盾兵",
+      "faction": "common",
+      "strength": 3,
+      "row": "infantry",
+      "ability": "boost_row:1",
+      "desc": "盾阵，本行+1"
+    },
+    {
+      "id": 108,
+      "name": "轻骑",
+      "faction": "common",
+      "strength": 4,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "轻骑突进"
+    },
+    {
+      "id": 109,
+      "name": "传令",
+      "faction": "common",
+      "strength": 1,
+      "row": "strategy",
+      "ability": "draw:1",
+      "desc": "传令兵，抽1牌"
+    },
+    {
+      "id": 1,
+      "name": "刘裕",
+      "faction": "song",
+      "strength": 6,
+      "row": "infantry",
+      "ability": "ambush:3",
+      "desc": "突袭！首回合步兵+3"
+    },
+    {
+      "id": 2,
+      "name": "檀道济",
+      "faction": "song",
+      "strength": 7,
+      "row": "infantry",
+      "ability": null,
+      "desc": "唱筹量沙，名将"
+    },
+    {
+      "id": 3,
+      "name": "沈庆之",
+      "faction": "song",
+      "strength": 5,
+      "row": "infantry",
+      "ability": "boost_row:1",
+      "desc": "老兵名将，本行+1"
+    },
+    {
+      "id": 4,
+      "name": "到彦之",
+      "faction": "song",
+      "strength": 4,
+      "row": "infantry",
+      "ability": "command:2",
+      "desc": "军令如山，弃最弱牌抽2"
+    },
+    {
+      "id": 5,
+      "name": "谢晦",
+      "faction": "song",
+      "strength": 3,
+      "row": "strategy",
+      "ability": "draw:1",
+      "desc": "谋略过人，抽1牌"
+    },
+    {
+      "id": 6,
+      "name": "萧道成",
+      "faction": "qi",
+      "strength": 5,
+      "row": "infantry",
+      "ability": null,
+      "desc": "齐高帝，雄主"
+    },
+    {
+      "id": 7,
+      "name": "王俭",
+      "faction": "qi",
+      "strength": 4,
+      "row": "strategy",
+      "ability": "control:1",
+      "desc": "离间计，对手最强行-1"
+    },
+    {
+      "id": 8,
+      "name": "褚渊",
+      "faction": "qi",
+      "strength": 3,
+      "row": "strategy",
+      "ability": "skirmish:0",
+      "desc": "书谋，跳过对手一回合"
+    },
+    {
+      "id": 9,
+      "name": "崔祖思",
+      "faction": "qi",
+      "strength": 5,
+      "row": "infantry",
+      "ability": "weaken_row:1",
+      "desc": "削弱对手一行-1"
+    },
+    {
+      "id": 10,
+      "name": "王僧虔",
+      "faction": "qi",
+      "strength": 6,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "书法传家，名士"
+    },
+    {
+      "id": 11,
+      "name": "萧衍",
+      "faction": "liang",
+      "strength": 7,
+      "row": "navy",
+      "ability": null,
+      "desc": "梁武帝，崇佛"
+    },
+    {
+      "id": 12,
+      "name": "韦睿",
+      "faction": "liang",
+      "strength": 6,
+      "row": "infantry",
+      "ability": "shield:1",
+      "desc": "佛光普照，全场+1"
+    },
+    {
+      "id": 13,
+      "name": "陈庆之",
+      "faction": "liang",
+      "strength": 8,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "白袍战神，名垂千古"
+    },
+    {
+      "id": 14,
+      "name": "羊侃",
+      "faction": "liang",
+      "strength": 5,
+      "row": "navy",
+      "ability": "navy_boost:2",
+      "desc": "水攻，水军+2"
+    },
+    {
+      "id": 15,
+      "name": "侯景",
+      "faction": "liang",
+      "strength": 4,
+      "row": "infantry",
+      "ability": "discard:1",
+      "desc": "乱臣贼子，对手弃1牌"
+    },
+    {
+      "id": 16,
+      "name": "陈霸先",
+      "faction": "chen",
+      "strength": 6,
+      "row": "infantry",
+      "ability": null,
+      "desc": "陈武帝，开国"
+    },
+    {
+      "id": 17,
+      "name": "吴明彻",
+      "faction": "chen",
+      "strength": 7,
+      "row": "infantry",
+      "ability": null,
+      "desc": "南朝名将，北伐"
+    },
+    {
+      "id": 18,
+      "name": "侯瑱",
+      "faction": "chen",
+      "strength": 5,
+      "row": "navy",
+      "ability": "farm:2",
+      "desc": "屯田，每回合+2粮草"
+    },
+    {
+      "id": 19,
+      "name": "章昭达",
+      "faction": "chen",
+      "strength": 4,
+      "row": "infantry",
+      "ability": "fortify:1",
+      "desc": "坚壁清野，本行+1"
+    },
+    {
+      "id": 20,
+      "name": "黄法氍",
+      "faction": "chen",
+      "strength": 3,
+      "row": "navy",
+      "ability": "gain_provisions:1",
+      "desc": "筹措粮草，+1"
+    },
+    {
+      "id": 21,
+      "name": "拓跋焘",
+      "faction": "beiwei",
+      "strength": 8,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "太武帝，统一北方"
+    },
+    {
+      "id": 22,
+      "name": "崔浩",
+      "faction": "beiwei",
+      "strength": 5,
+      "row": "strategy",
+      "ability": "weaken_row:2",
+      "desc": "军师，对手一行-2"
+    },
+    {
+      "id": 23,
+      "name": "尔朱荣",
+      "faction": "beiwei",
+      "strength": 7,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "权臣，骁勇善战"
+    },
+    {
+      "id": 24,
+      "name": "贺拔岳",
+      "faction": "beiwei",
+      "strength": 6,
+      "row": "cavalry",
+      "ability": "flex:0",
+      "desc": "铁骑纵横，骑兵任意行"
+    },
+    {
+      "id": 25,
+      "name": "奚康生",
+      "faction": "beiwei",
+      "strength": 4,
+      "row": "cavalry",
+      "ability": "assimilate:0",
+      "desc": "汉化，吸收对手一张牌"
+    },
+    {
+      "id": 26,
+      "name": "高欢",
+      "faction": "dongwei",
+      "strength": 7,
+      "row": "infantry",
+      "ability": null,
+      "desc": "神武帝，雄主"
+    },
+    {
+      "id": 27,
+      "name": "高澄",
+      "faction": "dongwei",
+      "strength": 5,
+      "row": "strategy",
+      "ability": "gain_provisions:2",
+      "desc": "富国强兵，+2粮草"
+    },
+    {
+      "id": 28,
+      "name": "慕容绍宗",
+      "faction": "dongwei",
+      "strength": 6,
+      "row": "infantry",
+      "ability": "armor:1",
+      "desc": "坚甲，所有友方+1"
+    },
+    {
+      "id": 29,
+      "name": "高岳",
+      "faction": "dongwei",
+      "strength": 4,
+      "row": "infantry",
+      "ability": "siege:2",
+      "desc": "围城，对手最强行-2"
+    },
+    {
+      "id": 30,
+      "name": "刘丰",
+      "faction": "dongwei",
+      "strength": 3,
+      "row": "navy",
+      "ability": "draw:1",
+      "desc": "水军将领，抽1牌"
+    },
+    {
+      "id": 31,
+      "name": "宇文泰",
+      "faction": "xiwei",
+      "strength": 8,
+      "row": "infantry",
+      "ability": null,
+      "desc": "大冢宰，八柱国"
+    },
+    {
+      "id": 32,
+      "name": "李虎",
+      "faction": "xiwei",
+      "strength": 6,
+      "row": "cavalry",
+      "ability": "coordinate:1",
+      "desc": "联防，同阵营相邻+1"
+    },
+    {
+      "id": 33,
+      "name": "侯莫陈崇",
+      "faction": "xiwei",
+      "strength": 5,
+      "row": "cavalry",
+      "ability": "boost_row:1",
+      "desc": "骁勇，本行+1"
+    },
+    {
+      "id": 34,
+      "name": "赵贵",
+      "faction": "xiwei",
+      "strength": 4,
+      "row": "infantry",
+      "ability": "ambush_card:0",
+      "desc": "伏兵，藏一张牌"
+    },
+    {
+      "id": 35,
+      "name": "独孤信",
+      "faction": "xiwei",
+      "strength": 5,
+      "row": "strategy",
+      "ability": null,
+      "desc": "八柱国，美男子"
+    },
+    {
+      "id": 36,
+      "name": "高洋",
+      "faction": "beiqi",
+      "strength": 8,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "文宣帝，疯癫天才"
+    },
+    {
+      "id": 37,
+      "name": "斛律光",
+      "faction": "beiqi",
+      "strength": 7,
+      "row": "cavalry",
+      "ability": "crit:0",
+      "desc": "暴击，随机消灭对手一张"
+    },
+    {
+      "id": 38,
+      "name": "兰陵王",
+      "faction": "beiqi",
+      "strength": 6,
+      "row": "cavalry",
+      "ability": "berserk:0",
+      "desc": "狂攻！战力翻倍但下回合-2"
+    },
+    {
+      "id": 39,
+      "name": "段韶",
+      "faction": "beiqi",
+      "strength": 5,
+      "row": "infantry",
+      "ability": "boost_row:2",
+      "desc": "名将，本行+2"
+    },
+    {
+      "id": 40,
+      "name": "傅伏",
+      "faction": "beiqi",
+      "strength": 4,
+      "row": "infantry",
+      "ability": null,
+      "desc": "忠臣守城"
+    },
+    {
+      "id": 41,
+      "name": "宇文邕",
+      "faction": "beizhou",
+      "strength": 7,
+      "row": "cavalry",
+      "ability": null,
+      "desc": "周武帝，雄才大略"
+    },
+    {
+      "id": 42,
+      "name": "韦孝宽",
+      "faction": "beizhou",
+      "strength": 6,
+      "row": "infantry",
+      "ability": "unify:0",
+      "desc": "统一之势，每出一张辅助类+0.5全局"
+    },
+    {
+      "id": 43,
+      "name": "于翼",
+      "faction": "beizhou",
+      "strength": 5,
+      "row": "cavalry",
+      "ability": "anti_south:3",
+      "desc": "灭陈，对南朝阵营+3"
+    },
+    {
+      "id": 44,
+      "name": "辛威",
+      "faction": "beizhou",
+      "strength": 4,
+      "row": "infantry",
+      "ability": "draw:1",
+      "desc": "勇将，抽1牌"
+    },
+    {
+      "id": 45,
+      "name": "梁士彦",
+      "faction": "beizhou",
+      "strength": 3,
+      "row": "navy",
+      "ability": "discard:1",
+      "desc": "猛将，对手弃1牌"
+    },
+    {
+      "id": 46,
+      "name": "宋军旗",
+      "faction": "song",
+      "strength": 2,
+      "row": "infantry",
+      "ability": "combo_boost:2",
+      "desc": "连携，友方连携+2"
+    },
+    {
+      "id": 47,
+      "name": "铁鹞子",
+      "faction": "beiwei",
+      "strength": 3,
+      "row": "cavalry",
+      "ability": "destroy:1",
+      "desc": "拆牌，消灭对手1张"
+    },
+    {
+      "id": 48,
+      "name": "舍利",
+      "faction": "liang",
+      "strength": 1,
+      "row": "strategy",
+      "ability": "resurrect:1",
+      "desc": "回收，从墓地拉1张"
+    },
+    {
+      "id": 49,
+      "name": "铁甲",
+      "faction": "dongwei",
+      "strength": 2,
+      "row": "infantry",
+      "ability": "protect:1",
+      "desc": "护盾，获得1点护甲"
+    },
+    {
+      "id": 50,
+      "name": "细作",
+      "faction": "beiqi",
+      "strength": 1,
+      "row": "strategy",
+      "ability": "spy:1",
+      "desc": "间谍，查看并弃对手1张"
+    },
+    {
+      "id": 110,
+      "name": "过牌",
+      "faction": "common",
+      "strength": 1,
+      "row": "strategy",
+      "ability": "draw_extra:2",
+      "desc": "运筹，额外抽2张牌"
+    },
+    {
+      "id": 111,
+      "name": "连环计",
+      "faction": "common",
+      "strength": 2,
+      "row": "strategy",
+      "ability": "destroy:1",
+      "desc": "连环计，消灭对手1张"
+    },
+    {
+      "id": 112,
+      "name": "暗度陈仓",
+      "faction": "common",
+      "strength": 1,
+      "row": "strategy",
+      "ability": "spy:1",
+      "desc": "暗度陈仓，间谍行动"
+    }
+  ]
+}
