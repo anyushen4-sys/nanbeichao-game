@@ -1669,8 +1669,9 @@ function renderGameResult(el){
                     }
 
                     function bindLobbyButtons(){
+                          console.log('[bind] called, hostBtn:', !!document.getElementById('mp-host-btn'));
                           var hb=document.getElementById('mp-host-btn');
-                          if(hb)hb.onclick=startMultiplayerHost;
+                          if(hb){hb.onclick=startMultiplayerHost;hb.addEventListener('click',function(){console.log('[bind] host-btn click');});}
                           var gb=document.getElementById('mp-guest-btn');
                           if(gb)gb.onclick=joinMultiplayerRoom;
                           var cb=document.getElementById('mp-cancel-btn');
@@ -3159,6 +3160,7 @@ function dismissSettlementToast() {
 }
 
 function startMultiplayerHost() {
+  console.log('[host] ENTRY');
   G._mpState = G._mpState || {};
   G._mpState._host = 'host';
   G._mpState._status = 'connecting';
@@ -3167,18 +3169,21 @@ function startMultiplayerHost() {
   G.phase = 'multiplayer_lobby';
   startMultiplayerPolling();
   render(); // 立即同步 UI (connecting 状态)
+  console.log('[host] status=' + G._mpState._status + ', hasEAPI=' + (typeof electronAPI !== 'undefined'));
   // Try to open invite dialog
   if (typeof electronAPI !== 'undefined' && electronAPI.multiplayer) {
-    electronAPI.multiplayer.openInviteDialog().then(function(r) {
+    console.log('[host] calling openInviteDialog'); electronAPI.multiplayer.openInviteDialog().then(function(r) {
       // r.ok=false 通常是 steam_not_running (dev 模式无 Steam)
       // 在这种模式下, 我们跳过 waiting_invite 阶段, 但保留 connecting 状态让 polling
       // 检测到 peerQueue 中的消息即可触发 connected (mock 会自动 fill peerQueue)
+      console.log('[host] openInviteDialog RESOLVED, r.ok=' + r.ok + ', r=' + JSON.stringify(r));
       if (r.ok) {
         G._mpState._status = 'waiting_invite';
         render();
       }
       // r.ok=false → 不改状态, polling 会继续
-    }).catch(function() {
+    }).catch(function(e) {
+      console.log('[host] CATCH: ' + (e && e.message));
       // IPC 调用失败, polling 也会继续, 等 mock 模拟
     });
   }
