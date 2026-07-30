@@ -1658,15 +1658,29 @@ function renderGameResult(el){
                '正在初始化...') +
             '</div>' +
             '<div class="mp-lobby-buttons">' +
-              (status === 'idle' || !status ? '<button class="menu-btn" onclick="startMultiplayerHost()" style="background:linear-gradient(135deg,#DAA520,#C83C3C)">创建房间 (host)</button>' +
-                '<button class="menu-btn" onclick="joinMultiplayerRoom()">加入房间 (guest)</button>' +
+              (status === 'idle' || !status ? '<button class="menu-btn" id="mp-host-btn" style="background:linear-gradient(135deg,#DAA520,#C83C3C)">创建房间 (host)</button>' +
+                '<button class="menu-btn" id="mp-guest-btn">加入房间 (guest)</button>' +
                 (/mockmp=1/.test(location.search) ? '<div style="margin-top:10px;padding:8px;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);border-radius:6px;font-size:.85em;color:#FFD700">⚙️ Mock 模式:打开两个窗口,一个点创建房间(host),另一个点加入房间(guest),通过 BroadcastChannel 跨窗口模拟</div>' : '') + '' : '') +
-              (status === 'waiting_invite' ? '<button class="menu-btn" onclick="cancelMultiplayerInvite()">取消等待</button>' : '') +
-              (status === 'connected' ? '<button class="menu-btn" onclick="startLeaderSelect()">开始选择主将</button>' : '') +
+              (status === 'waiting_invite' ? '<button class="menu-btn" id="mp-cancel-btn">取消等待</button>' : '') +
+              (status === 'connected' ? '<button class="menu-btn" id="mp-leader-btn">开始选择主将</button>' : '') +
             '</div>' +
-            '<button class="menu-btn" onclick="stopMultiplayerPolling();resetGame()" style="margin-top:10px">返回菜单</button>' +
+            '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">返回菜单</button>' +
                         '</div>';
                     }
+
+                        // 绑定按钮事件 (用 onclick 属性替代 inline onclick, 避免重复触发)
+                        setTimeout(function(){
+                          var hb=document.getElementById('mp-host-btn');
+                          if(hb)hb.onclick=startMultiplayerHost;
+                          var gb=document.getElementById('mp-guest-btn');
+                          if(gb)gb.onclick=joinMultiplayerRoom;
+                          var cb=document.getElementById('mp-cancel-btn');
+                          if(cb)cb.onclick=cancelMultiplayerInvite;
+                          var lb=document.getElementById('mp-leader-btn');
+                          if(lb)lb.onclick=startLeaderSelect;
+                          var bb=document.getElementById('mp-back-btn');
+                          if(bb)bb.onclick=function(){stopMultiplayerPolling();resetGame()};
+                        },0);
 
                     function renderMultiplayerPlaying(el){
           // 多人 playing：根据 mpPhase 渲染不同阶段
