@@ -66,8 +66,9 @@ export function getLocale() {
 
   const stored = _readStorage();
   if (stored) {
-    // validate stored value
-    if (SUPPORTED.includes(stored) || RESERVED.includes(stored)) {
+    // Only SUPPORTED locales are allowed for the active locale.
+    // RESERVED values in storage are an artifact; fall back to default.
+    if (SUPPORTED.includes(stored)) {
       _current = stored;
       _applyDOM(_current);
       return _current;
@@ -97,9 +98,9 @@ export function getLocale() {
  * @returns {boolean} true if locale changed, false if same or invalid
  */
 export function setLocale(locale) {
-  const allValid = [...SUPPORTED, ...RESERVED];
-  if (!allValid.includes(locale)) {
-    console.warn(`[locale] Unknown locale "${locale}", ignoring. Supported: ${allValid.join(', ')}`);
+  // Only allow actually SUPPORTED locales (NOT reserved Phase 2 slots)
+  if (!SUPPORTED.includes(locale)) {
+    console.warn(`[locale] Unsupported locale "${locale}", ignoring. Supported: ${SUPPORTED.join(', ')}`);
     return false;
   }
 

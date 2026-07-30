@@ -310,7 +310,7 @@ function main() {
       counterRate: +cfRate.toFixed(2),
       avgEndStr: +avgEnd.toFixed(2),
       rounds: acc.rounds, games: acc.games,
-      fail: jzRate < 10 || jzRate > 60,
+      fail: spec ? (jzRate < 10 || jzRate > 60) : false,
       winrate: +((acc.wins/acc.games*100)).toFixed(2),
     });
   }

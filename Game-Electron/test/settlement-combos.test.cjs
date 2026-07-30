@@ -101,7 +101,7 @@ function computeAllBonuses({ board, oppBoard, hand, leader }) {
 
 // ── helpers ──
 const c = (id, faction, row, ability) => ({ id, faction, row, ability, strength: 3 });
-const mkLeader = (faction, juzhongqu) => ({ faction, juzhongqu });
+function mkLeader(faction, juzhongqu) { return { faction, juzhongqu }; }
 
 function b(...cards) {
   const board = { infantry: [], cavalry: [], navy: [], strategy: [] };
@@ -188,7 +188,7 @@ describe('Layer 3: Leader Juzhongqu', () => {
     const board = b(
       c(1, 'song', 'infantry'), c(2, 'song', 'cavalry'), c(3, 'song', 'navy')
     );
-    const leader = mkdir('song', { row: 'infantry', count: 1, bonus_value: 2 });
+    const leader = mkLeader('song', { row: 'infantry', count: 1, bonus_value: 2 });
     const bonus = computeJuzhongqu(board, leader);
     assert.strictEqual(bonus[1], 2);
     assert.strictEqual(bonus[2], 2);
@@ -197,20 +197,20 @@ describe('Layer 3: Leader Juzhongqu', () => {
 
   it('trigger condition not met → no bonus', () => {
     const board = b(c(1, 'song', 'infantry'));
-    const leader = mkdir('song', { row: 'infantry', count: 2, bonus_value: 2 });
+    const leader = mkLeader('song', { row: 'infantry', count: 2, bonus_value: 2 });
     const bonus = computeJuzhongqu(board, leader);
     assert.deepStrictEqual(bonus, {});
   });
 
   it('no juzhongqu field on leader → no bonus', () => {
     const board = b(c(1, 'song', 'infantry'), c(2, 'song', 'infantry'));
-    const leader = mkdir('song', null);
+    const leader = mkLeader('song', null);
     assert.deepStrictEqual(computeJuzhongqu(board, leader), {});
   });
 
   it('different faction cards are not buffed', () => {
     const board = b(c(1, 'song', 'infantry'), c(2, 'qi', 'infantry'));
-    const leader = mkdir('song', { row: 'infantry', count: 1, bonus_value: 2 });
+    const leader = mkLeader('song', { row: 'infantry', count: 1, bonus_value: 2 });
     const bonus = computeJuzhongqu(board, leader);
     assert.strictEqual(bonus[1], 2);
     assert.strictEqual(bonus[2], undefined);
@@ -224,7 +224,7 @@ describe('computeAllBonuses merge', () => {
     const oppBoard = b(
       c(10, 'song', 'infantry'), c(11, 'song', 'infantry'), c(12, 'song', 'cavalry')
     );
-    const leader = mkdir('song', { row: 'infantry', count: 1, bonus_value: 2 });
+    const leader = mkLeader('song', { row: 'infantry', count: 1, bonus_value: 2 });
     const bonuses = computeAllBonuses({ board, us: 0, hand, leader, oppBoard });
     // Layer 1: not triggered (<3 song on my board)
     // Layer 2: opp has 3 song → counter_faction triggers +2
@@ -233,7 +233,7 @@ describe('computeAllBonuses merge', () => {
   });
 
   it('empty all → empty total', () => {
-    const leader = mkdir('song', null);
+    const leader = mkLeader('song', null);
     const bonuses = computeAllBonuses({ board: b(), us: 0, hand: [], leader, oppBoard: b() });
     assert.deepStrictEqual(bonuses.total, {});
   });

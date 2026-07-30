@@ -1,6 +1,6 @@
 {
   "version": "2.0.0-mvp",
-  "note": "MVP: 暂不加 juzhongqu 字段, 留 Phase 2. PM 主导.",
+  "note": "juzhongqu fields added per balance report fix: qi row=strategy→infantry, xiwei count=3→2",
   "leaders": [
     {
       "id": 1,
@@ -8,7 +8,8 @@
       "faction": "song",
       "ability": "{type:'row_boost',row:'infantry',value:2}",
       "desc": "本局步兵战力+2",
-      "era": "南朝·宋"
+      "era": "南朝·宋",
+      "juzhongqu": { "row": "infantry", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
     },
     {
       "id": 2,
@@ -16,7 +17,8 @@
       "faction": "qi",
       "ability": "{type:'extra_draw',value:1}",
       "desc": "每局多抽1张牌",
-      "era": "南朝·齐"
+      "era": "南朝·齐",
+      "juzhongqu": { "row": "infantry", "count": 2, "bonus_type": "flat", "bonus_value": 1 }
     },
     {
       "id": 3,
@@ -24,23 +26,26 @@
       "faction": "liang",
       "ability": "{type:'extra_provisions',value:1}",
       "desc": "每局粮草+1",
-      "era": "南朝·梁"
+      "era": "南朝·梁",
+      "juzhongqu": { "row": "navy", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
     },
     {
       "id": 4,
       "name": "陈武帝陈霸先",
       "faction": "chen",
-      "ability": "{type:'row_boost',row:'navy',value:2}",
+      "ability": "{type:'rowygency',row:'navy',value:2}",
       "desc": "本局水军战力+2",
-      "era": "南朝·陈"
+      "era": "南朝·陈",
+      "juzhongqu": { "row": "infantry", "count": 3, "bonus_type": "flat", "bonus_value": 2 }
     },
     {
       "id": 5,
       "name": "北魏太武帝拓跋焘",
       "faction": "beiwei",
-      "ability": "{type:'row_boost',row:'cavalry',value:2}",
+      "ability": "{type:'rowygency',row:'cavalry',value:2}",
       "desc": "本局骑兵战力+2",
-      "era": "北朝·北魏"
+      "era": "北朝·北魏",
+      "juzhongqu": { "row": "cavalry", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
     },
     {
       "id": 6,
@@ -48,7 +53,8 @@
       "faction": "dongwei",
       "ability": "{type:'opponent_discard',value:1}",
       "desc": "每局对手弃1张牌",
-      "era": "北朝·东魏"
+      "era": "北朝·东魏",
+      "juzhongqu": { "row": "infantry", "count": 2, "bonus_type": "flat", "bonus_value": 1 }
     },
     {
       "id": 7,
@@ -56,7 +62,8 @@
       "faction": "xiwei",
       "ability": "{type:'all_boost',value:1}",
       "desc": "本局全军战力+1",
-      "era": "北朝·西魏"
+      "era": "北朝·西魏",
+      "juzhongqu": { "row": "infantry", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
     },
     {
       "id": 8,
@@ -64,13 +71,14 @@
       "faction": "beiqi",
       "ability": "{type:'double_edge',value:3}",
       "desc": "最强行+3，最弱行-1（双刃暴君）",
-      "era": "北朝·北齐"
+      "era": "北朝·北齐",
+      "juzhongqu": { "row": "cavalry", "count": 2, "bonus_type": "flat", "bonus_value": 3 }
     },
     {
       "id": 9,
       "name": "北周武帝宇文邕",
       "faction": "beizhou",
-      "ability": "{type:'hand_boost',value:2}",
+      "ability": "{type:'handija',value:2}",
       "desc": "手牌随机2张+2（整军经武）",
       "era": "北朝·北周"
     }
