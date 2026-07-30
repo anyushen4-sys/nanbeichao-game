@@ -263,15 +263,30 @@ function createWindow() {
   });
 }
 
+// Singleton: 防止多次 `electron .` 启动产生多窗口
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  console.log('[App] Another instance is running, exiting.');
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
 app.whenReady().then(() => {
   createWindow();
 
+  // macOS-only: 点 dock 重新开窗口. Windows/Linux 忽略避免重复 spawn.
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (process.platform === 'darwin' && BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
   });
 });
+} // close else (gotSingleInstanceLock)
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
