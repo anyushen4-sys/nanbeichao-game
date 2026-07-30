@@ -26,12 +26,12 @@ function loadJSON(p) { return JSON.parse(fs.readFileSync(p, 'utf8')); }
 // 9 leader 的聚众曲; beizhou(宇文邕)留空, 不触发也不报错
 const SPEC_JZQ = {
   song:    { row: 'infantry',  count: 2, bonus_value: 2 },
-  qi:      { row: 'strategy',  count: 2, bonus_value: 1 },
+  qi:      { row: 'infantry',  count: 2, bonus_value: 1 },
   liang:   { row: 'navy',      count: 2, bonus_value: 2 },
   chen:    { row: 'infantry',  count: 3, bonus_value: 2 },
   beiwei:  { row: 'cavalry',   count: 2, bonus_value: 2 },
   dongwei: { row: 'infantry',  count: 2, bonus_value: 1 },
-  xiwei:   { row: 'infantry',  count: 3, bonus_value: 2 },
+  xiwei:   { row: 'infantry',  count: 2, bonus_value: 2 },
   beiqi:   { row: 'cavalry',   count: 2, bonus_value: 3 },
   beizhou: null,
 };
