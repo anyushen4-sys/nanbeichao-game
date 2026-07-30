@@ -109,6 +109,20 @@
   };
   console.log('[MockMP] ready. SELF='+SELF);
   console.log('[MockMP] use __MOCKMP.simulateGuest() to switch view');
+    console.log('[MockMP] AUTO: schedule host after first lobby render');
+    window.__MOCKMP_AUTO_HOSTED=false;
+    // hook 进 render 函数
+    var _origRender=window.render;
+    window.render=function(){
+      var ret=_origRender.apply(this,arguments);
+      // 检测: 进入 lobby + status=idle 时自动调 startMultiplayerHost
+      if(!window.__MOCKMP_AUTO_HOSTED && window.G && G.phase==='multiplayer_lobby' && G._mpState && G._mpState._status==='idle'){
+        window.__MOCKMP_AUTO_HOSTED=true;
+        console.log('[MockMP] AUTO-HOST triggered');
+        setTimeout(function(){startMultiplayerHost();},500);
+      }
+      return ret;
+    };
 })();
 </script>
 
