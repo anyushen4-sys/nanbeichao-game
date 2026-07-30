@@ -26,8 +26,29 @@
   var SELF='host'; // 默认视角 - 第一个窗口
   var clientId='mp-'+Math.random().toString(36).slice(2,8); // 每个实例唯一
   console.log('[MockMP] clientId='+clientId);
-  var bc=new BroadcastChannel('mock-mp'); // 同 origin 跨进程/tab/iframe 共享
+  var bc=null; // BC 跨实例不通, 用 localStorage 替代 (同 origin 跨 window/iframe 共享)
+  console.log('[MockMP] localStorage-based discovery, origin=' + location.origin);
   var knownClients={}; // 已知其他 client ID
+  // localStorage 'storage' 事件 - 当其他 tab/window 写入 key='mock-mp-msg' 时触发
+  window.addEventListener('storage',function(ev){
+    if(ev.key!=='mock-mp-msg' || !ev.newValue)return;
+    try {
+      var d=JSON.parse(ev.newValue);
+      if(!d || d.from===clientId)return;
+      console.log('[MockMP-storage] recv from ' + d.from + ':', d.msg);
+      myQueue.push({steamId:d.from,data:d.msg});
+    } catch(e){}
+  });
+  // 模拟 BroadcastChannel 接口给原代码用
+  function _bcPost(data){
+    localStorage.setItem('mock-mp-msg',JSON.stringify(data));
+  }
+  function _bcAddListener(cb){
+    return window.addEventListener('storage',function(ev){
+      if(ev.key!=='mock-mp-msg' || !ev.newValue)return;
+      try { cb({data: JSON.parse(ev.newValue)}); } catch(e){}
+    });
+  }
   // ===== SELF 角色分配 =====
   // 在 BC 上发 "hello" 看谁回应, 第一个收到回应的窗口=CLIENT #1=host
   // 没收到回应=SELF, 就是第一个进来的 = host
@@ -44,10 +65,10 @@
         doneCb();
       }
     };
-    bc.addEventListener('message',tempHandler);
+    window.addEventListener('storage',tempHandler);
     // 3 秒后超时, 默认 SELF=host
     setTimeout(function(){
-      bc.removeEventListener('message',tempHandler);
+      window.removeEventListener('storage',tempHandler);
       if(!responded){
         console.log('[MockMP] no existing client → SELF=host');
         SELF='host';
@@ -55,19 +76,11 @@
       doneCb();
     },300);
     // 发 hello
-    bc.postMessage({from:myId,msg:{type:'hello',role:'newcomer'}});
+    _bcPost({from:myId,msg:{type:'hello',role:'newcomer'}});
     // 同时我们也是 host, 准备回应 hello
   }
   // 监听 hello 消息 (新进来的 client) - 我作为 host 回应 hello-reply
-  bc.addEventListener('message',function(ev){
-    var d=ev.data;
-    if(!d)return;
-    var msg=d.msg;
-    if(msg && msg.type==='hello' && SELF==='host' && d.from!==clientId){
-      // 我是 host, 回应 hello-reply
-      bc.postMessage({from:clientId,msg:{type:'hello-reply',to:d.from}});
-    }
-  });
+  // hello handler 已通过上方 storage 监听 + tempHandler 处理
   var myQueue=[]; // 本实例的入站 (其他 client 发的, bc.onmessage 推到这)
   var peerState={
     _host:'guest',
@@ -86,18 +99,11 @@
     _selectedLeader:null
   };
   // 接收其他 BroadcastChannel 实例的消息
-  bc.onmessage=function(ev){
-    var d=ev.data;
-    if(!d || d.from===clientId)return;
-    // 跳过自己发的消息
-    console.log('[MockMP] recv from ' + d.from + ':', d.msg);
-    // 推入本实例的入站队列
-    myQueue.push({steamId:d.from,data:d.msg});
-  };
+  // 通过 storage 事件接收 (已在上面 addEventListener)
   function sendToPeer(data){
     var msg=typeof data==='string'?JSON.parse(data):data;
     // 广播给所有其他实例
-    bc.postMessage({from:clientId,msg:data});
+    _bcPost({from:clientId,msg:data});
   }
   function drainMyQueue(){var q=myQueue.slice();myQueue=[];return q;}
   // electronAPI mock
