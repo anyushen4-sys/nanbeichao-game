@@ -1,0 +1,102 @@
+{
+  "ui": {
+    "menu": {
+      "title": "Northern & Southern Dynasties",
+      "subtitle": "Card Power — Winds of Change",
+      "start": "Start Game",
+      "multiplayer": "Multiplayer",
+      "settings": "Settings",
+      "quit": "Quit"
+    },
+    "settings": {
+      "title": "Settings",
+      "language": "Language",
+      "back": "← Back",
+      "localeLabel": {
+        "zh-CN": "简体中文",
+        "en-US": "English (US)",
+        "zh-TW": "繁體中文 (Coming soon)",
+        "fr-FR": "Français (Coming soon)",
+        "es-ES": "Español (Coming soon)"
+      }
+    },
+    "game": {
+      "yourTurn": "Your Turn",
+      "opponentTurn": "Opponent's Turn",
+      "round": "Round {round}",
+      "playCard": "Play Card",
+      "pass": "Pass",
+      "surrender": "Surrender",
+      "score": "Score"
+    },
+    "leader": {
+      "select": "Select Leader",
+      "selectHint": "Choose a leader to begin",
+      "confirm": "Confirm"
+    },
+    "card": {
+      "strength": "Strength",
+      "ability": "Ability",
+      "faction": "Faction",
+      "row": "Row",
+      "cost": "Cost"
+    },
+    "faction": {
+      "song": "Song",
+      "qi": "Qi",
+      "liang": "Liang",
+      "chen": "Chen",
+      "beiwei": "Northern Wei",
+      "dongwei": "Eastern Wei",
+      "xiwei": "Western Wei",
+      "beiqi": "Northern Qi",
+      "beizhou": "Northern Zhou",
+      "common": "Neutral"
+    },
+    "row": {
+      "infantry": "Infantry",
+      "cavalry": "Cavalry",
+      "navy": "Navy",
+      "strategy": "Strategy"
+    }
+  },
+  "combo": {
+    "juzhongqu": {
+      "label": "Rally",
+      "desc": "Rally: ≥{count} {faction} {row} → all {faction} +{value}",
+      "undefined": "Undefined"
+    },
+    "sameFaction": {
+      "buff": "+{value}",
+      "toast": "{faction} forces assembled — all +{value}",
+      "rowBadge": "+{value}×{k}"
+    },
+    "counter": {
+      "toast": "⚡ {faction} dominant — counter cards +{value}",
+      "nOver3": "{n}/3",
+      "none": "N/A"
+    }
+  },
+  "settlement": {
+    "title": "Settlement",
+    "roundResult": "Round {round} Result",
+    "gameResult": "Game Over",
+    "win": "You Win!",
+    "lose": "You Lose!",
+    "draw": "Draw",
+    "base": "Base",
+    "breakdown": {
+      "zh": "基础 {base}  + 同阵营 +{ally}  + 聚众曲 +{jzq}",
+      "en": "Base {base} + Ally +{ally} + Rally +{jzq}"
+    },
+    "counterBreakdown": " Counter ×{counter}",
+    "total": "= {total}"
+  },
+  "ability": {
+    "counter_faction": "Counter",
+    "rally_leader": "Rally",
+    "spy": "Spy",
+    "medic": "Medic",
+    "morale_boost": "Morale"
+  }
+}
