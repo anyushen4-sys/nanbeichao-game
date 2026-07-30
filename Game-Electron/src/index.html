@@ -111,6 +111,27 @@
   console.log('[MockMP] use __MOCKMP.simulateGuest() to switch view');
     console.log('[MockMP] AUTO: schedule host after first lobby render');
     window.__MOCKMP_AUTO_HOSTED=false;
+    // contextBridge 暴露的对象被冻结, 必须用 Object.defineProperty 替换
+    // 但更可靠的做法: monkey-patch _existing_ electronAPI 的方法
+    if(typeof electronAPI !== 'undefined'){
+      console.log('[MockMP] monkey-patching electronAPI.multiplayer');
+      var __origOpenInvite = electronAPI.multiplayer.openInviteDialog;
+      electronAPI.multiplayer.openInviteDialog = function(){
+        console.log('[MockMP] intercept openInviteDialog');
+        var resolveFn;
+        var p = new Promise(function(r){resolveFn=r;});
+        // 同步调用: 设 connected 状态
+        if(G._mpState){
+          G._mpState._peerName='Mock对手(guest)';
+          G._mpState.peerId='mock-guest';
+          G._mpState._status='connected';
+        }
+        setTimeout(function(){
+          resolveFn({ok:true});
+        }, 50);
+        return p;
+      };
+    }
     // hook 进 render 函数
     var _origRender=window.render;
     window.render=function(){
