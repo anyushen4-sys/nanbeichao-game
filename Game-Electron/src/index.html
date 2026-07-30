@@ -221,7 +221,8 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="js/card_data_uris.js"></script>
+<script src="js/card_data_uris.js">
+<script src="js/combos.js"></script>
 <!--
   [架构说明 2026-07-22 cron 接管修复]
   本游戏当前采用 INLINE 模式:所有游戏逻辑(渲染/AI/规则/UI)都在本 index.html 内联。
@@ -487,7 +488,21 @@ function getRowPower(cards,playerIdx){
   const buffs=G.globalBuffs;
   const armor=playerIdx===0?buffs.playerArmor:buffs.aiArmor;
   const unify=playerIdx===0?buffs.playerUnify:buffs.aiUnify;
-  return cards.reduce((s,c)=>s+(c?Math.max(1,c.strength+armor+Math.floor(unify*0.5)):0),0);
+  // Combo Bonus overlay — sees the full board state and applies same-faction / anti-faction / juzhongqu
+  const cb=(typeof window!=='undefined' && window.ComboEngine) ? window.ComboEngine : null;
+  const oppIdx=1-playerIdx;
+  let _bonuses={};
+  if(cb){
+    const oppBoard = G.players[oppIdx] && G.players[oppIdx].board;
+    const myBoard = G.players[playerIdx] && G.players[playerIdx].board;
+    const myHand = G.players[playerIdx] && G.players[playerIdx].hand;
+    const myLeader = G.players[playerIdx] && G.players[playerIdx].leader;
+    if(myBoard){
+      const all = cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
+      _bonuses = all.total;
+    }
+  }
+  return cards.reduce((s,c)=>s+(c?Math.max(1,c.strength+armor+Math.floor(unify*0.5)+(_bonuses[c.id]||0)):0),0);
 }
 function getBoardPower(board,playerIdx){return getRowPower(board.infantry,playerIdx)+getRowPower(board.cavalry,playerIdx)+getRowPower(board.navy,playerIdx)+getRowPower(board.strategy,playerIdx)}
 
