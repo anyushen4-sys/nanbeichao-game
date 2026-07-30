@@ -222,7 +222,9 @@
 <body>
 <div id="app"></div>
 <script src="js/card_data_uris.js">
-<script src="js/combos.js"></script>
+<script src="js/combos.js">
+<script src="js/i18n.js">
+<script src="js/locale.js"></script>
 <!--
   [架构说明 2026-07-22 cron 接管修复]
   本游戏当前采用 INLINE 模式:所有游戏逻辑(渲染/AI/规则/UI)都在本 index.html 内联。
@@ -1172,7 +1174,7 @@ function render(){
   G._lastPlayedUid=null;
   G._lastPlayedBy=null;
   switch(G.phase){
-      case'menu':renderMenu(app);break;
+      case'menu':renderMenu(app);break;case'settings':renderSettings(app);break;
       case'tutorial':renderTutorial(app);break;
       case'leader_select':renderLeaderSelect(app);break;
       case'mulligan':renderMulligan(app);break;
@@ -1244,6 +1246,7 @@ function renderMenu(el){
       <div class="mode-select-back" onclick="G._menuScreen='main';render()">
         <span class="mode-back-arrow">←</span>
         <span>返回首页</span>
+        <button class="settings-gear-btn" onclick="event.stopPropagation();G.phase='settings';render()" title="设置 / Settings" style="margin-left:12px;">⚙</button>
       </div>
     </div>
   </div>`;
@@ -1274,7 +1277,7 @@ function renderMenu(el){
         运筹帷幄 · 决胜千里
       </div>
       <button class="menu-btn" onclick="G._menuScreen='mode_select';render()">开始游戏</button>
-      <div class="menu-footer">昆特牌风格 · 南北朝历史题材</div>
+      <div class="menu-footer">昆特牌风格 · 南北朝历史题材 <button class="settings-gear-btn" onclick="G.phase='settings';render()" title="设置 / Settings">⚙</button></div>
     </div>
     <div class="menu-bottom-deco">
       <div class="deco-line"></div>
@@ -1326,6 +1329,38 @@ function leaderImgFallback(img, fallbackSrc, color, initial){
     const ph=img.parentNode.querySelector('.placeholder-block');
     if(ph) ph.style.display='flex';
   }
+}
+
+
+function renderSettings(el){
+  const curLocale = (typeof Locale !== 'undefined' && Locale.getLocale) ? Locale.getLocale() : (localStorage.getItem('nanbeichao.locale') || 'zh-CN');
+  el.innerHTML=`
+  <div class="settings-screen">
+    <div class="settings-header">
+      <div class="settings-title">⚙ 设置</div>
+      <div class="settings-subtitle">Settings</div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">语言 / Language</div>
+      <select id="lang-select" class="settings-select" onchange="window.Locale && window.Locale.setLocale(this.value);">
+        <option value="zh-CN" ${curLocale==='zh-CN'?'selected':''}>中文 (zh-CN) — 默认</option>
+        <option value="en-US" ${curLocale==='en-US'?'selected':''}>English (en-US)</option>
+        <option value="zh-TW" disabled>繁體中文 (Phase 2)</option>
+        <option value="fr-FR" disabled>Français (Phase 2)</option>
+        <option value="es-ES" disabled>Español (Phase 2)</option>
+      </select>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">${curLocale}</div>
+    </div>
+    <button class="settings-back-btn" onclick="G.phase='menu';render()">⬅ 返回 / Back</button>
+  </div>`;
+  // Apply locale after render
+  setTimeout(()=>{
+    if(typeof Locale!=='undefined' && Locale.applyToDocument){
+      Locale.applyToDocument(curLocale);
+    }
+  },0);
 }
 
 function renderLeaderSelect(el){
