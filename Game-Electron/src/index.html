@@ -3173,18 +3173,23 @@ function startMultiplayerHost() {
   render(); // 立即同步 UI (connecting 状态)
   // Try to open invite dialog
   if (typeof electronAPI !== 'undefined' && electronAPI.multiplayer) {
+    console.log('[MP] calling openInviteDialog, mock:', !!(electronAPI.multiplayer.openInviteDialog.toString().indexOf('Mock')>=0));
     electronAPI.multiplayer.openInviteDialog().then(function(r) {
+      console.log('[MP] openInviteDialog RESOLVED, r.ok=' + r.ok + ', r=' + JSON.stringify(r));
       if (r.ok) {
         G._mpState._status = 'waiting_invite';
       } else {
+        console.log('[MP] openInviteDialog r.ok=false, returning to idle');
         G._mpState._status = 'idle';
       }
       render();
-    }).catch(function() {
+    }).catch(function(e) {
+      console.log('[MP] openInviteDialog REJECTED: ' + e);
       G._mpState._status = 'idle';
       render();
     });
   } else {
+    console.log('[MP] no electronAPI.multiplayer, returning to idle');
     G._mpState._status = 'idle';
     render();
   }
