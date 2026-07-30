@@ -21,12 +21,54 @@
 <script>
 (function(){
   if(!/mockmp=1/.test(location.search))return;
-  console.log('[MockMP] single-window mock enabled');
-  // 单窗口内两个虚拟 client 实例, 互发消息
-  var SELF='host'; // 第一个窗口的角色是 host
-  var PEER='guest';
-  var myQueue=[];  // host 的入站队列
-  var peerQueue=[]; // guest 的入站队列 (空)
+  console.log('[MockMP] multi-window mock enabled (BroadcastChannel cross-instance)');
+  // ===== 用 BroadcastChannel 跨 Electron 实例/tab 通信 =====
+  var SELF='host'; // 默认视角 - 第一个窗口
+  var clientId='mp-'+Math.random().toString(36).slice(2,8); // 每个实例唯一
+  console.log('[MockMP] clientId='+clientId);
+  var bc=new BroadcastChannel('mock-mp'); // 同 origin 跨进程/tab/iframe 共享
+  var knownClients={}; // 已知其他 client ID
+  // ===== SELF 角色分配 =====
+  // 在 BC 上发 "hello" 看谁回应, 第一个收到回应的窗口=CLIENT #1=host
+  // 没收到回应=SELF, 就是第一个进来的 = host
+  var SELF='host';
+  function discoverSelf(doneCb){
+    var myId=clientId;
+    var responded=false;
+    // 听 1.5s 看有没有其他 client 响应
+    var tempHandler=function(ev){
+      if(ev.data && ev.data.type==='hello-reply' && ev.data.to===myId){
+        responded=true;
+        SELF='guest';
+        console.log('[MockMP] discovered existing client → SELF=guest');
+        doneCb();
+      }
+    };
+    bc.addEventListener('message',tempHandler);
+    // 3 秒后超时, 默认 SELF=host
+    setTimeout(function(){
+      bc.removeEventListener('message',tempHandler);
+      if(!responded){
+        console.log('[MockMP] no existing client → SELF=host');
+        SELF='host';
+      }
+      doneCb();
+    },300);
+    // 发 hello
+    bc.postMessage({from:myId,msg:{type:'hello',role:'newcomer'}});
+    // 同时我们也是 host, 准备回应 hello
+  }
+  // 监听 hello 消息 (新进来的 client) - 我作为 host 回应 hello-reply
+  bc.addEventListener('message',function(ev){
+    var d=ev.data;
+    if(!d)return;
+    var msg=d.msg;
+    if(msg && msg.type==='hello' && SELF==='host' && d.from!==clientId){
+      // 我是 host, 回应 hello-reply
+      bc.postMessage({from:clientId,msg:{type:'hello-reply',to:d.from}});
+    }
+  });
+  var myQueue=[]; // 本实例的入站 (其他 client 发的, bc.onmessage 推到这)
   var peerState={
     _host:'guest',
     _status:'idle',
@@ -43,13 +85,21 @@
     peerId:'mock-host',
     _selectedLeader:null
   };
-  // 把消息分发到对方的入站队列
+  // 接收其他 BroadcastChannel 实例的消息
+  bc.onmessage=function(ev){
+    var d=ev.data;
+    if(!d || d.from===clientId)return;
+    // 跳过自己发的消息
+    console.log('[MockMP] recv from ' + d.from + ':', d.msg);
+    // 推入本实例的入站队列
+    myQueue.push({steamId:d.from,data:d.msg});
+  };
   function sendToPeer(data){
     var msg=typeof data==='string'?JSON.parse(data):data;
-    peerQueue.push(msg);
+    // 广播给所有其他实例
+    bc.postMessage({from:clientId,msg:data});
   }
   function drainMyQueue(){var q=myQueue.slice();myQueue=[];return q;}
-  function drainPeerQueue(){var q=peerQueue.slice();peerQueue=[];return q;}
   // electronAPI mock
   window.electronAPI={
     steam:{
@@ -73,9 +123,9 @@
         return Promise.resolve({ok:true});
       },
       onP2PMessage:function(){
-        // 同步取我的入站队列
+        // 同步取本实例入站 (BroadcastChannel 已经按 clientId 过滤过)
         return Promise.resolve({ok:true,messages:drainMyQueue().map(function(m){
-          return {steamId:'mock-peer',data:typeof m==='string'?m:JSON.stringify(m)};
+          return {steamId:m.steamId||'mock-peer',data:typeof m.data==='string'?m.data:JSON.stringify(m.data)};
         })});
       },
       acceptInvite:function(){return Promise.resolve({ok:true});}
@@ -109,8 +159,15 @@
   };
   console.log('[MockMP] ready. SELF='+SELF);
   console.log('[MockMP] use __MOCKMP.simulateGuest() to switch view');
-    console.log('[MockMP] AUTO: schedule host after first lobby render');
+    console.log('[MockMP] AUTO: discover SELF role then act');
     window.__MOCKMP_AUTO_HOSTED=false;
+    // 等待角色发现
+    discoverSelf(function(){
+      console.log('[MockMP] SELF determined: ' + SELF);
+      if(SELF==='host'){
+        // hook 进 render (host 走原流程)
+      }
+    });
     // contextBridge 暴露的对象被冻结, 必须用 Object.defineProperty 替换
     // 但更可靠的做法: monkey-patch _existing_ electronAPI 的方法
     if(typeof electronAPI !== 'undefined'){
@@ -136,11 +193,15 @@
     var _origRender=window.render;
     window.render=function(){
       var ret=_origRender.apply(this,arguments);
-      // 检测: 进入 lobby + status=idle 时自动调 startMultiplayerHost
       if(!window.__MOCKMP_AUTO_HOSTED && window.G && G.phase==='multiplayer_lobby' && G._mpState && G._mpState._status==='idle'){
         window.__MOCKMP_AUTO_HOSTED=true;
-        console.log('[MockMP] AUTO-HOST triggered');
-        setTimeout(function(){startMultiplayerHost();},500);
+        if(SELF==='host'){
+          console.log('[MockMP] AUTO-HOST triggered (SELF=host)');
+          setTimeout(function(){startMultiplayerHost();},500);
+        } else {
+          console.log('[MockMP] AUTO-JOIN triggered (SELF=guest)');
+          setTimeout(function(){joinMultiplayerRoom();},500);
+        }
       }
       return ret;
     };
@@ -3230,11 +3291,21 @@ function joinMultiplayerRoom() {
   G._mpState = G._mpState || {};
   G._mpState._host = 'guest';
   G._mpState._status = 'connecting';
-  G._mpState._myLocalIdx = 0;
+  G._mpState._myLocalIdx = 1;
   G.phase = 'multiplayer_lobby';
   startMultiplayerPolling();
   render();
   showNotification('等待游戏邀请...', 2500);
+  // Dev mock: 自动配对 (HOST 已经 AUTO-HOST 设了 connected), 我们也设 connected
+  // 实际游戏中 join 是被动接收 — dev 模式直接同步
+  setTimeout(function(){
+    if(G._mpState && G._mpState._status==='connecting'){
+      G._mpState._peerName='Mock对手(host)';
+      G._mpState.peerId='mock-host';
+      G._mpState._status='connected';
+      render();
+    }
+  },300);
 }
 
 function cancelMultiplayerInvite() {
