@@ -6,7 +6,24 @@
       "start": "[Translated Spanish]",
       "multiplayer": "[Translated Spanish]",
       "settings": "[Translated Spanish]",
-      "quit": "[Translated Spanish]"
+      "quit": "[Translated Spanish]",
+      "mode_title": "选择对战模式",
+      "mode_desc": "择一对手，逐鹿天下",
+      "ai_mode": "AI 对战",
+      "ai_desc": "单人挑战 · 随机领袖 · 三局两胜",
+      "hotseat": "同机对战",
+      "hotseat_desc": "好友对弈 · 同一屏幕 · 轮流操作",
+      "online": "联机对战",
+      "online_desc": "Steam 好友 · 远程对决 · 实时同步",
+      "back_home": "返回首页",
+      "seal_title": "天下对弈",
+      "main_title": "南北朝 · 天下对弈",
+      "subtitle_card": "— 卡牌对战 —",
+      "desc_line1": "四行布阵 · 三局两胜",
+      "desc_line2": "运筹帷幄 · 决胜千里",
+      "footer": "昆特牌风格 · 南北朝历史题材",
+      "tutorial": "教学",
+      "tutorial_skip": "跳过"
     },
     "settings": {
       "title": "[Translated Spanish]",
@@ -32,7 +49,9 @@
     "leader": {
       "select": "[Translated Spanish]",
       "selectHint": "[Translated Spanish]",
-      "confirm": "[Translated Spanish]"
+      "confirm": "[Translated Spanish]",
+      "title": "选择主将",
+      "your_leader": "你的主将"
     },
     "card": {
       "strength": "[Translated Spanish]",
@@ -58,6 +77,15 @@
       "cavalry": "[Translated Spanish]",
       "navy": "[Translated Spanish]",
       "strategy": "[Translated Spanish]"
+    },
+    "tutorial": {
+      "title": "天下对弈",
+      "subtitle": "— 游戏规则 —",
+      "rule1": "四行布阵：步兵、骑兵、水军、谋略各占一行，计算各行战力总和",
+      "rule2": "粮草出牌：每张牌需要消耗粮草（力量值÷3向上取整）",
+      "rule3": "三局两胜：先赢两局者获胜，共三局",
+      "rule4": "Pass机制：放弃本局后不可再出牌，双方都Pass则结算",
+      "start_btn": "我明白了，开始！"
     }
   },
   "combo": {

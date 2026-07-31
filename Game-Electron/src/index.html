@@ -19,6 +19,44 @@
 
 <!-- ===== Multiplayer Dev Mock (URL ?mockmp=1) ===== -->
 <script>
+
+// ── inline t() fallback ──
+// 在模块加载前提供翻译, 模块加载后 window.t 被替换为完整翻译函数
+window.t = window.t || function(key, vars){
+  var _t = {
+    'ui.menu.seal_title':'天下对弈',
+    'ui.menu.main_title':'南北朝 · 天下对弈',
+    'ui.menu.start':'开始游戏',
+    'ui.menu.mode_title':'选择对战模式',
+    'ui.menu.mode_desc':'择一对手，逐鹿天下',
+    'ui.menu.ai_mode':'AI 对战',
+    'ui.menu.ai_desc':'单人挑战 · 随机领袖 · 三局两胜',
+    'ui.menu.hotseat':'同机对战',
+    'ui.menu.hotseat_desc':'好友对弈 · 同一屏幕 · 轮流操作',
+    'ui.menu.online':'联机对战',
+    'ui.menu.online_desc':'Steam 好友 · 远程对决 · 实时同步',
+    'ui.menu.back_home':'返回首页',
+    'ui.menu.settings':'设置',
+    'ui.menu.footer':'昆特牌风格 · 南北朝历史题材',
+    'ui.menu.tutorial':'教学',
+    'ui.menu.tutorial_skip':'跳过',
+    'ui.tutorial.title':'天下对弈',
+    'ui.tutorial.subtitle':'— 游戏规则 —',
+    'ui.tutorial.rule1':'四行布阵：步兵、骑兵、水军、谋略各占一行，计算各行战力总和',
+    'ui.tutorial.rule2':'粮草出牌：每张牌需要消耗粮草（力量值÷3向上取整）',
+    'ui.tutorial.rule3':'三局两胜：先赢两局者获胜，共三局',
+    'ui.tutorial.rule4':'Pass机制：放弃本局后不可再出牌，双方都Pass则结算',
+    'ui.tutorial.start_btn':'我明白了，开始！',
+    'ui.leader.title':'选择主将',
+    'ui.leader.selectHint':'选择一位领袖开始游戏',
+    'ui.leader.your_leader':'你的主将',
+    'ui.leader.confirm':'确认选择'
+  ,
+    'ui.leader.desc':'你的领袖将决定阵营与特殊能力',
+    'ui.leader.march':'确认出征'};
+  return _t[key] || key;
+};
+
 (function(){
   if(!/mockmp=1/.test(location.search))return;
   console.log('[MockMP] multi-window mock enabled (BroadcastChannel cross-instance)');
@@ -1196,8 +1234,8 @@ function renderMenu(el){
     <div class="mode-select-content">
       <div class="mode-select-header">
         <div class="mode-select-emblem">⚔</div>
-        <div class="mode-select-title">选择对战模式</div>
-        <div class="mode-select-desc">择一对手，逐鹿天下</div>
+        <div class="mode-select-title">${t('ui.menu.mode_title')}</div>
+        <div class="mode-select-desc">${t('ui.menu.mode_desc')}</div>
         <div class="mode-select-divider">
           <span class="mode-divider-line"></span>
           <span class="mode-divider-diamond">◆</span>
@@ -1212,8 +1250,8 @@ function renderMenu(el){
             <span class="mode-card-icon-text">🤖</span>
           </div>
           <div class="mode-card-body">
-            <div class="mode-card-title">AI 对战</div>
-            <div class="mode-card-desc">单人挑战 · 随机领袖 · 三局两胜</div>
+            <div class="mode-card-title">${t('ui.menu.ai_mode')}</div>
+            <div class="mode-card-desc">${t('ui.menu.ai_desc')}</div>
           </div>
           <div class="mode-card-arrow">→</div>
         </div>
@@ -1224,8 +1262,8 @@ function renderMenu(el){
             <span class="mode-card-icon-text">👥</span>
           </div>
           <div class="mode-card-body">
-            <div class="mode-card-title">同机对战</div>
-            <div class="mode-card-desc">好友对弈 · 同一屏幕 · 轮流操作</div>
+            <div class="mode-card-title">${t('ui.menu.hotseat')}</div>
+            <div class="mode-card-desc">${t('ui.menu.hotseat_desc')}</div>
           </div>
           <div class="mode-card-arrow">→</div>
         </div>
@@ -1236,8 +1274,8 @@ function renderMenu(el){
             <span class="mode-card-icon-text">🌐</span>
           </div>
           <div class="mode-card-body">
-            <div class="mode-card-title">联机对战</div>
-            <div class="mode-card-desc">Steam 好友 · 远程对决 · 实时同步</div>
+            <div class="mode-card-title">${t('ui.menu.online')}</div>
+            <div class="mode-card-desc">${t('ui.menu.online_desc')}</div>
           </div>
           <div class="mode-card-arrow">→</div>
         </div>
@@ -1245,7 +1283,7 @@ function renderMenu(el){
 
       <div class="mode-select-back" onclick="G._menuScreen='main';render()">
         <span class="mode-back-arrow">←</span>
-        <span>返回首页</span>
+        <span>${t('ui.menu.back_home')}</span>
         <button class="settings-gear-btn" onclick="event.stopPropagation();G.phase='settings';render()" title="设置 / Settings" style="margin-left:12px;">⚙</button>
       </div>
     </div>
@@ -1268,16 +1306,16 @@ function renderMenu(el){
       <div class="poetry-line">鸟 鸣 山 更 幽</div>
     </div>
     <div class="menu-content-wrap">
-      <div class="menu-seal">天下对弈</div>
-      <div class="menu-title">南北朝 · 天下对弈</div>
-      <div class="menu-subtitle">— 卡牌对战 —</div>
+      <div class="menu-seal">${t('ui.menu.seal_title')}</div>
+      <div class="menu-title">${t('ui.menu.main_title')}</div>
+      <div class="menu-subtitle">${t('ui.menu.subtitle_card')}</div>
       <div class="menu-line"></div>
       <div class="menu-desc">
         四行布阵 · 三局两胜<br/>
         运筹帷幄 · 决胜千里
       </div>
-      <button class="menu-btn" onclick="G._menuScreen='mode_select';render()">开始游戏</button>
-      <div class="menu-footer">昆特牌风格 · 南北朝历史题材 <button class="settings-gear-btn" onclick="G.phase='settings';render()" title="设置 / Settings">⚙</button></div>
+      <button class="menu-btn" onclick="G._menuScreen='mode_select';render()">${t('ui.menu.start')}</button>
+      <div class="menu-footer">${t('ui.menu.footer')} <button class="settings-gear-btn" onclick="G.phase='settings';render()" title="设置 / Settings">⚙</button></div>
     </div>
     <div class="menu-bottom-deco">
       <div class="deco-line"></div>
@@ -1300,17 +1338,17 @@ function renderTutorial(el){
   el.innerHTML=`
   <div class="tutorial-overlay" onclick="event.target===this&&(G.phase='leader_select';render())">
     <div class="tutorial-card">
-      <div class="tut-title">天下对弈</div>
-      <div class="tut-subtitle">— 游戏规则 —</div>
+      <div class="tut-title">${t('ui.tutorial.title')}</div>
+      <div class="tut-subtitle">${t('ui.tutorial.subtitle')}</div>
       <div class="tut-deco">☰ ☰ ☰</div>
       <ul class="tut-rules">
-        <li><span class="tut-rule-icon">⚔</span>四行布阵：步兵、骑兵、水军、谋略各占一行，计算各行战力总和</li>
-        <li><span class="tut-rule-icon">🌾</span>粮草出牌：每张牌需要消耗粮草（力量值÷3向上取整）</li>
-        <li><span class="tut-rule-icon">🏆</span>三局两胜：先赢两局者获胜，共三局</li>
-        <li><span class="tut-rule-icon">🏳</span>Pass机制：放弃本局后不可再出牌，双方都Pass则结算</li>
+        <li><span class="tut-rule-icon">⚔</span>${t('ui.tutorial.rule1')}</li>
+        <li><span class="tut-rule-icon">🌾</span>${t('ui.tutorial.rule2')}</li>
+        <li><span class="tut-rule-icon">🏆</span>${t('ui.tutorial.rule3')}</li>
+        <li><span class="tut-rule-icon">🏳</span>${t('ui.tutorial.rule4')}</li>
       </ul>
       <div class="tut-btn-wrap">
-        <button class="tut-btn" onclick="G.phase='leader_select';render()">我明白了，开始！</button>
+        <button class="tut-btn" onclick="G.phase='leader_select';render()">${t('ui.tutorial.start_btn')}</button>
       </div>
     </div>
   </div>`;
@@ -1375,7 +1413,7 @@ function renderLeaderSelect(el){
     const isFirstRow = l.id <= 4;
     cards+=`<div class="leader-card ${sel}" style="--fc:${factionColor};--fc22:${factionColor}22;--fc11:${factionColor}11" onclick="selectLeader(${l.id})">
       <div class="leader-portrait">
-        <img src="${imgSrc}"
+        <img src=${imgSrc}
              alt="${l.name}"
              onerror="leaderImgFallback(this,'${imgFallback}','${factionColor}','${l.name[0]}')"
              loading="eager"
@@ -1393,10 +1431,10 @@ function renderLeaderSelect(el){
   });
   el.innerHTML=`
   <div class="leader-select">
-    <h2>选择领袖</h2>
-    <p class="subtitle">你的领袖将决定阵营与特殊能力</p>
+    <h2>${t('ui.leader.title')}</h2>
+    <p class="subtitle">${t('ui.leader.desc')}</p>
     <div class="leader-grid">${cards}</div>
-    <button class="btn btn-primary btn-confirm-leader" onclick="confirmLeader()" ${G._selectedLeader?'':'disabled'}>确认出征</button>
+    <button class="btn btn-primary btn-confirm-leader" onclick="confirmLeader()" ${G._selectedLeader?'':'disabled'}>${t('ui.leader.march')}</button>
   </div>`;
 }
 

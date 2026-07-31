@@ -239,6 +239,13 @@ export function switchLocale(locale) {
 
 // ── re-exports from locale.js ─────────────────────────────────────────────
 
+
+
+// ── global exposure for inline scripts ──
+if (typeof window !== "undefined") {
+  window.t = t;
+}
+
 export { getSupported, getAllLocales } from './locale.js';
 
 // ── path utility ──────────────────────────────────────────────────────────

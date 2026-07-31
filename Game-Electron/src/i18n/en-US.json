@@ -6,7 +6,24 @@
       "start": "Start Game",
       "multiplayer": "Multiplayer",
       "settings": "Settings",
-      "quit": "Quit"
+      "quit": "Quit",
+      "mode_title": "Select Game Mode",
+      "mode_desc": "Choose your opponent, conquer the realm",
+      "ai_mode": "vs AI",
+      "ai_desc": "Single player · Random leader · Best of 3",
+      "hotseat": "Hot Seat",
+      "hotseat_desc": "Pass & Play · Same screen · Take turns",
+      "online": "Online",
+      "online_desc": "Steam friends · Remote duel · Real-time",
+      "back_home": "Back to Home",
+      "seal_title": "Grand Chess",
+      "main_title": "Northern & Southern · Card Power",
+      "subtitle_card": "— Card Battle —",
+      "desc_line1": "Four rows · Best of 3",
+      "desc_line2": "Strategy · Victory",
+      "footer": "Gwent-style · Northern & Southern Dynasties",
+      "tutorial": "Tutorial",
+      "tutorial_skip": "Skip"
     },
     "settings": {
       "title": "Settings",
@@ -31,8 +48,12 @@
     },
     "leader": {
       "select": "Select Leader",
-      "selectHint": "Choose a leader to begin",
-      "confirm": "Confirm"
+      "selectHint": "Choose a leader to start",
+      "confirm": "Confirm",
+      "title": "Select Leader",
+      "your_leader": "Your Leader",
+      "desc": "Your leader determines your faction and special ability",
+      "march": "Confirm and March"
     },
     "card": {
       "strength": "Strength",
@@ -58,6 +79,15 @@
       "cavalry": "Cavalry",
       "navy": "Navy",
       "strategy": "Strategy"
+    },
+    "tutorial": {
+      "title": "Grand Chess",
+      "subtitle": "— Game Rules —",
+      "rule1": "Four rows: Infantry, Cavalry, Navy, Strategy. Sum each row power.",
+      "rule2": "Provisions: Each card costs provisions (strength/3, round up).",
+      "rule3": "Best of 3: Win 2 rounds to win the game.",
+      "rule4": "Pass: When both pass, the round ends immediately.",
+      "start_btn": "Got it, Start!"
     }
   },
   "combo": {
