@@ -177,3 +177,15 @@ function _applyDOM(locale) {
     document.documentElement.lang = locale;
   }
 }
+
+// ── global exposure (for non-module inline scripts like renderSettings) ──
+if (typeof window !== 'undefined') {
+  window.Locale = {
+    getLocale,
+    setLocale,
+    getSupported,
+    getAllLocales,
+    resolutionChain,
+    applyToDocument: _applyDOM,
+  };
+}
