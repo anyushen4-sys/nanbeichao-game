@@ -1,6 +1,72 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
-if(process.env.ELECTRON_USER_DATA_DIR)app.setPath('userData',process.env.ELECTRON_USER_DATA_DIR);
+const fs = require('fs');
+
+// ── PID Lock File ──
+// Fallback for npx scenario: each `npx electron .` spawns independent cmd.exe tree
+// so requestSingleInstanceLock may not coordinate across processes.
+// Write PID to file, detect running instance, focus + quit.
+const PID_FILE = path.join(app.getPath('userData'), 'nb_game.lock');
+
+function _pidFileCleanup() {
+  try { if (fs.existsSync(PID_FILE)) fs.unlinkSync(PID_FILE); } catch {}
+}
+function _pidFileAcquire() {
+  try { fs.writeFileSync(PID_FILE, String(process.pid)); } catch {}
+}
+
+// Primary singleton: works under direct `electron .`
+const _gotLock = app.requestSingleInstanceLock();
+if (!_gotLock) {
+  // Electron says we're second instance
+  app.quit();
+}
+
+// When second instance launches (direct `electron .` path)
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
+
+// PID Fallback: scheduled immediately after app is ready
+let _pidOwner = null;
+try {
+  if (fs.existsSync(PID_FILE)) {
+    _pidOwner = parseInt(String(fs.readFileSync(PID_FILE)).trim(), 10);
+  }
+  _pidFileAcquire();
+} catch {}
+
+if (_gotLock) {
+  // Only block PID fallback if we got Electron lock (regular single instance)
+  // For npx scenario: PID file is the only protection; proceed.
+} else if (!_gotLock && _pidOwner) {
+  // Already have an Electron lock AND PID fallback covering both modes
+  app.quit();
+}
+
+app.whenReady().then(() => {
+  // PID fallback check
+  if (_pidOwner && process.pid !== _pidOwner) {
+    const { execSync } = require('child_process');
+    let stillAlive = false;
+    try {
+      execSync(`powershell -Command "Get-Process -Id ${_pidOwner} -ErrorAction Stop"`, { timeout: 2000 });
+      stillAlive = true;
+    } catch { /* process not found → stale */ }
+    if (stillAlive) {
+      console.log('[Lock] Already running (pid', _pidOwner, '), quitting...');
+      app.quit();
+      return;
+    }
+    _pidFileAcquire();
+    }
+
+    }); // close app.whenReady()
+
+    if(process.env.ELECTRON_USER_DATA_DIR)app.setPath('userData',process.env.ELECTRON_USER_DATA_DIR);
 
 // ===== Steamworks 集成 =====
 // steamworks.js: https://github.com/ceifa/steamworks.js
