@@ -1,0 +1,102 @@
+{
+  "ui": {
+    "menu": {
+      "title": "南北朝·牌力無限",
+      "subtitle": "Card Power — 南北風雲",
+      "start": "開始遊戲",
+      "multiplayer": "多人對戰",
+      "settings": "設置",
+      "quit": "退出"
+    },
+    "settings": {
+      "title": "設置",
+      "language": "語言",
+      "back": "← 返回",
+      "localeLabel": {
+        "zh-CN": "簡體中文",
+        "en-US": "English (US)",
+        "zh-TW": "繁體中文",
+        "fr-FR": "Français",
+        "es-ES": "Español"
+      }
+    },
+    "game": {
+      "yourTurn": "你的回合",
+      "opponentTurn": "對手回合",
+      "round": "第 {round} 回合",
+      "playCard": "出牌",
+      "pass": "跳過",
+      "surrender": "認輸",
+      "score": "分數"
+    },
+    "leader": {
+      "select": "選擇領袖",
+      "selectHint": "選擇一位領袖開始遊戲",
+      "confirm": "確認選擇"
+    },
+    "card": {
+      "strength": "戰力",
+      "ability": "技能",
+      "faction": "陣營",
+      "row": "行",
+      "cost": "費用"
+    },
+    "faction": {
+      "song": "宋",
+      "qi": "齊",
+      "liang": "梁",
+      "chen": "陳",
+      "beiwei": "北魏",
+      "dongwei": "東魏",
+      "xiwei": "西魏",
+      "beiqi": "北齊",
+      "beizhou": "北周",
+      "common": "中立"
+    },
+    "row": {
+      "infantry": "步兵",
+      "cavalry": "騎兵",
+      "navy": "水軍",
+      "strategy": "謀略"
+    }
+  },
+  "combo": {
+    "juzhongqu": {
+      "label": "聚眾曲",
+      "desc": "聚眾曲：{faction}{row} ≥{count} → 全{faction} +{value}",
+      "undefined": "未定義"
+    },
+    "sameFaction": {
+      "buff": "+{value}",
+      "toast": "{faction}軍集結，全軍 +{value}",
+      "rowBadge": "+{value}×{k}"
+    },
+    "counter": {
+      "toast": "⚡ {faction}軍眾多，反制牌 +{value}",
+      "nOver3": "{n}/3",
+      "none": "暫無"
+    }
+  },
+  "settlement": {
+    "title": "結算",
+    "roundResult": "回合 {round} 結果",
+    "gameResult": "遊戲結束",
+    "win": "你贏了！",
+    "lose": "你輸了！",
+    "draw": "平局",
+    "base": "基礎",
+    "breakdown": {
+      "zh": "基礎 {base}  + 同陣營 +{ally}  + 聚眾曲 +{jzq}",
+      "en": "基礎 {base}  + 同陣營 +{ally}  + 聚眾曲 +{jzq}"
+    },
+    "counterBreakdown": " 反制 ×{counter}",
+    "total": "= {total}"
+  },
+  "ability": {
+    "counter_faction": "反制",
+    "rally_leader": "聚眾",
+    "spy": "細作",
+    "medic": "軍醫",
+    "morale_boost": "鼓舞"
+  }
+}
