@@ -13,6 +13,10 @@ function _pidFileCleanup() {
 }
 function _pidFileAcquire() {
   try { fs.writeFileSync(PID_FILE, String(process.pid)); } catch {}
+
+// ── PID lock cleanup on process exit ──
+process.on("exit", () => { try { fs.unlinkSync(PID_FILE); } catch {} });
+
 }
 
 // Primary singleton: works under direct `electron .`
