@@ -16,7 +16,7 @@
       "online": "Online",
       "online_desc": "Steam friends · Remote duel · Real-time",
       "back_home": "Back to Home",
-      "seal_title": "Grand Chess",
+      "seal_title": "Chess",
       "main_title": "Northern & Southern · Card Power",
       "subtitle_card": "— Card Battle —",
       "desc_line1": "Four rows · Best of 3",
@@ -199,6 +199,14 @@
       "settings": "Settings",
       "language": "Language",
       "back": "Back"
+    },
+    "poetry": {
+      "left1": "Sunset clouds scatter",
+      "left2": "Spring grass by the pond",
+      "left3": "The great river flows",
+      "right1": "Like silk the river calms",
+      "right2": "A traveler's heart grieves",
+      "right3": "Birds sing in deeper hills"
     }
   },
   "combo": {

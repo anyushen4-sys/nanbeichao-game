@@ -16,7 +16,7 @@
       "online": "联机对战",
       "online_desc": "Steam 好友 · 远程对决 · 实时同步",
       "back_home": "返回首页",
-      "seal_title": "天下对弈",
+      "seal_title": "对弈",
       "main_title": "南北朝 · 天下对弈",
       "subtitle_card": "— 卡牌对战 —",
       "desc_line1": "四行布阵 · 三局两胜",
@@ -193,6 +193,14 @@
       "settings": "设置",
       "language": "语言 / Language",
       "back": "返回 / Back"
+    },
+    "poetry": {
+      "left1": "余 霞 散 成 绮",
+      "left2": "池 塘 生 春 草",
+      "left3": "大 江 流 日 夜",
+      "right1": "澄 江 静 如 练",
+      "right2": "客 心 悲 未 央",
+      "right3": "鸟 鸣 山 更 幽"
     }
   },
   "combo": {

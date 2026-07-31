@@ -243,7 +243,8 @@ export function switchLocale(locale) {
 
 // ── global exposure for inline scripts ──
 if (typeof window !== "undefined") {
-  window.t = t;
+  if (typeof window !== "undefined" && !window.t) { window.t = t; }
+  window._i18nT = t;
 }
 
 export { getSupported, getAllLocales } from './locale.js';
