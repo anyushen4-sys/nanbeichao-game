@@ -1,0 +1,102 @@
+{
+  "ui": {
+    "menu": {
+      "title": "[Translated Spanish]",
+      "subtitle": "[Translated Spanish]",
+      "start": "[Translated Spanish]",
+      "multiplayer": "[Translated Spanish]",
+      "settings": "[Translated Spanish]",
+      "quit": "[Translated Spanish]"
+    },
+    "settings": {
+      "title": "[Translated Spanish]",
+      "language": "[Translated Spanish]",
+      "back": "[Translated Spanish]",
+      "localeLabel": {
+        "zh-CN": "[Translated Spanish]",
+        "en-US": "[Translated Spanish]",
+        "zh-TW": "[Translated Spanish]",
+        "fr-FR": "[Translated Spanish]",
+        "es-ES": "[Translated Spanish]"
+      }
+    },
+    "game": {
+      "yourTurn": "[Translated Spanish]",
+      "opponentTurn": "[Translated Spanish]",
+      "round": "[Translated Spanish]",
+      "playCard": "[Translated Spanish]",
+      "pass": "[Translated Spanish]",
+      "surrender": "[Translated Spanish]",
+      "score": "[Translated Spanish]"
+    },
+    "leader": {
+      "select": "[Translated Spanish]",
+      "selectHint": "[Translated Spanish]",
+      "confirm": "[Translated Spanish]"
+    },
+    "card": {
+      "strength": "[Translated Spanish]",
+      "ability": "[Translated Spanish]",
+      "faction": "[Translated Spanish]",
+      "row": "[Translated Spanish]",
+      "cost": "[Translated Spanish]"
+    },
+    "faction": {
+      "song": "[Translated Spanish]",
+      "qi": "[Translated Spanish]",
+      "liang": "[Translated Spanish]",
+      "chen": "[Translated Spanish]",
+      "beiwei": "[Translated Spanish]",
+      "dongwei": "[Translated Spanish]",
+      "xiwei": "[Translated Spanish]",
+      "beiqi": "[Translated Spanish]",
+      "beizhou": "[Translated Spanish]",
+      "common": "[Translated Spanish]"
+    },
+    "row": {
+      "infantry": "[Translated Spanish]",
+      "cavalry": "[Translated Spanish]",
+      "navy": "[Translated Spanish]",
+      "strategy": "[Translated Spanish]"
+    }
+  },
+  "combo": {
+    "juzhongqu": {
+      "label": "[Translated Spanish]",
+      "desc": "[Translated Spanish]",
+      "undefined": "[Translated Spanish]"
+    },
+    "sameFaction": {
+      "buff": "[Translated Spanish]",
+      "toast": "[Translated Spanish]",
+      "rowBadge": "[Translated Spanish]"
+    },
+    "counter": {
+      "toast": "[Translated Spanish]",
+      "nOver3": "[Translated Spanish]",
+      "none": "[Translated Spanish]"
+    }
+  },
+  "settlement": {
+    "title": "[Translated Spanish]",
+    "roundResult": "[Translated Spanish]",
+    "gameResult": "[Translated Spanish]",
+    "win": "[Translated Spanish]",
+    "lose": "[Translated Spanish]",
+    "draw": "[Translated Spanish]",
+    "base": "[Translated Spanish]",
+    "breakdown": {
+      "zh": "[Translated Spanish]",
+      "en": "[Translated Spanish]"
+    },
+    "counterBreakdown": "[Translated Spanish]",
+    "total": "[Translated Spanish]"
+  },
+  "ability": {
+    "counter_faction": "[Translated Spanish]",
+    "rally_leader": "[Translated Spanish]",
+    "spy": "[Translated Spanish]",
+    "medic": "[Translated Spanish]",
+    "morale_boost": "[Translated Spanish]"
+  }
+}
