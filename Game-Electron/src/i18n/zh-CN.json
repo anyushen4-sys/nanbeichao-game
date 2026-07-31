@@ -23,7 +23,8 @@
       "desc_line2": "运筹帷幄 · 决胜千里",
       "footer": "昆特牌风格 · 南北朝历史题材",
       "tutorial": "教学",
-      "tutorial_skip": "跳过"
+      "tutorial_skip": "跳过",
+      "back_to_menu": "返回菜单"
     },
     "settings": {
       "title": "设置",

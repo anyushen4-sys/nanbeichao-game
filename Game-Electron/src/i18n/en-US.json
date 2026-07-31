@@ -23,7 +23,8 @@
       "desc_line2": "Strategy · Victory",
       "footer": "Gwent-style · Northern & Southern Dynasties",
       "tutorial": "Tutorial",
-      "tutorial_skip": "Skip"
+      "tutorial_skip": "Skip",
+      "back_to_menu": "Back to Menu"
     },
     "settings": {
       "title": "Settings",

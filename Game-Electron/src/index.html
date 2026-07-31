@@ -53,7 +53,8 @@ window.t = window.t || function(key, vars){
     'ui.leader.confirm':'确认选择'
   ,
     'ui.leader.desc':'你的领袖将决定阵营与特殊能力',
-    'ui.leader.march':'确认出征'};
+    'ui.leader.march':'确认出征',
+    'ui.menu.back_to_menu':'返回菜单'};
   return _t[key] || key;
 };
 
@@ -1798,7 +1799,7 @@ function renderGameResult(el){
   const playerWin=G.scores[0]>G.scores[1];
   const isDraw=G.scores[0]===G.scores[1];
   // ===== Steam 统计/成就触发 =====
-  (async()=>{
+  (async ()=>{
     await steamSetStat('STAT_TOTAL_GAMES',(Number(localStorage.getItem('steam_total_games')||0))+1);
     localStorage.setItem('steam_total_games',String(Number(localStorage.getItem('steam_total_games')||0)+1));
     if(playerWin){
@@ -1823,7 +1824,7 @@ function renderGameResult(el){
     </div>
     <div class="decorative-line" style="width:200px;margin:20px auto"></div>
         <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
-          ${playerWin?'运筹帷幄之中，决胜千里之外。':isDraw?'将遇良才，棋逢对手。':'胜败乃兵家常事，再接再厉。'}
+          ${t(playerWin?'ui.result.victory_message':isDraw?'ui.result.draw_message':'ui.result.loss_message')}
         </p>
         <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
           </div>`;
@@ -1854,7 +1855,7 @@ function renderGameResult(el){
               (status === 'waiting_invite' ? '<button class="menu-btn" id="mp-cancel-btn">取消等待</button>' : '') +
               (status === 'connected' ? '<button class="menu-btn" id="mp-leader-btn">开始选择主将</button>' : '') +
             '</div>' +
-            '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">返回菜单</button>
+            '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">${t("ui.menu.back_to_menu")}</button>
             <div style="margin-top:12px;text-align:center">
               <button class="menu-btn" id="mp-switch-self-btn" style="background:rgba(150,150,200,.2);font-size:.85em">⚙️ 切换为 guest 视角</button>
             </div>' +
@@ -2002,7 +2003,7 @@ function renderGameResult(el){
                winner === 1 ? '<div style="font-size:1.3em;color:#E23E57">对方赢得了天下！</div>' :
                '<div style="font-size:1.3em;color:#888">棋逢对手，不分胜负！</div>') +
               (G._mpRemoteHash ? '<div style="margin:15px;font-size:0.8em;color:#888;font-family:monospace">结算哈希: ' + G._mpRemoteHash + (G._mpRemoteHash !== G._mpLocalHash ? ' ⚠️ 不一致' : '') + '</div>' : '') +
-              '<button class="btn btn-primary" onclick="stopMultiplayerPolling();resetGame()">返回菜单</button>' +
+              '<button class="btn btn-primary" onclick="stopMultiplayerPolling();resetGame()">${t("ui.menu.back_to_menu")}</button>' +
               '</div>';
             return;
           }
@@ -3191,7 +3192,7 @@ function timeoutReconnect() {
                               '<p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">'+
                                 (p1Win?'运筹帷幄之中，决胜千里之外。':tie?'将遇良才，棋逢对手。':'胜败乃兵家常事，再接再厉。')+
                               '</p>'+
-                              '<button class="btn btn-primary" onclick="resetGame()">返回菜单</button>'+
+                              '<button class="btn btn-primary" onclick="resetGame()">${t("ui.menu.back_to_menu")}</button>'+
                             '</div>';
                             return;
                         }
