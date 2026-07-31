@@ -1345,8 +1345,8 @@ function renderSettings(el){
       <select id="lang-select" class="settings-select" onchange="window.Locale && window.Locale.setLocale(this.value);">
         <option value="zh-CN" ${curLocale==='zh-CN'?'selected':''}>中文 (zh-CN) — 默认</option>
         <option value="en-US" ${curLocale==='en-US'?'selected':''}>English (en-US)</option>
-        <option value="zh-TW" disabled>繁體中文 (Phase 2)</option>
-        <option value="fr-FR" disabled>Français (Phase 2)</option>
+        <option value="zh-TW">繁體中文 (Phase 2)</option>
+        <option value="fr-FR">Français (Phase 2)</option>
         <option value="es-ES" disabled>Español (Phase 2)</option>
       </select>
     </div>
@@ -1447,7 +1447,7 @@ function renderMulligan(app){
   app.innerHTML=`
   <div class="leader-select">
     <h2>换牌阶段</h2>
-    <p class="subtitle">点击选择要替换的牌（可换 ${sel.size} 张）</p>
+    <p class="subtitle">点击选择要替换的牌（已选 ${sel.size} 张）</p>
     <div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">
       ${cardsHtml}
     </div>

@@ -12,13 +12,13 @@
 const STORAGE_KEY = 'nanbeichao.locale';
 
 /** @type {string[]} — all locale codes that have real translation data */
-const SUPPORTED = ['zh-CN', 'en-US'];
+const SUPPORTED = ['zh-CN', 'en-US', 'fr-FR', 'zh-TW'];
 
 /** @type {string[]} — Phase 2 placeholder slots (no data yet, not selectable) */
-const RESERVED = ['zh-TW', 'fr-FR', 'es-ES'];
+const RESERVED = ['es-ES'];
 
 /** @type {string} — fallback chain, most to least preferred */
-const FALLBACK_CHAIN = ['zh-CN', 'en-US'];
+const FALLBACK_CHAIN = ['zh-CN', 'en-US', 'fr-FR', 'zh-TW'];
 
 // ── current locale (mutable) ──────────────────────────────────────────────────
 
