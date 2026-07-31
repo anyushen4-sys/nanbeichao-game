@@ -1,0 +1,102 @@
+{
+  "ui": {
+    "menu": {
+      "title": "南北朝 · Puissance des Cartes",
+      "subtitle": "Card Power — Vent du Nord et du Sud",
+      "start": "Commencer le jeu",
+      "multiplayer": "Multijoueur",
+      "settings": "Paramètres",
+      "quit": "Quitter"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "language": "Langue",
+      "back": "← Retour",
+      "localeLabel": {
+        "zh-CN": "Chinois simplifié",
+        "en-US": "Anglais (États-Unis)",
+        "zh-TW": "Chinois traditionnel (Bientôt)",
+        "fr-FR": "Français (Bientôt)",
+        "es-ES": "Espagnol (Bientôt)"
+      }
+    },
+    "game": {
+      "yourTurn": "Ton tour",
+      "opponentTurn": "Tour de l'adversaire",
+      "round": "Tour {round}",
+      "playCard": "Jouer une carte",
+      "pass": "Passer",
+      "surrender": "Abandonner",
+      "score": "Score"
+    },
+    "leader": {
+      "select": "Sélectionner un chef",
+      "selectHint": "Sélectionnez un chef pour commencer le jeu",
+      "confirm": "Confirmer la sélection"
+    },
+    "card": {
+      "strength": "Force",
+      "ability": "Capacité",
+      "faction": "Faction",
+      "row": "Ligne",
+      "cost": "Coût"
+    },
+    "faction": {
+      "song": "Song",
+      "qi": "Qi",
+      "liang": "Liang",
+      "chen": "Chen",
+      "beiwei": "Wei du Nord",
+      "dongwei": "Wei de l'Est",
+      "xiwei": "Wei de l'Ouest",
+      "beiqi": "Qi du Nord",
+      "beizhou": "Zhou du Nord",
+      "common": "Neutre"
+    },
+    "row": {
+      "infantry": "Infanterie",
+      "cavalry": "Cavalerie",
+      "navy": "Marine",
+      "strategy": "Stratégie"
+    }
+  },
+  "combo": {
+    "juzhongqu": {
+      "label": "Formation collective",
+      "desc": "Formation collective : {faction}{row} ≥{count} → toute {faction} +{value}",
+      "undefined": "Non défini"
+    },
+    "sameFaction": {
+      "buff": "+{value}",
+      "toast": "La faction {faction} se rassemble, toute faction +{value}",
+      "rowBadge": "+{value}×{k}"
+    },
+    "counter": {
+      "toast": "⚡ De nombreuses troupes {faction}, carte de contre +{value}",
+      "nOver3": "{n}/3",
+      "none": "Aucun"
+    }
+  },
+  "settlement": {
+    "title": "Bilan",
+    "roundResult": "Résultat du tour {round}",
+    "gameResult": "Fin de partie",
+    "win": "Vous avez gagné !",
+    "lose": "Vous avez perdu !",
+    "draw": "Nul",
+    "base": "De base",
+    "breakdown": {
+      "zh": "{base} de base + même faction +{ally} + Formation collective +{jzq}",
+      "en": "{base} de base + même faction +{ally} + Formation collective +{jzq}"
+    },
+    "counterBreakdown": " ×{counter}",
+    "total": "= {total}"
+  },
+  "ability": {
+    "counter_faction": "Contre-faction",
+    "rally_leader": "Rassemblement",
+    "spy": "Espion",
+    "medic": "Médecin",
+    "morale_boost": "Morale boostée"
+  }
+}
