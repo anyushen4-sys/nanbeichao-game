@@ -12,7 +12,7 @@
 const STORAGE_KEY = 'nanbeichao.locale';
 
 /** @type {string[]} — all locale codes that have real translation data */
-const SUPPORTED = ['zh-CN', 'en-US', 'fr-FR', 'zh-TW'];
+const SUPPORTED = ['zh-CN', 'en-US', 'fr-FR', 'zh-TW','es-ES'];
 
 /** @type {string[]} — Phase 2 placeholder slots (no data yet, not selectable) */
 const RESERVED = ['es-ES'];

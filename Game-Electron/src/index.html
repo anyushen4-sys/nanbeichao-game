@@ -54,7 +54,83 @@ window.t = window.t || function(key, vars){
   ,
     'ui.leader.desc':'你的领袖将决定阵营与特殊能力',
     'ui.leader.march':'确认出征',
-    'ui.menu.back_to_menu':'返回菜单'};
+    'ui.menu.back_to_menu':'返回菜单'
+    'ui.mulligan.title':'换牌阶段',
+    'ui.mulligan.hint':'点击选择要替换的牌（已选 {count} 张）',
+    'ui.mulligan.confirm':'确认换牌',
+    'ui.game.hand_cards':'{count} 张手牌',
+    'ui.game.ai_side':'— AI 阵营 · 战力 {power} —',
+    'ui.game.your_side':'— 你的阵营 · 战力 {power} —',
+    'ui.game.passed_waiting':'你已放弃，等待AI',
+    'ui.game.your_hand':'— 你的手牌 ({count}张) —',
+    'ui.game.pass_round':'放弃本局',
+    'ui.game.no_hand':'无手牌',
+    'ui.game.provisions':'粮草',
+    'ui.round_result.title':'第 {round} 局 结果',
+    'ui.round_result.your_power':'你的战力',
+    'ui.round_result.ai_power':'AI战力',
+    'ui.round_result.player_win':'你赢得了本局！',
+    'ui.round_result.ai_win':'AI赢得了本局！',
+    'ui.round_result.draw_round':'本局平局！',
+    'ui.round_result.score':'当前比分：{s0} : {s1}',
+    'ui.round_result.view_final':'查看最终结果',
+    'ui.round_result.next_round':'下一局',
+    'ui.game_result.victory':'胜利',
+    'ui.game_result.defeat':'败北',
+    'ui.game_result.draw':'平局',
+    'ui.game_result.victory_title':'天下归一',
+    'ui.game_result.defeat_title':'功败垂成',
+    'ui.game_result.draw_title':'棋逢对手',
+    'ui.game_result.victory_message':'运筹帷幄之中，决胜千里之外。',
+    'ui.game_result.draw_message':'将遇良才，棋逢对手。',
+    'ui.game_result.defeat_message':'胜败乃兵家常事，再接再厉。',
+    'ui.game_result.play_again':'再 战 一 局',
+    'ui.multiplayer.lobby':'多人对战大厅',
+    'ui.multiplayer.join_room':'加入房间 (guest)',
+    'ui.multiplayer.cancel_wait':'取消等待',
+    'ui.multiplayer.start_leader':'开始选择主将',
+    'ui.multiplayer.switch_guest':'切换为 guest 视角',
+    'ui.multiplayer.host_label':t('ui.multiplayer.host_label'),
+    'ui.multiplayer.guest_label':t('ui.multiplayer.guest_label'),
+    'ui.multiplayer.opponent':'对手',
+    'ui.multiplayer.continue':'继续',
+    'ui.multiplayer.you_win':'你赢得了天下！',
+    'ui.multiplayer.they_win':'对方赢得了天下！',
+    'ui.multiplayer.draw_game':'棋逢对手，不分胜负！',
+    'ui.multiplayer.concede':'我认输',
+    'ui.multiplayer.reconnect_title':'对方未响应',
+    'ui.multiplayer.pass_round':'放弃本局',
+    'ui.hotseat.select_leader_title':'玩家 {player} 选择主将',
+    'ui.hotseat.select_leader_hint':'你的主将将决定阵营与特殊能力 — 请先点击一张卡片',
+    'ui.hotseat.confirm_leader':'确认选择',
+    'ui.hotseat.mulligan_title':'玩家 {player} 换牌',
+    'ui.hotseat.mulligan_hint':'点击选择要替换的牌（可换 {count} 张）',
+    'ui.hotseat.confirm_mulligan':'确认换牌 (选中 {count} 张要换)',
+    'ui.hotseat.round_title':'第 {round} 局 结果',
+    'ui.hotseat.player1_power':'玩家1 战力',
+    'ui.hotseat.player2_power':'玩家2 战力',
+    'ui.hotseat.score':'当前比分：{s0} : {s1}',
+    'ui.hotseat.player1_win':'玩家1胜利',
+    'ui.hotseat.player2_win':'玩家2胜利',
+    'ui.hotseat.player1_crown':'玩家1 天下归一',
+    'ui.hotseat.player2_crown':'玩家2 天下归一',
+    'ui.hotseat.loading':'加载中',
+    'ui.hotseat.player1_label':'玩家1',
+    'ui.hotseat.player2_label':'玩家2',
+    'ui.hotseat.rounds_won':'玩家1 {s0}胜 · 玩家2 {s1}胜',
+    'ui.hotseat.player2_side':'玩家2 阵营',
+    'ui.hotseat.player1_side':'玩家1 阵营',
+    'ui.hotseat.opponent_passed':'对手已放弃，等待你',
+    'ui.hotseat.player1_hand':'玩家1 的手牌',
+    'ui.hotseat.opponent_turn':'对方回合中',
+    'ui.hotseat.no_hand_cards':'无手牌',
+    'ui.hotseat.player2_hand':'玩家2 的手牌 ({count}张)',
+    'ui.hotseat.pass_round':'放弃本局',
+    'ui.dialog.confirm':'确认',
+    'ui.dialog.cancel':'取消',
+    'ui.dialog.settings':'设置',
+    'ui.dialog.language':'语言 / Language',
+    'ui.dialog.back':'⬅ 返回 / Back'};
   return _t[key] || key;
 };
 
@@ -1376,23 +1452,23 @@ function renderSettings(el){
   el.innerHTML=`
   <div class="settings-screen">
     <div class="settings-header">
-      <div class="settings-title">⚙ 设置</div>
+      <div class="settings-title">⚙ ${t("ui.settings.title")}</div>
       <div class="settings-subtitle">Settings</div>
     </div>
     <div class="settings-section">
-      <div class="settings-label">语言 / Language</div>
+      <div class="settings-label">${t("ui.dialog.language")}</div>
       <select id="lang-select" class="settings-select" onchange="window.Locale && window.Locale.setLocale(this.value);">
         <option value="zh-CN" ${curLocale==='zh-CN'?'selected':''}>中文 (zh-CN) — 默认</option>
         <option value="en-US" ${curLocale==='en-US'?'selected':''}>English (en-US)</option>
         <option value="zh-TW">繁體中文 (Phase 2)</option>
         <option value="fr-FR">Français (Phase 2)</option>
-        <option value="es-ES" disabled>Español (Phase 2)</option>
+        <option value="es-ES">Español (Phase 2)</option>
       </select>
     </div>
     <div class="settings-section">
       <div class="settings-label">${curLocale}</div>
     </div>
-    <button class="settings-back-btn" onclick="G.phase='menu';render()">⬅ 返回 / Back</button>
+    <button class="settings-back-btn" onclick="G.phase='menu';render()">${t("ui.dialog.back")}</button>
   </div>`;
   // Apply locale after render
   setTimeout(()=>{
@@ -1485,13 +1561,13 @@ function renderMulligan(app){
   }).join('');
   app.innerHTML=`
   <div class="leader-select">
-    <h2>换牌阶段</h2>
-    <p class="subtitle">点击选择要替换的牌（已选 ${sel.size} 张）</p>
+    <h2>${t("ui.mulligan.title")}</h2>
+    <p class="subtitle">${t("ui.mulligan.hint",{count:sel.size})}</p>
     <div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">
       ${cardsHtml}
     </div>
     <div style="text-align:center;margin-top:20px">
-      <button class="btn btn-primary" onclick="confirmMulligan()">确认换牌</button>
+      <button class="btn btn-primary" onclick="confirmMulligan()">${t("ui.mulligan.confirm")}</button>
     </div>
   </div>`;
 }
@@ -1617,7 +1693,7 @@ function renderGame(el,lastUid,lastBy){
         <span class="count">${G.provisions[1]}</span>
       </div>
       <div class="opponent-hand-pile">
-              <span style="font-size:.85em;color:#B8C9D1;font-weight:500">🃏 ${G.players[1].hand.length} 张手牌</span>
+              <span style="font-size:.85em;color:#B8C9D1;font-weight:500">🃏 ${t("ui.game.hand_cards",{count:G.players[1].hand.length})}</span>
       </div>
     </div>
   </div>
@@ -1643,7 +1719,7 @@ function renderGame(el,lastUid,lastBy){
   </div>
   <div class="turn-indicator">
     <span class="${turnClass}">${turnText}</span>
-    ${G.players[0].passed&&!G.players[1].passed?'<span class="waiting"> · 你已放弃，等待AI</span>':''}
+    ${G.players[0].passed&&!G.players[1].passed?'<span class="waiting"> · ${t("ui.game.passed_waiting")}</span>':''}
   </div>
   <div class="hand-area">
     <div class="hand-label">— 你的手牌 (${G.players[0].hand.length}张) —</div>
@@ -1654,7 +1730,7 @@ function renderGame(el,lastUid,lastBy){
   <div class="action-bar">
     <button class="btn btn-sm btn-primary" onclick="useLeaderAbility(0)" ${G.currentTurn!=='player'||G.players[0].passed||G.leaderAbilityUsed[0]?'disabled':''}>${G.leaderAbilityUsed[0]?'已使用':'主将技能'} · ${G.players[0].leader?G.players[0].leader.name:''}</button>
         ${G.players[0].leader&&!G.leaderAbilityUsed[0]?`<div class="skill-desc">${G.players[0].leader.desc}</div>`:''}
-        <button class="btn btn-sm btn-pass" onclick="playerPass()" ${G.currentTurn!=='player'||G.players[0].passed?'disabled':''}>放弃本局</button>
+        <button class="btn btn-sm btn-pass" onclick="playerPass()" ${G.currentTurn!=='player'||G.players[0].passed?'disabled':''}>${t("ui.game.pass_round")}</button>
           </div>
           <div class="log-area">
             ${G.logs.slice(-3).map(l=>`<div class="log-entry">${l}</div>`).join('')}
@@ -1769,18 +1845,18 @@ function renderRoundResult(el){
   const tie=r.winner===-1;
   el.innerHTML=`
   <div class="round-result">
-    <h2>第${G.round}局 结果</h2>
+    <h2>${t("ui.round_result.title",{round:G.round})}</h2>
     <div class="power-compare">
       <div class="power-row">
         <div class="power-side ${pWin?'win-side':'lose-side'}">
-          <div class="power-label">你的战力</div>
+          <div class="power-label">${t("ui.round_result.your_power")}</div>
           <div class="power-val ${pWin?'win':'lose'}">${r.playerPower}</div>
         </div>
         <div class="power-vs-wrap">
           <div class="power-vs">VS</div>
         </div>
         <div class="power-side ${aWin?'win-side':'lose-side'}">
-          <div class="power-label">AI战力</div>
+          <div class="power-label">${t("ui.round_result.ai_power")}</div>
           <div class="power-val ${aWin?'win':'lose'}">${r.aiPower}</div>
         </div>
       </div>
@@ -1789,8 +1865,8 @@ function renderRoundResult(el){
         <div class="power-bar-divider"></div>
       </div>
     </div>
-    <div class="result-text ${pWin?'result-win':aWin?'result-lose':'result-tie'}">${pWin?'你赢得了本局！':aWin?'AI赢得了本局！':'本局平局！'}</div>
-    <div class="result-score">当前比分：${G.scores[0]} : ${G.scores[1]}</div>
+    <div class="result-text ${pWin?'result-win':aWin?'result-lose':'result-tie'}">${t(pWin?'ui.round_result.player_win':aWin?'ui.round_result.ai_win':'ui.round_result.draw_round')}</div>
+    <div class="result-score">${t("ui.round_result.score",{s0:G.scores[0],s1:G.scores[1]})}</div>
     <button class="btn btn-primary btn-result" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续下一局'}</button>
   </div>`;
 }
@@ -1839,25 +1915,25 @@ function renderGameResult(el){
           var status = mp._status || '';
 
           el.innerHTML = '<div class="multiplayer-lobby">' +
-            '<h2>🏰 多人对战大厅</h2>' +
+            '<h2>🏰 ' + t('ui.multiplayer.lobby') + '</h2>' +
             '<div class="mp-lobby-status">' +
               (status === 'connecting' ? '正在连接 Steam 服务...' :
                status === 'waiting_invite' ? '等待好友接受邀请...' :
-               status === 'connected' ? ('已配对 · ' + peerName + (isHost ? ' <span class="mp-host">(主机)</span>' : '')) :
+               status === 'connected' ? ('已配对 · ' + peerName + (isHost ? ' <span class="mp-host">' + t('ui.multiplayer.host_label') + '</span>' : '')) :
                status === 'picking_leader' ? '双方正在选择主将...' :
                status === 'rng_exchange' ? '交换随机数，确定主机...' :
                '正在初始化...') +
             '</div>' +
             '<div class="mp-lobby-buttons">' +
               (status === 'idle' || !status ? '<button class="menu-btn" id="mp-host-btn" style="background:linear-gradient(135deg,#DAA520,#C83C3C)">创建房间 (host)</button>' +
-                '<button class="menu-btn" id="mp-guest-btn">加入房间 (guest)</button>' +
+                '<button class="menu-btn" id="mp-guest-btn">' + t('ui.multiplayer.join_room') + '</button>' +
                 (/mockmp=1/.test(location.search) ? '<div style="margin-top:10px;padding:8px;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);border-radius:6px;font-size:.85em;color:#FFD700">⚙️ Mock 模式:打开两个窗口,一个点创建房间(host),另一个点加入房间(guest),通过 BroadcastChannel 跨窗口模拟</div>' : '') + '' : '') +
-              (status === 'waiting_invite' ? '<button class="menu-btn" id="mp-cancel-btn">取消等待</button>' : '') +
-              (status === 'connected' ? '<button class="menu-btn" id="mp-leader-btn">开始选择主将</button>' : '') +
+              (status === 'waiting_invite' ? '<button class="menu-btn" id="mp-cancel-btn">' + t('ui.multiplayer.cancel_wait') + '</button>' : '') +
+              (status === 'connected' ? '<button class="menu-btn" id="mp-leader-btn">' + t('ui.multiplayer.start_leader') + '</button>' : '') +
             '</div>' +
-            '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">${t("ui.menu.back_to_menu")}</button>
+            '<button class="menu-btn" id="mp-back-btn" style="margin-top:10px">' + t("ui.menu.back_to_menu") + '</button>'
             <div style="margin-top:12px;text-align:center">
-              <button class="menu-btn" id="mp-switch-self-btn" style="background:rgba(150,150,200,.2);font-size:.85em">⚙️ 切换为 guest 视角</button>
+              `<button class="menu-btn" id="mp-switch-self-btn" style="background:rgba(150,150,200,.2);font-size:.85em">⚙️ ${t('ui.multiplayer.switch_guest')}</button>`
             </div>' +
                         '</div>';
 
@@ -1920,7 +1996,7 @@ function renderGameResult(el){
                         '</div>';
                       }).join('');
                       el.innerHTML = '<div class="leader-select">' +
-                        '<h2>🌐 多人对战 · 选择主将</h2>' +
+                        '<h2>🌐 ' + t('ui.multiplayer.select_leader') + '</h2>' +
                         '<p class="subtitle">'+(isHost ? '你是主机' : '你是客机')+(mp.peerName ? ' · 对手: ' + mp.peerName : '')+' — 请先点击一张卡片</p>' +
                         '<div class="leader-grid">' + cardsHtml + '</div>' +
                         '<div style="text-align:center;margin:20px">' +
@@ -2045,7 +2121,7 @@ function renderGameResult(el){
               '<div class="name" style="color:' + f0.color + '">你</div>' +
               '<div class="leader">' + (p0.leader ? p0.leader.name : '') + '</div>' +
               '<div class="provisions-bar">' +
-                '<span class="label">粮草</span>' +
+                '<span class="label">' + t('ui.game.provisions') + '</span>' +
                 '<div class="pips">' + renderPips(G.provisions[0], 30, 'player') + '</div>' +
                 '<span class="count">' + G.provisions[0] + '</span>' +
               '</div>' +
@@ -2089,7 +2165,7 @@ function renderGameResult(el){
             '<div class="hand-cards' + (p0.hand.length === 0 ? ' empty' : '') +
                 (p0.hand.length >= 5 ? ' many-cards' : '') +
                 (p0.hand.length >= 7 ? ' overflow-cards' : '') + '">' +
-              (p0.hand.length === 0 ? '<span style="color:#B8A88A">无手牌</span>' :
+              (p0.hand.length === 0 ? '<span style="color:#B8A88A">${t("ui.game.no_hand")}</span>' :
                p0.hand.map(function(c, i) { return handleHotSeatHandCard(c, i, 0); }).join('')) +
             '</div>' +
           '</div>' +
@@ -2916,7 +2992,7 @@ function timeoutReconnect() {
                                                                   }
                                                                   cnt=3;
                                                                 }
-                                                                addLog((p===0?'玩家1':'玩家2')+'换了'+cnt+'张牌');
+                                                                addLog((p===0?t('ui.hotseat.player1_label'):t('ui.hotseat.player2_label'))+'换了'+cnt+'张牌');
                                                                 G.mulliganSelected=new Set();
                                                                 // 玩家1 换完 → 切到玩家2
                                                                 if(G.activePlayer===0){
@@ -2948,7 +3024,7 @@ function timeoutReconnect() {
             function hotSeatPassTurn(){
                           const a=G.activePlayer;
                           G.players[a].passed=true;
-                          addLog((a===0?'玩家1':'玩家2')+'放弃了本局');
+                          addLog((a===0?t('ui.hotseat.player1_label'):t('ui.hotseat.player2_label'))+'放弃了本局');
                           G.selectedCard=null;
                           const b=1-a;
                           if(G.players[b].passed){
@@ -3092,7 +3168,7 @@ function timeoutReconnect() {
                               '</div>';
                             }).join('');
                             el.innerHTML='<div class="leader-select">'+
-                                                          '<h2>👥 同机对战 · 玩家'+(p+1)+'选择主将</h2>'+
+                                                          '<h2>👥 '+t('ui.hotseat.select_leader_title',{player:p+1})+'</h2>'+
                                                           '<p class="subtitle">'+(G._selectedLeader?'点击下方「确认选择」按钮完成选择':'你的主将将决定阵营与特殊能力 — 请先点击一张卡片')+'</p>'+
                                                           '<div class="leader-grid">'+cardsHtml+'</div>'+
                                                           '<div style="text-align:center;margin:20px">'+
@@ -3123,13 +3199,13 @@ function timeoutReconnect() {
                                 '</div>';
                               }).join('');
                               el.innerHTML='<div class="leader-select">'+
-                                '<h2>👥 玩家'+(a+1)+'换牌</h2>'+
+                                '<h2>👥 '+t('ui.hotseat.mulligan_title',{player:a+1})+'</h2>'+
                                 '<p class="subtitle">点击选择要替换的牌（可换 '+sel.size+' 张）</p>'+
                                 '<div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">'+
                                 cardsHtml+
                                 '</div>'+
                                 '<div style="text-align:center;margin-top:20px">'+
-                                  '<button class="btn btn-primary" onclick="hotSeatConfirmMulligan()">确认换牌 (选中 '+sel.size+' 张要换)</button>'+
+                                  '<button class="btn btn-primary" onclick="hotSeatConfirmMulligan()">'+t('ui.hotseat.confirm_mulligan',{count:sel.size})+'</button>'+
                                 '</div>'+
                               '</div>';
                               return;
@@ -3152,14 +3228,14 @@ function timeoutReconnect() {
                               '<div class="power-compare">'+
                                 '<div class="power-row">'+
                                   '<div class="power-side '+(pWin?'win-side':'lose-side')+'">'+
-                                    '<div class="power-label">玩家1 战力</div>'+
+                                    '<div class="power-label">'+t('ui.hotseat.player1_power')+'</div>'+
                                     '<div class="power-val '+(pWin?'win':'lose')+'">'+rr.playerPower+'</div>'+
                                   '</div>'+
                                   '<div class="power-vs-wrap">'+
                                     '<div class="power-vs">VS</div>'+
                                   '</div>'+
                                   '<div class="power-side '+(aWin?'win-side':'lose-side')+'">'+
-                                    '<div class="power-label">玩家2 战力</div>'+
+                                    '<div class="power-label">'+t('ui.hotseat.player2_power')+'</div>'+
                                     '<div class="power-val '+(aWin?'win':'lose')+'">'+rr.aiPower+'</div>'+
                                   '</div>'+
                                 '</div>'+
@@ -3181,8 +3257,8 @@ function timeoutReconnect() {
                             var p2Win=winner===1;
                             var tie=winner===-1;
                             el.innerHTML='<div class="game-result">'+
-                              '<div class="menu-seal-hs" style="margin:0 auto 30px">'+(p1Win?'玩家1胜利':p2Win?'玩家2胜利':'平局')+'</div>'+
-                              '<h1 class="'+(p1Win?'victory':p2Win?'defeat':'draw')+'">'+(p1Win?'玩家1 天下归一':p2Win?'玩家2 天下归一':'棋逢对手')+'</h1>'+
+                              '<div class="menu-seal-hs" style="margin:0 auto 30px">'+(t(p1Win?'ui.hotseat.player1_win':p2Win?'ui.hotseat.player2_win':'ui.hotseat.draw_round'))+'</div>'+
+                              '<h1 class="'+(p1Win?'victory':p2Win?'defeat':'draw')+'">'+(t(p1Win?'ui.hotseat.player1_crown':p2Win?'ui.hotseat.player2_crown':'ui.hotseat.draw_title'))+'</h1>'+
                               '<div class="final-score">'+G.scores[0]+' : '+G.scores[1]+'</div>'+
                               '<div class="detail">'+
                                 G.players[0].leader.name+'（'+FACTIONS[G.players[0].leader.faction].name+'）VS '+
@@ -3197,7 +3273,7 @@ function timeoutReconnect() {
                             return;
                         }
             // Default fallback
-            el.innerHTML='<div class="hot-seat-playing"><h2>热座模式</h2><p>加载中...</p></div>';
+            el.innerHTML='<div class="hot-seat-playing"><h2>' + t('ui.hotseat.loading') + '</h2><p>' + t('ui.hotseat.loading') + '</p></div>';
         }
 
         function renderHotSeatGame(el){
@@ -3281,7 +3357,7 @@ function timeoutReconnect() {
                                     '<div class="hs-hidden-icon">🔒</div>'+
                                     '<div class="hs-hidden-text">对方回合中</div>'+
                                   '</div>':
-                                  (p0.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
+                                  (p0.hand.length===0?'<span style="color:#B8A88A">${t("ui.game.no_hand")}</span>':
                                                                       p0.hand.map(function(c,i){return handleHotSeatHandCard(c,i,act)}).join(''))) +
                               '</div>'+
                             '</div>'+
@@ -3295,7 +3371,7 @@ function timeoutReconnect() {
                                                 '<div class="hs-hidden-icon">🔒</div>'+
                                                 '<div class="hs-hidden-text">对方回合中</div>'+
                                               '</div>':
-                                              (p1.hand.length===0?'<span style="color:#B8A88A">无手牌</span>':
+                                              (p1.hand.length===0?'<span style="color:#B8A88A">${t("ui.game.no_hand")}</span>':
                                                 p1.hand.map(function(c,i){return handleHotSeatHandCard(c,i,1)}).join('')))+
                                           '</div>'+
                                         '</div>'+
@@ -3303,7 +3379,7 @@ function timeoutReconnect() {
                                           '<button class="btn btn-sm btn-primary" onclick="useLeaderAbility('+act+')" '+
                                             (G.leaderAbilityUsed[act]?'disabled':'')+'>'+
                                             (G.leaderAbilityUsed[act]?'已使用':'主将技能')+' · '+G.players[act].leader.name+'</button>'+
-                                          '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">放弃本局</button>'+
+                                          '<button class="btn btn-sm btn-pass" onclick="hotSeatPassTurn()">'+t('ui.hotseat.pass_round')+'</button>'+
                                                                                    '</div>'+
                                                                                    '<div class="log-area">'+
                                                                                                                                                  (G.logs||[]).slice(-4).map(function(l){return'<div class="log-entry">'+l+'</div>'}).join('')+
@@ -3451,8 +3527,8 @@ function showConfirmModal(title, msg, onYes){
     <div class="confirm-title">${title}</div>
     <div class="confirm-msg">${msg}</div>
     <div class="confirm-btns">
-      <button class="confirm-btn confirm-no">取消</button>
-      <button class="confirm-btn confirm-yes">确认</button>
+      <button class="confirm-btn confirm-no">${t("ui.dialog.cancel")}</button>
+      <button class="confirm-btn confirm-yes">${t("ui.dialog.confirm")}</button>
     </div>
   </div>`;
   document.body.appendChild(overlay);
