@@ -675,34 +675,34 @@ function triggerAbility(card,playerIdx){
   switch(t){
     case'draw':
       drawCards(playerIdx,n);
-      addLog(`${card.name}的效果：抽${n}张牌`);
+      addLog(`${cn(card)}的效果：抽${n}张牌`);
       break;
     case'discard':{
       const oppH=getHand(opp);
       for(let i=0;i<n&&oppH.length>0;i++){
         const idx=Math.floor(random()*oppH.length);
-        addLog(`${card.name}的效果：${opp===0?'你':'AI'}弃掉了${oppH[idx].name}`);
+        addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}弃掉了${oppH[idx].name}`);
         oppH.splice(idx,1);
       }
       break;}
     case'boost_row':
       myBoard[card.row].forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
-      addLog(`${card.name}的效果：本行+${n}`);
+      addLog(`${cn(card)}的效果：本行+${n}`);
       break;
     case'weaken_row':{
       const wk=weakestOpponentRow(oppBoard,opp);
       oppBoard[wk].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-n)});
-      addLog(`${card.name}的效果：${opp===0?'你':'AI'}${ROW_NAMES[wk]}行-${n}`);
+      addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}${ROW_NAMES[wk]}行-${n}`);
       break;}
     case'gain_provisions':
       G.provisions[playerIdx]+=n;
-      addLog(`${card.name}的效果：+${n}粮草`);
+      addLog(`${cn(card)}的效果：+${n}粮草`);
       break;
     case'ambush':
       if(G.turnCount===0&&!G.globalBuffs.ambushTriggered){
         myBoard.infantry.forEach(c=>{if(c)c.strength+=n});
         G.globalBuffs.ambushTriggered=true;
-        addLog(`${card.name}的效果：突袭！步兵行+${n}`);
+        addLog(`${cn(card)}的效果：突袭！步兵行+${n}`);
       }
       break;
     case'command':{
@@ -711,10 +711,10 @@ function triggerAbility(card,playerIdx){
         let weakIdx=0,weakStr=Infinity;
         cmdH.forEach((c,i)=>{if(c&&c.strength<weakStr){weakStr=c.strength;weakIdx=i}});
         const discarded=cmdH.splice(weakIdx,1)[0];
-        addLog(`${card.name}的效果：弃掉了${discarded.name}（${discarded.strength}）`);
+        addLog(`${cn(card)}的效果：弃掉了${discarded.name}（${discarded.strength}）`);
         if(cmdH.length>0){
           drawCards(playerIdx,n);
-          addLog(`${card.name}的效果：抽${n}张牌`);
+          addLog(`${cn(card)}的效果：抽${n}张牌`);
         }
       }
       break;}
@@ -725,34 +725,34 @@ function triggerAbility(card,playerIdx){
         if(p>ctrlMaxP){ctrlMaxP=p;ctrlMaxRow=r}
       });
       oppBoard[ctrlMaxRow].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-1)});
-      addLog(`${card.name}的效果：离间计！${opp===0?'你':'AI'}${ROW_NAMES[ctrlMaxRow]}行-1`);
+      addLog(`${cn(card)}的效果：离间计！${opp===0?'你':'AI'}${ROW_NAMES[ctrlMaxRow]}行-1`);
       break;}
     case'skirmish':
       if(playerIdx===0) G.players[1].passed=true;
       else G.players[0].passed=true;
-      addLog(`${card.name}的效果：${opp===0?'你':'AI'}被迫跳过`);
+      addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}被迫跳过`);
       break;
     case'shield':
       ['infantry','cavalry','navy','strategy'].forEach(r=>{
         myBoard[r].forEach(c=>{if(c)c.strength+=n});
       });
-      addLog(`${card.name}的效果：全场+${n}`);
+      addLog(`${cn(card)}的效果：全场+${n}`);
       break;
     case'navy_boost':
       myBoard.navy.forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
-      addLog(`${card.name}的效果：水军行+${n}`);
+      addLog(`${cn(card)}的效果：水军行+${n}`);
       break;
     case'farm':
       if(playerIdx===0) G.globalBuffs.playerFarm=n;
       else G.globalBuffs.aiFarm=n;
-      addLog(`${card.name}的效果：每回合+${n}粮草`);
+      addLog(`${cn(card)}的效果：每回合+${n}粮草`);
       break;
     case'fortify':
       myBoard[card.row].forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
-      addLog(`${card.name}的效果：本行+${n}`);
+      addLog(`${cn(card)}的效果：本行+${n}`);
       break;
     case'flex':
-      addLog(`${card.name}的效果：可放入任意行`);
+      addLog(`${cn(card)}的效果：可放入任意行`);
       break;
     case'assimilate':{
       let aMinCard=null,aMinStr=Infinity,aMinRow=null;
@@ -764,13 +764,13 @@ function triggerAbility(card,playerIdx){
       if(aMinCard){
         oppBoard[aMinRow]=oppBoard[aMinRow].filter(c=>c.uid!==aMinCard.uid);
         getHandSafe(playerIdx).push(aMinCard);
-        addLog(`${card.name}的效果：吸收了${opp===0?'你':'AI'}的${aMinCard.name}`);
+        addLog(`${cn(card)}的效果：吸收了${opp===0?'你':'AI'}的${aMinCard.name}`);
       }
       break;}
     case'armor':
       if(playerIdx===0) G.globalBuffs.playerArmor+=n;
       else G.globalBuffs.aiArmor+=n;
-      addLog(`${card.name}的效果：全军护甲+${n}`);
+      addLog(`${cn(card)}的效果：全军护甲+${n}`);
       break;
     case'siege':{
       let sMaxP=-1,sMaxRow='infantry';
@@ -779,29 +779,29 @@ function triggerAbility(card,playerIdx){
         if(p>sMaxP){sMaxP=p;sMaxRow=r}
       });
       oppBoard[sMaxRow].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-n)});
-      addLog(`${card.name}的效果：围城！${opp===0?'你':'AI'}${ROW_NAMES[sMaxRow]}行-${n}`);
+      addLog(`${cn(card)}的效果：围城！${opp===0?'你':'AI'}${ROW_NAMES[sMaxRow]}行-${n}`);
       break;}
     case'coordinate':
       myBoard[card.row].forEach(c=>{
         if(c.uid!==card.uid&&c.faction===card.faction) c.strength+=n;
       });
-      addLog(`${card.name}的效果：联防，同阵营+${n}`);
+      addLog(`${cn(card)}的效果：联防，同阵营+${n}`);
       break;
     case'ambush_card':{
       drawCards(playerIdx,1);
       const ambH=getHand(opp);
       if(ambH.length>0){
         const idx=Math.floor(random()*ambH.length);
-        addLog(`${card.name}的效果：${opp===0?'你':'AI'}弃掉了${ambH[idx].name}`);
+        addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}弃掉了${ambH[idx].name}`);
         ambH.splice(idx,1);
       }
-      addLog(`${card.name}的效果：抽1牌，对手弃1牌`);
+      addLog(`${cn(card)}的效果：抽1牌，对手弃1牌`);
       break;}
     case'berserk':
       card.strength*=2;
       if(playerIdx===0) G.globalBuffs.playerBerserkCard=card.uid;
       else G.globalBuffs.aiBerserkCard=card.uid;
-      addLog(`${card.name}的效果：狂攻！战力翻倍为${card.strength}`);
+      addLog(`${cn(card)}的效果：狂攻！战力翻倍为${card.strength}`);
       break;
     case'crit':{
       let cMaxCard=null,cMaxStr=-1,cMaxRow=null;
@@ -812,26 +812,26 @@ function triggerAbility(card,playerIdx){
       });
       if(cMaxCard){
         oppBoard[cMaxRow]=oppBoard[cMaxRow].filter(c=>c.uid!==cMaxCard.uid);
-        addLog(`${card.name}的效果：消灭了${opp===0?'你':'AI'}的${cMaxCard.name}（${cMaxStr}）`);
+        addLog(`${cn(card)}的效果：消灭了${opp===0?'你':'AI'}的${cMaxCard.name}（${cMaxStr}）`);
       }
       break;}
     case'unify':
       if(playerIdx===0) G.globalBuffs.playerUnify+=1;
       else G.globalBuffs.aiUnify+=1;
-      addLog(`${card.name}的效果：统一之力+1`);
+      addLog(`${cn(card)}的效果：统一之力+1`);
       break;
     case'anti_south':{
       const southFactions=['song','qi','liang','chen'];
       const oppLeaderFaction=(playerIdx===0?G.players[1].leader:G.players[0].leader)?.faction||'';
       if(southFactions.includes(oppLeaderFaction)){
         card.strength+=n;
-        addLog(`${card.name}的效果：灭${oppLeaderFaction}！战力+${n}`);
+        addLog(`${cn(card)}的效果：灭${oppLeaderFaction}！战力+${n}`);
       }
       break;}
     case'combo_boost':{
       const sameType=Object.values(myBoard).flat().filter(c=>c.uid!==card.uid&&c.ability&&c.ability.split(':')[0]==='combo_boost');
       sameType.forEach(c=>{if(c)c.strength+=n});
-      addLog(`${card.name}的效果：连携！友方连携卡+${n}`);
+      addLog(`${cn(card)}的效果：连携！友方连携卡+${n}`);
       break;}
     case'destroy':{
       const oppAll=Object.entries(oppBoard).flatMap(([r,cards])=>cards.map(c=>({...c,_row:r})));
@@ -840,7 +840,7 @@ function triggerAbility(card,playerIdx){
         const target=oppAll.splice(ri,1)[0];
         oppBoard[target._row]=oppBoard[target._row].filter(c=>c.uid!==target.uid);
         G.graveyard.push(target);
-        addLog(`${card.name}的效果：消灭了${opp===0?'你':'AI'}的${target.name}`);
+        addLog(`${cn(card)}的效果：消灭了${opp===0?'你':'AI'}的${target.name}`);
       }
       break;}
     case'resurrect':{
@@ -848,12 +848,12 @@ function triggerAbility(card,playerIdx){
         const ri=Math.floor(random()*G.graveyard.length);
         const card2=G.graveyard.splice(ri,1)[0];
         getHandSafe(playerIdx).push(card2);
-        addLog(`${card.name}的效果：从墓地回收了${card2.name}`);
+        addLog(`${cn(card)}的效果：从墓地回收了${card2.name}`);
       }
       break;}
     case'protect':
       card.protectArmor=(card.protectArmor||0)+n;
-      addLog(`${card.name}的效果：获得${n}点护甲`);
+      addLog(`${cn(card)}的效果：获得${n}点护甲`);
       break;
     case'spy':{
       const oppH2=getHand(opp);
@@ -862,12 +862,12 @@ function triggerAbility(card,playerIdx){
         oppH2.forEach((c,i)=>{if(c&&c.strength>spyMax){spyMax=c.strength;spyIdx=i}});
         const discarded=oppH2.splice(spyIdx,1)[0];
         G.graveyard.push(discarded);
-        addLog(`${card.name}的效果：间谍行动，${opp===0?'你':'AI'}弃掉了${discarded.name}（${discarded.strength}）`);
+        addLog(`${cn(card)}的效果：间谍行动，${opp===0?'你':'AI'}弃掉了${discarded.name}（${discarded.strength}）`);
       }
       break;}
     case'draw_extra':
       drawCards(playerIdx,n);
-      addLog(`${card.name}的效果：额外抽${n}张牌`);
+      addLog(`${cn(card)}的效果：额外抽${n}张牌`);
       break;
   }
 }
@@ -919,7 +919,7 @@ function playCard(playerIdx,handIdx,row){
   G._lastPlayedUid=card.uid;
   G._lastPlayedBy=playerIdx;
   const name=playerIdx===0?'你':'AI';
-  addLog(`${name}打出了 ${card.name}（${ROW_NAMES[row]} ${card.strength}）`);
+  addLog(`${name}打出了 ${cn(card)}（${ROW_NAMES[row]} ${card.strength}）`);
   setTimeout(()=>{
     const rowEl=document.querySelector('.row[data-row="'+row+'"]')||document.querySelectorAll('.row')[getRowIdx(row)];
     const cardEl=card.uid?getCardEl(card.uid):null;
@@ -1604,11 +1604,11 @@ function renderMulligan(app){
     const cost=getCardCost(c.strength);
     const rowName=ROW_NAMES[c.row];
     const desc=(c.desc||'')+(c.protectArmor?` 🛡${c.protectArmor}`:'');
-    return`<div class="card ${isSelected?'selected':''}" onclick="onMulliganCardClick(${i})" title="${c.name} - ${c.desc}"
+    return`<div class="card ${isSelected?'selected':''}" onclick="onMulliganCardClick(${i})" title="${cn(c)} - ${cd(c)}"
       style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px);':''}width:96px;min-width:96px;max-width:96px;flex:0 0 96px">
       <div class="card-cost">${cost}</div>
-      <div class="card-illustration"><img src="${CARD_DATA_URIS[c.id]||`assets/cards/card_${c.id}.png`}" alt="${c.name}"/><div class="card-art-fallback" style="display:none!important">${c.name}</div></div>
-            <div class="card-name">${c.name}</div>
+      <div class="card-illustration"><img src="${CARD_DATA_URIS[c.id]||`assets/cards/card_${c.id}.png`}" alt="${cn(c)}"/><div class="card-art-fallback" style="display:none!important">${cn(c)}</div></div>
+            <div class="card-name">${cn(c)}</div>
       <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
       <div class="card-ability">${desc}</div>
       <div class="card-stats-bar"><span class="card-atk">⚔ ${c.strength}</span></div>
@@ -1817,7 +1817,7 @@ function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
         const animClass=c.uid===lastUid?(lastBy===1?' ai-play-card':' play-animation'):'';
         return`<div class="card-mini ${c.ability?'has-ability':''}${animClass}" style="perspective:600px">
           <div class="c-faction-dot" style="background:${f.color}"></div>
-          <div class="c-name" title="${c.name}">${c.name}</div>
+          <div class="c-name" title="${cn(c)}">${cn(c)}</div>
           <div class="c-str">${c.strength}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
         </div>`;
       }).join('');
@@ -1838,11 +1838,11 @@ function renderHandCard(card,idx){
   const cls=selected?'selected':(!playable?'unplayable':'');
   const rowName=ROW_NAMES[card.row];
   const desc=(card.desc||'')+(card.protectArmor?` 🛡${card.protectArmor}`:'');
-  return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${card.name} - ${card.desc}"
+  return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${cn(card)} - ${cd(card)}"
     style="--faction-color:${f.color};--faction-glow:${f.color}40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px">
     <div class="card-cost">${cost}</div>
-    <div class="card-illustration"><img src="${CARD_DATA_URIS[card.id]||`assets/cards/card_${card.id}.png`}" alt="${card.name}"/><div class="card-art-fallback" style="display:none!important">${card.name}</div></div>
-        <div class="card-name">${card.name}</div>
+    <div class="card-illustration"><img src="${CARD_DATA_URIS[card.id]||`assets/cards/card_${card.id}.png`}" alt="${cn(card)}"/><div class="card-art-fallback" style="display:none!important">${cn(card)}</div></div>
+        <div class="card-name">${cn(card)}</div>
     <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
     <div class="card-ability">${desc}</div>
     <div class="card-stats-bar"><span class="card-atk">⚔ ${card.strength}</span></div>
@@ -2071,10 +2071,10 @@ function renderGameResult(el){
                         var cost = getCardCost(c.strength);
                         var rowName = ROW_NAMES[c.row];
                         var desc = (c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
-                        return '<div class="card '+(picked?'selected':'')+'" onclick="toggleMulligan(' + i + ');render()" title="'+c.name+' - '+c.desc+'" ' +
+                        return '<div class="card '+(picked?'selected':'')+'" onclick="toggleMulligan(' + i + ');render()" title="'+cn(c)+' - '+cd(c)+'" ' +
                           'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">' +
                           '<div class="card-cost">' + cost + '</div>' +
-                          '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+c.name+'"/><div class="card-art-fallback" style="display:none!important">'+c.name+'</div></div>' +
+                          '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+cn(c)+'"/><div class="card-art-fallback" style="display:none!important">'+cn(c)+'</div></div>' +
                           '<div class="card-name">' + c.name + '</div>' +
                           '<div class="card-tags"><span class="card-type-tag">' + rowName + '</span></div>' +
                           '<div class="card-ability">' + desc + '</div>' +
@@ -3243,11 +3243,11 @@ function timeoutReconnect() {
                                 var cost=getCardCost(c.strength);
                                 var rowName=ROW_NAMES[c.row];
                                 var desc=(c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
-                                return'<div class="card '+(picked?'selected':'')+'" onclick="hotSeatToggleMulligan('+i+')" title="'+c.name+' - '+c.desc+'" '+
+                                return'<div class="card '+(picked?'selected':'')+'" onclick="hotSeatToggleMulligan('+i+')" title="'+cn(c)+' - '+cd(c)+'" '+
                                   'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">'+
                                   '<div class="card-cost">'+cost+'</div>'+
-                                  '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+c.name+'"/><div class="card-art-fallback" style="display:none!important">'+c.name+'</div></div>'+
-                                  '<div class="card-name">'+c.name+'</div>'+
+                                  '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+cn(c)+'"/><div class="card-art-fallback" style="display:none!important">'+cn(c)+'</div></div>'+
+                                  '<div class="card-name">'+cn(c)+'</div>'+
                                   '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
                                   '<div class="card-ability">'+desc+'</div>'+
                                   '<div class="card-stats-bar"><span class="card-atk">⚔ '+c.strength+'</span></div>'+
@@ -3452,12 +3452,12 @@ function timeoutReconnect() {
             var rowName=ROW_NAMES[card.row];
             var desc=(card.desc||'')+(card.protectArmor?' 🛡'+card.protectArmor:'');
             return'<div class="card '+cls+'" '+(myTurn?'onclick="onCardClick('+idx+')" ':'')+
-              'title="'+card.name+' - '+rowName+'" style="'+
+              'title="'+cn(card)+' - '+rowName+'" style="'+
               '--faction-color:'+f.color+';--faction-glow:'+f.color+'40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px">'+
               '<div class="card-cost">'+cost+'</div>'+
               '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[card.id]||'assets/cards/card_'+card.id+'.png')+
-                '" alt="'+card.name+'"/></div>'+
-              '<div class="card-name">'+card.name+'</div>'+
+                '" alt="'+cn(card)+'"/></div>'+
+              '<div class="card-name">'+cn(card)+'</div>'+
               '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
               '<div class="card-ability">'+desc+'</div>'+
               '<div class="card-stats-bar"><span class="card-atk">⚔ '+card.strength+'</span></div>'+
