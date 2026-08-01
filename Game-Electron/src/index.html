@@ -24,7 +24,7 @@
 // 在模块加载前提供翻译, 模块加载后 window.t 被替换为完整翻译函数
 window.t = window.t || function(key, vars){
   var _t = {
-    'ui.menu.seal_title':'对弈',
+    'ui.menu.seal_title':'天下对弈',
     'ui.menu.main_title':'南北朝 · 天下对弈',
     'ui.menu.start':'开始游戏',
     'ui.menu.mode_title':'选择对战模式',
@@ -133,6 +133,15 @@ window.t = window.t || function(key, vars){
     'ui.dialog.settings':'设置',
     'ui.dialog.language':'语言 / Language',
     'ui.dialog.back':'⬅ 返回 / Back',
+    'ui.tutorial.combo_title':'⚔ 组合技说明',
+    'ui.tutorial.combo_same_faction':'同阵营加成',
+    'ui.tutorial.combo_same_faction_desc':'同势力≥2张武将牌触发',
+    'ui.tutorial.combo_counter':'异阵营反制',
+    'ui.tutorial.combo_counter_desc':'对手≥3张武将牌时，counter_faction 牌+2',
+    'ui.tutorial.combo_juzhongqu':'领袖羁绊',
+    'ui.tutorial.combo_juzhongqu_desc':'同势力同行数≥count，全体+bonus',
+    'ui.tutorial.combo_hint':'卡牌出现金色 +N 表示已触发',
+    'ui.menu.subtitle_card':'四行布阵 · 三局两胜',
     'ui.poetry.left1':'余 霞 散 成 绮',
     'ui.poetry.left2':'池 塘 生 春 草',
     'ui.poetry.left3':'大 江 流 日 夜',
@@ -152,9 +161,15 @@ window.t = window.t || function(key, vars){
     }
   }
   return val;
-};
+  };
 
-(function(){
+    // Card localization helpers
+    function cn(c){return c&&c.name_en&&window.currentLocale!=='zh-CN'?c.name_en:c&&c.name||'';}
+    function cd(c){return c&&c.desc_en&&window.currentLocale!=='zh-CN'?c.desc_en:c&&c.desc||'';}
+    function ln(l){return l&&l.name_en&&window.currentLocale!=='zh-CN'?l.name_en:l&&l.name||'';}
+    function ld(l){return l&&l.desc_en&&window.currentLocale!=='zh-CN'?l.desc_en:l&&l.desc||'';}
+
+  (function(){
   if(!/mockmp=1/.test(location.search))return;
   console.log('[MockMP] multi-window mock enabled (BroadcastChannel cross-instance)');
   // ===== 用 BroadcastChannel 跨 Electron 实例/tab 通信 =====
@@ -442,81 +457,81 @@ beizhou:{name:'北周',color:'#3D4F5F',bg:'#EDEDF2'}
 };
 
 const CARDS_DATA=[
-{id:100,name:'斥候',faction:'common',strength:2,row:'infantry',ability:null,desc:'探听敌情'},
-{id:101,name:'民兵',faction:'common',strength:3,row:'infantry',ability:null,desc:'保家卫国'},
-{id:102,name:'弓箭手',faction:'common',strength:4,row:'cavalry',ability:null,desc:'远程射击'},
-{id:103,name:'辎重',faction:'common',strength:1,row:'navy',ability:'gain_provisions:1',desc:'补给粮草+1'},
-{id:104,name:'谋士',faction:'common',strength:2,row:'strategy',ability:'draw:1',desc:'运筹帷幄，抽1牌'},
-{id:105,name:'刺客',faction:'common',strength:5,row:'cavalry',ability:'discard:1',desc:'暗杀行动，对手弃1牌'},
-{id:106,name:'弩手',faction:'common',strength:6,row:'cavalry',ability:null,desc:'强弓劲弩'},
-{id:107,name:'盾兵',faction:'common',strength:3,row:'infantry',ability:'boost_row:1',desc:'盾阵，本行+1'},
-{id:108,name:'轻骑',faction:'common',strength:4,row:'cavalry',ability:null,desc:'轻骑突进'},
-{id:109,name:'传令',faction:'common',strength:1,row:'strategy',ability:'draw:1',desc:'传令兵，抽1牌'},
-{id:1,name:'刘裕',faction:'song',strength:6,row:'infantry',ability:'ambush:3',desc:'突袭！首回合步兵+3'},
-{id:2,name:'檀道济',faction:'song',strength:7,row:'infantry',ability:null,desc:'唱筹量沙，名将'},
-{id:3,name:'沈庆之',faction:'song',strength:5,row:'infantry',ability:'boost_row:1',desc:'老兵名将，本行+1'},
-{id:4,name:'到彦之',faction:'song',strength:4,row:'infantry',ability:'command:2',desc:'军令如山，弃最弱牌抽2'},
-{id:5,name:'谢晦',faction:'song',strength:3,row:'strategy',ability:'draw:1',desc:'谋略过人，抽1牌'},
-{id:6,name:'萧道成',faction:'qi',strength:5,row:'infantry',ability:null,desc:'齐高帝，雄主'},
-{id:7,name:'王俭',faction:'qi',strength:4,row:'strategy',ability:'control:1',desc:'离间计，对手最强行-1'},
-{id:8,name:'褚渊',faction:'qi',strength:3,row:'strategy',ability:'skirmish:0',desc:'书谋，跳过对手一回合'},
-{id:9,name:'崔祖思',faction:'qi',strength:5,row:'infantry',ability:'weaken_row:1',desc:'削弱对手一行-1'},
-{id:10,name:'王僧虔',faction:'qi',strength:6,row:'cavalry',ability:null,desc:'书法传家，名士'},
-{id:11,name:'萧衍',faction:'liang',strength:7,row:'navy',ability:null,desc:'梁武帝，崇佛'},
-{id:12,name:'韦睿',faction:'liang',strength:6,row:'infantry',ability:'shield:1',desc:'佛光普照，全场+1'},
-{id:13,name:'陈庆之',faction:'liang',strength:8,row:'cavalry',ability:null,desc:'白袍战神，名垂千古'},
-{id:14,name:'羊侃',faction:'liang',strength:5,row:'navy',ability:'navy_boost:2',desc:'水攻，水军+2'},
-{id:15,name:'侯景',faction:'liang',strength:4,row:'infantry',ability:'discard:1',desc:'乱臣贼子，对手弃1牌'},
-{id:16,name:'陈霸先',faction:'chen',strength:6,row:'infantry',ability:null,desc:'陈武帝，开国'},
-{id:17,name:'吴明彻',faction:'chen',strength:7,row:'infantry',ability:null,desc:'南朝名将，北伐'},
-{id:18,name:'侯瑱',faction:'chen',strength:5,row:'navy',ability:'farm:2',desc:'屯田，每回合+2粮草'},
-{id:19,name:'章昭达',faction:'chen',strength:4,row:'infantry',ability:'fortify:1',desc:'坚壁清野，本行+1'},
-{id:20,name:'黄法氍',faction:'chen',strength:3,row:'navy',ability:'gain_provisions:1',desc:'筹措粮草，+1'},
-{id:21,name:'拓跋焘',faction:'beiwei',strength:8,row:'cavalry',ability:null,desc:'太武帝，统一北方'},
-{id:22,name:'崔浩',faction:'beiwei',strength:5,row:'strategy',ability:'weaken_row:2',desc:'军师，对手一行-2'},
-{id:23,name:'尔朱荣',faction:'beiwei',strength:7,row:'cavalry',ability:null,desc:'权臣，骁勇善战'},
-{id:24,name:'贺拔岳',faction:'beiwei',strength:6,row:'cavalry',ability:'flex:0',desc:'铁骑纵横，骑兵任意行'},
-{id:25,name:'奚康生',faction:'beiwei',strength:4,row:'cavalry',ability:'assimilate:0',desc:'汉化，吸收对手一张牌'},
-{id:26,name:'高欢',faction:'dongwei',strength:7,row:'infantry',ability:null,desc:'神武帝，雄主'},
-{id:27,name:'高澄',faction:'dongwei',strength:5,row:'strategy',ability:'gain_provisions:2',desc:'富国强兵，+2粮草'},
-{id:28,name:'慕容绍宗',faction:'dongwei',strength:6,row:'infantry',ability:'armor:1',desc:'坚甲，所有友方+1'},
-{id:29,name:'高岳',faction:'dongwei',strength:4,row:'infantry',ability:'siege:2',desc:'围城，对手最强行-2'},
-{id:30,name:'刘丰',faction:'dongwei',strength:3,row:'navy',ability:'draw:1',desc:'水军将领，抽1牌'},
-{id:31,name:'宇文泰',faction:'xiwei',strength:8,row:'infantry',ability:null,desc:'大冢宰，八柱国'},
-{id:32,name:'李虎',faction:'xiwei',strength:6,row:'cavalry',ability:'coordinate:1',desc:'联防，同阵营相邻+1'},
-{id:33,name:'侯莫陈崇',faction:'xiwei',strength:5,row:'cavalry',ability:'boost_row:1',desc:'骁勇，本行+1'},
-{id:34,name:'赵贵',faction:'xiwei',strength:4,row:'infantry',ability:'ambush_card:0',desc:'伏兵，藏一张牌'},
-{id:35,name:'独孤信',faction:'xiwei',strength:5,row:'strategy',ability:null,desc:'八柱国，美男子'},
+{id:100,name:'斥候',name_en:'Scout',faction:'common',strength:2,row:'infantry',ability:null,desc:'探听敌情',desc_en:'Scout enemy'},
+{id:101,name:'民兵',name_en:'Militia',faction:'common',strength:3,row:'infantry',ability:null,desc:'保家卫国',desc_en:'Defend homeland'},
+{id:102,name:'弓箭手',name_en:'Archer',faction:'common',strength:4,row:'cavalry',ability:null,desc:'远程射击',desc_en:'Ranged fire'},
+{id:103,name:'辎重',name_en:'Supply',faction:'common',strength:1,row:'navy',ability:'gain_provisions:1',desc:'补给粮草+1',desc_en:'+1 provision'},
+{id:104,name:'谋士',name_en:'Strategist',faction:'common',strength:2,row:'strategy',ability:'draw:1',desc:'运筹帷幄，抽1牌',desc_en:'Strategy, draw 1'},
+{id:105,name:'刺客',name_en:'Assassin',faction:'common',strength:5,row:'cavalry',ability:'discard:1',desc:'暗杀行动，对手弃1牌',desc_en:'Assassinate, opponent discards 1'},
+{id:106,name:'弩手',name_en:'Crossbowman',faction:'common',strength:6,row:'cavalry',ability:null,desc:'强弓劲弩',desc_en:'Strong bow'},
+{id:107,name:'盾兵',name_en:'Shieldman',faction:'common',strength:3,row:'infantry',ability:'boost_row:1',desc:'盾阵，本行+1',desc_en:'Shield wall, row +1'},
+{id:108,name:'轻骑',name_en:'Light Cavalry',faction:'common',strength:4,row:'cavalry',ability:null,desc:'轻骑突进',desc_en:'Light charge'},
+{id:109,name:'传令',name_en:'Messenger',faction:'common',strength:1,row:'strategy',ability:'draw:1',desc:'传令兵，抽1牌',desc_en:'Messenger, draw 1'},
+{id:1,name:'刘裕',name_en:'Liu Yu',faction:'song',strength:6,row:'infantry',ability:'ambush:3',desc:'突袭！首回合步兵+3',desc_en:'Ambush! Infantry +3 first turn'},
+{id:2,name:'檀道济',name_en:'Tan Daoji',faction:'song',strength:7,row:'infantry',ability:null,desc:'唱筹量沙，名将',desc_en:'Famous general'},
+{id:3,name:'沈庆之',name_en:'Shen Qingzhi',faction:'song',strength:5,row:'infantry',ability:'boost_row:1',desc:'老兵名将，本行+1',desc_en:'Veteran, row +1'},
+{id:4,name:'到彦之',name_en:'Dao Yanzhi',faction:'song',strength:4,row:'infantry',ability:'command:2',desc:'军令如山，弃最弱牌抽2',desc_en:'Strategy, draw 1'},
+{id:5,name:'谢晦',name_en:'Xie Hui',faction:'song',strength:3,row:'strategy',ability:'draw:1',desc:'谋略过人，抽1牌',desc_en:'Sow discord, strongest row -1'},
+{id:6,name:'萧道成',name_en:'Xiao Daocheng',faction:'qi',strength:5,row:'infantry',ability:null,desc:'齐高帝，雄主',desc_en:'Founder emperor'},
+{id:7,name:'王俭',name_en:'Wang Jian',faction:'qi',strength:4,row:'strategy',ability:'control:1',desc:'离间计，对手最强行-1',desc_en:'Skip opponent turn'},
+{id:8,name:'褚渊',name_en:'Chu Yuan',faction:'qi',strength:3,row:'strategy',ability:'skirmish:0',desc:'书谋，跳过对手一回合',desc_en:'Weaken row -1'},
+{id:9,name:'崔祖思',name_en:'Cui Zusi',faction:'qi',strength:5,row:'infantry',ability:'weaken_row:1',desc:'削弱对手一行-1',desc_en:'Calligraphy family'},
+{id:10,name:'王僧虔',name_en:'Wang Sengqian',faction:'qi',strength:6,row:'cavalry',ability:null,desc:'书法传家，名士',desc_en:'Famous calligrapher'},
+{id:11,name:'萧衍',name_en:'Xiao Yan',faction:'liang',strength:7,row:'navy',ability:null,desc:'梁武帝，崇佛',desc_en:'Buddhist emperor'},
+{id:12,name:'韦睿',name_en:'Wei Rui',faction:'liang',strength:6,row:'infantry',ability:'shield:1',desc:'佛光普照，全场+1',desc_en:'White armor general'},
+{id:13,name:'陈庆之',name_en:'Chen Qingzhi',faction:'liang',strength:8,row:'cavalry',ability:null,desc:'白袍战神，名垂千古',desc_en:'Divine warrior'},
+{id:14,name:'羊侃',name_en:'Yang Kan',faction:'liang',strength:5,row:'navy',ability:'navy_boost:2',desc:'水攻，水军+2',desc_en:'Brave defender'},
+{id:15,name:'侯景',name_en:'Hou Jing',faction:'liang',strength:4,row:'infantry',ability:'discard:1',desc:'乱臣贼子，对手弃1牌',desc_en:'Treasonous general'},
+{id:16,name:'陈霸先',name_en:'Chen Baxian',faction:'chen',strength:6,row:'infantry',ability:null,desc:'陈武帝，开国',desc_en:'Founder of Chen'},
+{id:17,name:'吴明彻',name_en:'Wu Mingche',faction:'chen',strength:7,row:'infantry',ability:null,desc:'南朝名将，北伐',desc_en:'Southern general'},
+{id:18,name:'侯瑱',name_en:'Hou Tian',faction:'chen',strength:5,row:'navy',ability:'farm:2',desc:'屯田，每回合+2粮草',desc_en:'Naval commander'},
+{id:19,name:'章昭达',name_en:'Zhang Zhaoda',faction:'chen',strength:4,row:'infantry',ability:'fortify:1',desc:'坚壁清野，本行+1',desc_en:'Brave general'},
+{id:20,name:'黄法氍',name_en:'Huang Faqu',faction:'chen',strength:3,row:'navy',ability:'gain_provisions:1',desc:'筹措粮草，+1',desc_en:'Loyal defender'},
+{id:21,name:'拓跋焘',name_en:'Tuoba Tao',faction:'beiwei',strength:8,row:'cavalry',ability:null,desc:'太武帝，统一北方',desc_en:'Unified the north'},
+{id:22,name:'崔浩',name_en:'Cui Hao',faction:'beiwei',strength:5,row:'strategy',ability:'weaken_row:2',desc:'军师，对手一行-2',desc_en:'Strategist'},
+{id:23,name:'尔朱荣',name_en:'Er Zhu Rong',faction:'beiwei',strength:7,row:'cavalry',ability:null,desc:'权臣，骁勇善战',desc_en:'Powerful minister'},
+{id:24,name:'贺拔岳',name_en:'He Ba Yue',faction:'beiwei',strength:6,row:'cavalry',ability:'flex:0',desc:'铁骑纵横，骑兵任意行',desc_en:'Iron cavalry'},
+{id:25,name:'奚康生',name_en:'Xi Kangsheng',faction:'beiwei',strength:4,row:'cavalry',ability:'assimilate:0',desc:'汉化，吸收对手一张牌',desc_en:'Brave warrior'},
+{id:26,name:'高欢',name_en:'Gao Huan',faction:'dongwei',strength:7,row:'infantry',ability:null,desc:'神武帝，雄主',desc_en:'Divine warrior of Qi'},
+{id:27,name:'高澄',name_en:'Gao Cheng',faction:'dongwei',strength:5,row:'strategy',ability:'gain_provisions:2',desc:'富国强兵，+2粮草',desc_en:'Successor'},
+{id:28,name:'慕容绍宗',name_en:'Murong Shaozong',faction:'dongwei',strength:6,row:'infantry',ability:'armor:1',desc:'坚甲，所有友方+1',desc_en:'Famous general'},
+{id:29,name:'高岳',name_en:'Gao Yue',faction:'dongwei',strength:4,row:'infantry',ability:'siege:2',desc:'围城，对手最强行-2',desc_en:'Loyal general'},
+{id:30,name:'刘丰',name_en:'Liu Feng',faction:'dongwei',strength:3,row:'navy',ability:'draw:1',desc:'水军将领，抽1牌',desc_en:'Brave commander'},
+{id:31,name:'宇文泰',name_en:'Yuwen Tai',faction:'xiwei',strength:8,row:'infantry',ability:null,desc:'大冢宰，八柱国',desc_en:'Powerful minister'},
+{id:32,name:'李虎',name_en:'Li Hu',faction:'xiwei',strength:6,row:'cavalry',ability:'coordinate:1',desc:'联防，同阵营相邻+1',desc_en:'Founding minister'},
+{id:33,name:'侯莫陈崇',name_en:'Houmo Chen Chong',faction:'xiwei',strength:5,row:'cavalry',ability:'boost_row:1',desc:'骁勇，本行+1',desc_en:'Eight pillars'},
+{id:34,name:'赵贵',name_en:'Zhao Gui',faction:'xiwei',strength:4,row:'infantry',ability:'ambush_card:0',desc:'伏兵，藏一张牌',desc_en:'Eight pillars'},
+{id:35,name:'独孤信',name_en:'Dugu Xin',faction:'xiwei',strength:5,row:'strategy',ability:null,desc:'八柱国，美男子',desc_en:'Eight pillars'},
 {id:36,name:'高洋',faction:'beiqi',strength:8,row:'cavalry',ability:null,desc:'文宣帝，疯癫天才'},
-{id:37,name:'斛律光',faction:'beiqi',strength:7,row:'cavalry',ability:'crit:0',desc:'暴击，随机消灭对手一张'},
-{id:38,name:'兰陵王',faction:'beiqi',strength:6,row:'cavalry',ability:'berserk:0',desc:'狂攻！战力翻倍但下回合-2'},
-{id:39,name:'段韶',faction:'beiqi',strength:5,row:'infantry',ability:'boost_row:2',desc:'名将，本行+2'},
-{id:40,name:'傅伏',faction:'beiqi',strength:4,row:'infantry',ability:null,desc:'忠臣守城'},
+{id:37,name:'斛律光',name_en:'Hulü Guang',faction:'beiqi',strength:7,row:'cavalry',ability:'crit:0',desc:'暴击，随机消灭对手一张',desc_en:'Brave general'},
+{id:38,name:'兰陵王',name_en:'Lanling Wang',faction:'beiqi',strength:6,row:'cavalry',ability:'berserk:0',desc:'狂攻！战力翻倍但下回合-2',desc_en:'Masked warrior'},
+{id:39,name:'段韶',name_en:'Duan Shao',faction:'beiqi',strength:5,row:'infantry',ability:'boost_row:2',desc:'名将，本行+2',desc_en:'Famous general'},
+{id:40,name:'傅伏',name_en:'Fu Fu',faction:'beiqi',strength:4,row:'infantry',ability:null,desc:'忠臣守城',desc_en:'Loyal defender'},
 {id:41,name:'宇文邕',faction:'beizhou',strength:7,row:'cavalry',ability:null,desc:'周武帝，雄才大略'},
-{id:42,name:'韦孝宽',faction:'beizhou',strength:6,row:'infantry',ability:'unify:0',desc:'统一之势，每出一张辅助类+0.5全局'},
-{id:43,name:'于翼',faction:'beizhou',strength:5,row:'cavalry',ability:'anti_south:3',desc:'灭陈，对南朝阵营+3'},
-{id:44,name:'辛威',faction:'beizhou',strength:4,row:'infantry',ability:'draw:1',desc:'勇将，抽1牌'},
-{id:45,name:'梁士彦',faction:'beizhou',strength:3,row:'navy',ability:'discard:1',desc:'猛将，对手弃1牌'},
-{id:46,name:'宋军旗',faction:'song',strength:2,row:'infantry',ability:'combo_boost:2',desc:'连携，友方连携+2'},
-{id:47,name:'铁鹞子',faction:'beiwei',strength:3,row:'cavalry',ability:'destroy:1',desc:'拆牌，消灭对手1张'},
-{id:48,name:'舍利',faction:'liang',strength:1,row:'strategy',ability:'resurrect:1',desc:'回收，从墓地拉1张'},
-{id:49,name:'铁甲',faction:'dongwei',strength:2,row:'infantry',ability:'protect:1',desc:'护盾，获得1点护甲'},
-{id:50,name:'细作',faction:'beiqi',strength:1,row:'strategy',ability:'spy:1',desc:'间谍，查看并弃对手1张'},
-{id:110,name:'过牌',faction:'common',strength:1,row:'strategy',ability:'draw_extra:2',desc:'运筹，额外抽2张牌'},
-{id:111,name:'连环计',faction:'common',strength:2,row:'strategy',ability:'destroy:1',desc:'连环计，消灭对手1张'},
-{id:112,name:'暗度陈仓',faction:'common',strength:1,row:'strategy',ability:'spy:1',desc:'暗度陈仓，间谍行动'}
+{id:42,name:'韦孝宽',name_en:'Wei Xiaokuan',faction:'beizhou',strength:6,row:'infantry',ability:'unify:0',desc:'统一之势，每出一张辅助类+0.5全局',desc_en:'Unification minister'},
+{id:43,name:'于翼',name_en:'Yu Yi',faction:'beizhou',strength:5,row:'cavalry',ability:'anti_south:3',desc:'灭陈，对南朝阵营+3',desc_en:'Chief minister'},
+{id:44,name:'辛威',name_en:'Xin Wei',faction:'beizhou',strength:4,row:'infantry',ability:'draw:1',desc:'勇将，抽1牌',desc_en:'Brave general'},
+{id:45,name:'梁士彦',name_en:'Liang Shiyan',faction:'beizhou',strength:3,row:'navy',ability:'discard:1',desc:'猛将，对手弃1牌',desc_en:'Brave general'},
+{id:46,name:'宋军旗',name_en:'Song Standard',faction:'song',strength:2,row:'infantry',ability:'combo_boost:2',desc:'连携，友方连携+2',desc_en:'Combo allies +2'},
+{id:47,name:'铁鹞子',name_en:'Iron Falcon',faction:'beiwei',strength:3,row:'cavalry',ability:'destroy:1',desc:'拆牌，消灭对手1张',desc_en:'Iron cavalry'},
+{id:48,name:'舍利',name_en:'She Li',faction:'liang',strength:1,row:'strategy',ability:'resurrect:1',desc:'回收，从墓地拉1张',desc_en:'Recycle from grave'},
+{id:49,name:'铁甲',name_en:'Iron Armor',faction:'dongwei',strength:2,row:'infantry',ability:'protect:1',desc:'护盾，获得1点护甲',desc_en:'Shield, gain 1 armor'},
+{id:50,name:'细作',name_en:'Spy',faction:'beiqi',strength:1,row:'strategy',ability:'spy:1',desc:'间谍，查看并弃对手1张',desc_en:'Covert spy action'},
+{id:110,name:'过牌',name_en:'Draw',faction:'common',strength:1,row:'strategy',ability:'draw_extra:2',desc:'运筹，额外抽2张牌',desc_en:'Extra draw 2 cards'},
+{id:111,name:'连环计',name_en:'Chain Plan',faction:'common',strength:2,row:'strategy',ability:'destroy:1',desc:'连环计，消灭对手1张',desc_en:'Chain plan, destroy 1'},
+{id:112,name:'暗度陈仓',name_en:'Covert March',faction:'common',strength:1,row:'strategy',ability:'spy:1',desc:'暗度陈仓，间谍行动',desc_en:'Covert spy'}
 ];
 
 const LEADERS_DATA=[
-{id:1,name:'宋武帝刘裕',faction:'song',ability:{type:'row_boost',row:'infantry',value:2},desc:'本局步兵战力+2',era:'南朝·宋'},
-{id:2,name:'齐高帝萧道成',faction:'qi',ability:{type:'extra_draw',value:1},desc:'每局多抽1张牌',era:'南朝·齐'},
-{id:3,name:'梁武帝萧衍',faction:'liang',ability:{type:'extra_provisions',value:1},desc:'每局粮草+1',era:'南朝·梁'},
-{id:4,name:'陈武帝陈霸先',faction:'chen',ability:{type:'row_boost',row:'navy',value:2},desc:'本局水军战力+2',era:'南朝·陈'},
-{id:5,name:'北魏太武帝拓跋焘',faction:'beiwei',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',era:'北朝·北魏'},
-{id:6,name:'东魏孝静帝元善见',faction:'dongwei',ability:{type:'opponent_discard',value:1},desc:'每局对手弃1张牌',era:'北朝·东魏'},
-{id:7,name:'西魏文帝元宝炬',faction:'xiwei',ability:{type:'all_boost',value:1},desc:'本局全军战力+1',era:'北朝·西魏'},
-{id:8,name:'北齐文宣帝高洋',faction:'beiqi',ability:{type:'double_edge',value:3},desc:'最强行+3，最弱行-1（双刃暴君）',era:'北朝·北齐'},
-{id:9,name:'北周武帝宇文邕',faction:'beizhou',ability:{type:'hand_boost',value:2},desc:'手牌随机2张+2（整军经武）',era:'北朝·北周'}
+{id:1,name:'宋武帝刘裕',name_en:'Liu Yu, Emperor Wu of Song',faction:'song',ability:{type:'row_boost',row:'infantry',value:2},desc:'本局步兵战力+2',desc_en:'Infantry +2 this game',era:'南朝·宋'},
+{id:2,name:'齐高帝萧道成',name_en:'Xiao Daocheng, Emperor Gao of Qi',faction:'qi',ability:{type:'extra_draw',value:1},desc:'每局多抽1张牌',desc_en:'+1 draw per round',era:'南朝·齐'},
+{id:3,name:'梁武帝萧衍',name_en:'Xiao Yan, Emperor Wu of Liang',faction:'liang',ability:{type:'extra_provisions',value:1},desc:'每局粮草+1',desc_en:'+1 provision per round',era:'南朝·梁'},
+{id:4,name:'陈武帝陈霸先',name_en:'Chen Baxian, Emperor Wu of Chen',faction:'chen',ability:{type:'row_boost',row:'navy',value:2},desc:'本局水军战力+2',desc_en:'Navy +2 this round',era:'南朝·陈'},
+{id:5,name:'北魏太武帝拓跋焘',name_en:'Tuoba Tao, Emperor Taiwu of N Wei',faction:'beiwei',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',desc_en:'Cavalry +2 this round',era:'北朝·北魏'},
+{id:6,name:'东魏孝静帝元善见',name_en:'Yuan Shanjian, Emperor Xiaojing of E Wei',faction:'dongwei',ability:{type:'opponent_discard',value:1},desc:'每局对手弃1张牌',desc_en:'Opponent discards 1 per round',era:'北朝·东魏'},
+{id:7,name:'西魏文帝元宝炬',name_en:'Yuan Baoju, Emperor Wen of W Wei',faction:'xiwei',ability:{type:'all_boost',value:1},desc:'本局全军战力+1',desc_en:'All units +1 this round',era:'北朝·西魏'},
+{id:8,name:'北齐文宣帝高洋',name_en:'Gao Yang, Emperor Wenxuan of N Qi',faction:'beiqi',ability:{type:'double_edge',value:3},desc:'最强行+3，最弱行-1（双刃暴君）',desc_en:'Strongest row +3, weakest -1',era:'北朝·北齐'},
+{id:9,name:'北周武帝宇文邕',name_en:'Yuwen Yong, Emperor Wu of N Zhou',faction:'beizhou',ability:{type:'hand_boost',value:2},desc:'手牌随机2张+2（整军经武）',desc_en:'Random 2 hand cards +2',era:'北朝·北周'}
 ];
 window.LEADERS_DATA=LEADERS_DATA;
 
@@ -867,7 +882,7 @@ function triggerAbilityWithFlash(card,playerIdx,row){
       const els=document.querySelectorAll('.card-mini');
       for(const el of els){
         const nameEl=el.querySelector('.c-name');
-        if(nameEl&&nameEl.textContent===card.name){
+        if(nameEl&&nameEl.textContent===cn(card)){
           el.classList.add('skill-flash');
           setTimeout(()=>el.classList.remove('skill-flash'),700);
           break;
@@ -1444,6 +1459,23 @@ function renderTutorial(el){
         <li><span class="tut-rule-icon">🏆</span>${t('ui.tutorial.rule3')}</li>
         <li><span class="tut-rule-icon">🏳</span>${t('ui.tutorial.rule4')}</li>
       </ul>
+      <div class="combo-guide-panel" style="max-width:360px;margin:10px auto">
+        <div class="combo-guide-title">${t('ui.tutorial.combo_title')}</div>
+        <div class="combo-guide-row">
+          <span class="combo-faction-dot" style="background:#C41E3A"></span>
+          <span class="combo-guide-text"><b>${t('ui.tutorial.combo_same_faction')}：</b>${t('ui.tutorial.combo_same_faction_desc')}</span>
+        </div>
+        <div class="combo-guide-row">
+          <span class="combo-faction-dot" style="background:#2E8B57"></span>
+          <span class="combo-guide-text"><b>${t('ui.tutorial.combo_counter')}：</b>${t('ui.tutorial.combo_counter_desc')}</span>
+        </div>
+        <div class="combo-guide-row">
+          <span class="combo-faction-dot" style="background:#DAA520"></span>
+          <span class="combo-guide-text"><b>${t('ui.tutorial.combo_juzhongqu')}：</b>${t('ui.tutorial.combo_juzhongqu_desc')}</span>
+        </div>
+        <div class="combo-guide-hint">${t('ui.tutorial.combo_hint')}</div>
+      </div>
+
       <div class="tut-btn-wrap">
         <button class="tut-btn" onclick="G.phase='leader_select';render()">${t('ui.tutorial.start_btn')}</button>
       </div>
@@ -2351,8 +2383,8 @@ function renderGameResult(el){
                                                   // 发送自己的 RNG 值给 guest
                                                   var pkt = packMessage('action', { action: 'rng_value', data: {
                                                     v: '' + arr[0],
-                                                    leaderP0: G.players[0].leader && (G.players[0].leader.id || G.players[0].leader.name),
-                                                    leaderP1: G.players[1].leader && (G.players[1].leader.id || G.players[1].leader.name)
+                                                    leaderP0: G.players[0].leader && (G.players[0].leader.id || G.players[0].ln(leader)),
+                                                    leaderP1: G.players[1].leader && (G.players[1].leader.id || G.players[1].ln(leader))
                                                   } });
                                                   sendP2P(pkt, G._mpState.peerId);
                                                   if (G._mpState._host === 'host') {
@@ -3560,5 +3592,15 @@ function showConfirmModal(title, msg, onYes){
 
 document.addEventListener('DOMContentLoaded',()=>render());
 </script>
+
+<style>
+/* Combo guide panel */
+.combo-guide-panel{background:rgba(30,20,10,0.6);border:1px solid #8B7355;border-radius:8px;padding:12px 16px;margin-top:16px}
+.combo-guide-title{color:#D4A84B;font-size:14px;font-weight:bold;margin-bottom:8px;text-align:center}
+.combo-guide-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.combo-faction-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.combo-guide-text{color:#C4A882;font-size:12px;line-height:1.4}
+.combo-guide-hint{color:#8B7355;font-size:11px;text-align:center;margin-top:8px;font-style:italic}
+</style>
 </body>
 </html>
