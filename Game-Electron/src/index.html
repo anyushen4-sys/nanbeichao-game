@@ -2075,7 +2075,7 @@ function renderGameResult(el){
                           'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">' +
                           '<div class="card-cost">' + cost + '</div>' +
                           '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+cn(c)+'"/><div class="card-art-fallback" style="display:none!important">'+cn(c)+'</div></div>' +
-                          '<div class="card-name">' + c.name + '</div>' +
+                          '<div class="card-name">' + cn(c) + '</div>' +
                           '<div class="card-tags"><span class="card-type-tag">' + rowName + '</span></div>' +
                           '<div class="card-ability">' + desc + '</div>' +
                           '<div class="card-stats-bar"><span class="card-atk">⚔ ' + c.strength + '</span></div>' +
