@@ -164,10 +164,10 @@ window.t = window.t || function(key, vars){
   };
 
     // Card localization helpers
-    function cn(c){return c&&c.name_en&&window.currentLocale!=='zh-CN'?c.name_en:c&&c.name||'';}
-    function cd(c){return c&&c.desc_en&&window.currentLocale!=='zh-CN'?c.desc_en:c&&c.desc||'';}
-    function ln(l){return l&&l.name_en&&window.currentLocale!=='zh-CN'?l.name_en:l&&l.name||'';}
-    function ld(l){return l&&l.desc_en&&window.currentLocale!=='zh-CN'?l.desc_en:l&&l.desc||'';}
+      window.cn=function(c){return c&&c.name_en&&window.currentLocale!=='zh-CN'?c.name_en:c&&c.name||'';};
+      window.cd=function(c){return c&&c.desc_en&&window.currentLocale!=='zh-CN'?c.desc_en:c&&c.desc||'';};
+      window.ln=function(l){return l&&l.name_en&&window.currentLocale!=='zh-CN'?l.name_en:l&&l.name||'';};
+      window.ld=function(l){return l&&l.desc_en&&window.currentLocale!=='zh-CN'?l.desc_en:l&&l.desc||'';};
 
   (function(){
   if(!/mockmp=1/.test(location.search))return;
