@@ -72,8 +72,10 @@ window.t = window.t || function(key, vars){
             'ui.game.ai_turn':'AI思考中...',
             'ui.game.leader_ability':'主将技能',
             'ui.game.ability_used':'已使用',
-            'ui.game.round_of':'第 {round} / 3 局',
-            'ui.game.rounds_won':'你 {p1}胜 · AI {p2}胜',
+                'ui.game.round_of':'第 {round} / 3 局',
+                'ui.game.rounds_won':'你 {p1}胜 · AI {p2}胜',
+                'ui.game.opponent_playing':'对方出牌中...',
+    'ui.game.opponent_side':'— 对方阵营 · 战力 {power} —',
             'ui.round_result.title':'第 {round} 局 结果',
     'ui.round_result.your_power':'你的战力',
     'ui.round_result.ai_power':'AI战力',
@@ -2163,7 +2165,7 @@ function renderGameResult(el){
           var f0 = FACTIONS[(p0.leader||{}).faction] || FACTIONS.common;
           var f1 = FACTIONS[(p1.leader||{}).faction] || FACTIONS.common;
           var pow0 = getBoardPower(p0.board, 0), pow1 = getBoardPower(p1.board, 1);
-          var appearText = act === 0 ? '你的回合' : '对方出牌中...';
+          var appearText = act === 0 ? t('ui.game.your_turn') : t('ui.game.opponent_playing');
           var lastUid = G._lastPlayedUid || null;
           var lastR = G._lastPlayedBy || null;
 
