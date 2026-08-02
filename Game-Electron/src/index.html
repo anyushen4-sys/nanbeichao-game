@@ -2047,7 +2047,7 @@ function renderGameResult(el){
                         var sel = G._selectedLeader === l.id;
                         return '<div class="leader-card'+(sel?' selected':'')+'" style="--fc:'+fc+';--fc22:'+fc+'22;--fc11:'+fc+'11;cursor:pointer" onclick="G._selectedLeader=' + l.id + ';render()">' +
                           '<div class="leader-portrait">' +
-                            '<img src="assets/leaders/leader_L' + l.id + '.png" alt="' + l.name + '" onerror="leaderImgFallback(this,\'assets/leaders/leader_L' + l.id + '.png\',\''+fc+'\',\''+l.name[0]+'\')" loading="eager" decoding="async"/>' +
+                            '<img src="assets/leaders/leader_L' + l.id + '.png" alt="' + ln(l) + '" onerror="leaderImgFallback(this,\'assets/leaders/leader_L' + l.id + '.png\',\''+fc+'\',\''+ln(l)[0]+'\')" loading="eager" decoding="async"/>' +
                             '<div class="placeholder-block">' + (ln(l)[0] || '?') + '</div>' +
                           '</div>' +
                           '<div class="leader-info">' +
@@ -3219,7 +3219,7 @@ function timeoutReconnect() {
                               var sel=G._selectedLeader===l.id;
                               return'<div class="leader-card'+(sel?' selected':'')+'" style="--fc:'+fc+';--fc22:'+fc+'22;--fc11:'+fc+'11;cursor:pointer" onclick="G._selectedLeader='+l.id+';render()">'+
                                 '<div class="leader-portrait">'+
-                                  '<img src="assets/leaders/leader_L'+l.id+'.png" alt="'+l.name+'" onerror="leaderImgFallback(this,\'assets/leaders/leader_L'+l.id+'.png\',\''+fc+'\',\''+l.name[0]+'\')" loading="eager" decoding="async"/>'+
+                                  '<img src="assets/leaders/leader_L'+l.id+'.png" alt="'+ln(l)+'" onerror="leaderImgFallback(this,\'assets/leaders/leader_L'+l.id+'.png\',\''+fc+'\',\''+ln(l)[0]+'\')" loading="eager" decoding="async"/>'+
                                   '<div class="placeholder-block">'+(ln(l)[0]||'?')+'</div>'+
                                 '</div>'+
                                 '<div class="leader-info">'+
