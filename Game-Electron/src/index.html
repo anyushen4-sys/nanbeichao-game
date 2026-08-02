@@ -156,7 +156,27 @@ window.t = window.t || function(key, vars){
     'ui.poetry.left3':'大 江 流 日 夜',
     'ui.poetry.right1':'澄 江 静 如 练',
     'ui.poetry.right2':'客 心 悲 未 央',
-    'ui.poetry.right3':'鸟 鸣 山 更 幽'};
+    'ui.poetry.right3':'鸟 鸣 山 更 幽',
+    'ui.log.you_win_round':'你赢了本局！',
+    'ui.log.ai_win_round':'AI赢了本局！',
+    'ui.log.tie_round':'本局平局！',
+    'ui.log.round_end':'第{round}局结束',
+    'ui.log.round_start':'第{round}局开始',
+    'ui.log.power_compare':'你的战力：{player} vs AI战力：{ai}',
+    'ui.log.both_draw':'双方各抽{count}张牌',
+    'ui.log.game_over_you_win':'你赢得了天下！',
+    'ui.log.game_over_tie':'棋逢对手，不分胜负！',
+    'ui.log.game_over_ai_win':'AI赢得了天下！',
+    'ui.log.you_pass':'你放弃了本局',
+    'ui.log.pass_wait':'已放弃本局,等待 AI',
+    'ui.log.no_cards':'你没有可出的牌了',
+    'ui.log.ai_no_provisions':'AI无粮草可出，自动放弃',
+    'ui.log.ai_no_cards':'AI无牌可出，放弃了',
+    'ui.log.ai_pass':'AI放弃了本局',
+    'ui.log.ai_pass_short':'AI放弃了',
+    'ui.log.guest_pass':'客机放弃本局',
+    'ui.log.host_pass':'放弃本局'
+  };};
   // Use inline _t table as fallback (module t() may not be initialized yet)
   // Interpolate placeholders
   var val = _t[key] || key;
