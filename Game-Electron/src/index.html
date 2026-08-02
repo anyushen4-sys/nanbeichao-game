@@ -1611,7 +1611,7 @@ function renderMulligan(app){
     const isSelected=sel.has(i);
     const cost=getCardCost(c.strength);
     const rowName=t("ui.row."+c.row);
-    const desc=(c.desc||'')+(c.protectArmor?` 🛡${c.protectArmor}`:'');
+    const desc=cd(c)+(c.protectArmor?` 🛡${c.protectArmor}`:'');
     return`<div class="card ${isSelected?'selected':''}" onclick="onMulliganCardClick(${i})" title="${cn(c)} - ${cd(c)}"
       style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px);':''}width:96px;min-width:96px;max-width:96px;flex:0 0 96px;overflow:hidden">
       <div class="card-cost">${cost}</div>
@@ -1845,7 +1845,7 @@ function renderHandCard(card,idx){
   const selected=G.selectedCard===idx;
   const cls=selected?'selected':(!playable?'unplayable':'');
   const rowName=t("ui.row."+card.row);
-  const desc=(card.desc||'')+(card.protectArmor?` 🛡${card.protectArmor}`:'');
+  const desc=cd(card)+(card.protectArmor?` 🛡${card.protectArmor}`:'');
   return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${cn(card)} - ${cd(card)}"
     style="--faction-color:${f.color};--faction-glow:${f.color}40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;overflow:hidden">
     <div class="card-cost">${cost}</div>
