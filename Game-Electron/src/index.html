@@ -3354,7 +3354,7 @@ function timeoutReconnect() {
                     var f0=FACTIONS[p0.leader.faction], f1=FACTIONS[p1.leader.faction];
                     var pow0=getBoardPower(p0.board,0), pow1=getBoardPower(p1.board,1);
                     var isP1=act===0;
-                    var appearText=isP1?'玩家1的回合':'玩家2的回合';
+                    var appearText=isP1?t('ui.game.your_turn'):t('ui.game.opponent_turn');
                     var handClass=isP1?'your-turn':'ai-turn';
                     var lastUid=G._lastPlayedUid||null;
                     var lastR=G._lastPlayedBy||null;
