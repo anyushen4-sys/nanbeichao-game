@@ -2930,7 +2930,7 @@ function renderGameResult(el){
                                                   var toast = document.createElement('div');
                                                   toast.className = 'mp-settlement-toast';
                                                   toast.innerHTML = '<div class="mp-toast-title">🛡 结算不一致</div>' +
-                                                    '<div class="mp-toast-msg">对手终局战力与你的回合过程不一致</div>' +
+                                                    '<div class="mp-toast-msg">' + t('tui.mp_settlement_msg') + '</div>' +
                                                     '<div class="mp-toast-details">对方: ' + remoteHash + ' vs 你: ' + localHash + '</div>' +
                                                     '<div class="mp-toast-actions">' +
                                                       '<button class="mp-toast-btn" onclick="dismissSettlementToast()">我知道了</button>' +
