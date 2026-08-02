@@ -157,11 +157,7 @@ window.t = window.t || function(key, vars){
     'ui.poetry.right1':'澄 江 静 如 练',
     'ui.poetry.right2':'客 心 悲 未 央',
     'ui.poetry.right3':'鸟 鸣 山 更 幽'};
-  // Try module's t() for non-zh-CN locales
-  if (window._i18nT && window.Locale && window.Locale.getLocale() !== 'zh-CN') {
-    var result = window._i18nT(key, vars);
-    if (result !== key) return result;
-  }
+  // Use inline _t table as fallback (module t() may not be initialized yet)
   // Interpolate placeholders
   var val = _t[key] || key;
   if (typeof val === 'string' && vars && typeof vars === 'object') {
