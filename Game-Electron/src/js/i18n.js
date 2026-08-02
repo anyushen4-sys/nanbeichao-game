@@ -33,7 +33,7 @@ const _tables = new Map();
 // ── path config ──────────────────────────────────────────────────────────────
 
 /** Base path for translation JSON files, relative to HTML root */
-let _i18nBasePath = 'src/i18n/';
+let _i18nBasePath = 'i18n/';
 
 /**
  * Set the base path from which locale JSON files are loaded.
@@ -187,6 +187,11 @@ export function t(key, langOrParams, params) {
   const loc = locale || getLocale();
   const raw = resolve(key, loc);
 
+  // DEBUG: log if key not found
+  if (raw === key) {
+    console.warn(`[i18n] t() key not found: "${key}" (locale: ${loc}, tables: ${Array.from(_tables.keys()).join(', ')})`);
+  }
+
   if (raw === null || raw === key) {
     // Absolute fallback — no translation found, return key
     return interpolate(key, params);
@@ -210,12 +215,42 @@ export { getLocale as getCurrent };
  */
 export async function initLocale() {
   // Load zh-CN and en-US (at minimum)
-  await Promise.all([
+  const [zhResult, enResult] = await Promise.allSettled([
     loadLocale('zh-CN'),
     loadLocale('en-US')
   ]);
 
-  return getLocale();
+  // If fetch failed (Electron file:// protocol), inject from inline fallback
+  if (zhResult.status === 'rejected' || !zhResult.value) {
+    console.warn('[i18n] Fetch failed (likely file://), injecting inline fallback for zh-CN');
+    const zhData = window._inlineFallback?.['zh-CN'] || null;
+    if (zhData) {
+      setLocaleTable('zh-CN', zhData);
+      console.log(`[i18n] Inline fallback loaded: ${Object.keys(zhData).length} top-level keys`);
+    } else {
+      console.error('[i18n] No inline fallback data for zh-CN');
+    }
+  } else {
+    console.log('[i18n] zh-CN loaded via fetch');
+  }
+
+  if (enResult.status === 'rejected' || !enResult.value) {
+    console.warn('[i18n] Fetch failed (likely file://), injecting inline fallback for en-US');
+    const enData = window._inlineFallback?.['en-US'] || null;
+    if (enData) {
+      setLocaleTable('en-US', enData);
+      console.log(`[i18n] Inline fallback loaded: ${Object.keys(enData).length} top-level keys`);
+    } else {
+      console.error('[i18n] No inline fallback data for en-US');
+    }
+  } else {
+    console.log('[i18n] en-US loaded via fetch');
+  }
+
+  const active = getLocale();
+  console.log(`[i18n] Active locale: ${active}`);
+
+  return active;
 }
 
 /**
@@ -245,6 +280,14 @@ export function switchLocale(locale) {
 if (typeof window !== "undefined") {
   if (typeof window !== "undefined" && !window.t) { window.t = t; }
   window._i18nT = t;
+  window.initLocale = initLocale;
+  window.Locale = {
+    getLocale,
+    setLocale,
+    getSupported,
+    getAllLocales,
+    resolutionChain,
+  };
 }
 
 export { getSupported, getAllLocales } from './locale.js';

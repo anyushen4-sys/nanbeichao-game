@@ -163,8 +163,16 @@ window.t = window.t || function(key, vars){
   return val;
   };
 
-    // Card localization helpers
-      window.cn=function(c){return c&&c.name_en&&window.currentLocale!=='zh-CN'?c.name_en:c&&c.name||'';};
+    // Card localization helpers — track currentLocale for cn/cd/ln/ld
+        window.currentLocale = 'zh-CN';
+        if (window.Locale && window.Locale.getLocale) {
+          try { window.currentLocale = window.Locale.getLocale(); } catch(e) {}
+        }
+        window.addEventListener('localechange', function(e) {
+          window.currentLocale = (e && e.detail && e.detail.locale) || window.Locale.getLocale();
+        });
+
+        window.cn=function(c){return c&&c.name_en&&window.currentLocale!=='zh-CN'?c.name_en:c&&c.name||'';};
       window.cd=function(c){return c&&c.desc_en&&window.currentLocale!=='zh-CN'?c.desc_en:c&&c.desc||'';};
       window.ln=function(l){return l&&l.name_en&&window.currentLocale!=='zh-CN'?l.name_en:l&&l.name||'';};
       window.ld=function(l){return l&&l.desc_en&&window.currentLocale!=='zh-CN'?l.desc_en:l&&l.desc||'';};
@@ -3593,7 +3601,26 @@ function showConfirmModal(title, msg, onYes){
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 }
 
-document.addEventListener('DOMContentLoaded',()=>render());
+document.addEventListener('DOMContentLoaded',()=>{
+  // Initialize i18n first, then render
+  if (window.initLocale) {
+    window.initLocale().then(function() {
+      // Sync currentLocale after init
+      if (window.Locale && window.Locale.getLocale) {
+        window.currentLocale = window.Locale.getLocale();
+      } else {
+        window.currentLocale = 'zh-CN';
+      }
+      render();
+    }).catch(function() {
+      // fallback: render with default inline t()
+      window.currentLocale = 'zh-CN';
+      render();
+    });
+  } else {
+    render();
+  }
+});
 </script>
 
 <style>
