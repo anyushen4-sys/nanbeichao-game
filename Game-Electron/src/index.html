@@ -1555,11 +1555,11 @@ function renderLeaderSelect(el){
       <div class="leader-portrait">
         <img src=${imgSrc}
              alt="${ln(l)}"
-             onerror="leaderImgFallback(this,'${imgFallback}','${factionColor}','${l.name[0]}')"
+             onerror="leaderImgFallback(this,'${imgFallback}','${factionColor}','${ln(l)[0]}')"
              loading="eager"
              decoding="async"
              fetchpriority="${isFirstRow?'high':'auto'}"/>
-        <div class="placeholder-block">${l.name[0]}</div>
+        <div class="placeholder-block">${ln(l)[0] || "?"}</div>
       </div>
       <div class="leader-info">
         <div class="era">${l.era_en||l.era}</div>
