@@ -2214,7 +2214,7 @@ function renderGameResult(el){
           '<div class="battlefield-wrap game-content">' +
             '<div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>' +
             '<div class="battlefield">' +
-              '<div class="board-section ai-rows"><div class="section-label">— 对方阵营 · 战力 ' + pow1 + ' —</div>' +
+              '<div class="board-section ai-rows"><div class="section-label">} + t('ui.game.opponent_side',{power:pow1}) + {power:pow1} + ' —</div>' +
                 renderRow('navy', p1.board.navy, false, lastUid, lastR) +
                 renderRow('cavalry', p1.board.cavalry, false, lastUid, lastR) +
                 renderRow('infantry', p1.board.infantry, false, lastUid, lastR) +
@@ -3398,7 +3398,7 @@ function timeoutReconnect() {
               '<div class="battlefield-wrap game-content">'+
                 '<div class="battlefield-bg"><img src="assets/battlefield_bg.jpg" alt=""/></div>'+
                 '<div class="battlefield">'+
-                  '<div class="board-section ai-rows"><div class="section-label">— 玩家2 阵营 · 战力 '+pow1+' —</div>'+
+                  '<div class="board-section ai-rows"><div class="section-label">} + t('ui.hotseat.player2_side',{power:pow1}) + {power:pow1} + ' —</div>'+
                     renderRow('navy',p1.board.navy,false,lastUid,lastR)+
                     renderRow('cavalry',p1.board.cavalry,false,lastUid,lastR)+
                     renderRow('infantry',p1.board.infantry,false,lastUid,lastR)+
