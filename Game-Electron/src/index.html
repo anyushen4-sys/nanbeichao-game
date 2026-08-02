@@ -3419,7 +3419,7 @@ function timeoutReconnect() {
                 (p0.passed&&!p1.passed?'<span class="waiting"> · 对手已放弃，等待你</span>':'')+
               '</div>'+
                             '<div class="hand-area">'+
-                            ((act===0)?'<div class="hand-label">— 玩家1 的手牌 —</div>':'')+
+                            ((act===0)?'<div class="hand-label"> + t('ui.hotseat.player1_hand',{count:p0.hand.length}) +</div>':'')+
                             '<div class="hand-cards'+(p0.hand.length===0?' empty':'')+
                                 (p0.hand.length>=5?' many-cards':'')+
                                 (p0.hand.length>=7?' overflow-cards':'')+'">'+
@@ -3433,7 +3433,7 @@ function timeoutReconnect() {
                               '</div>'+
                             '</div>'+
                             '<div class="hand-area">'+
-                                          ((act===1)?'<div class="hand-label">— 玩家2 的手牌 ('+p1.hand.length+'张) —</div>':'')+
+                                          ((act===1)?'<div class="hand-label"> + t('ui.hotseat.player2_hand',{count:p1.hand.length}) +</div>':'')+
                                           '<div class="hand-cards'+(p1.hand.length===0?' empty':'')+
                                             (p1.hand.length>=5?' many-cards':'')+
                                             (p1.hand.length>=7?' overflow-cards':'')+'">'+
