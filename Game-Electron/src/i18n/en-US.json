@@ -7,14 +7,14 @@
       "multiplayer": "Multiplayer",
       "settings": "Settings",
       "quit": "Quit",
-      "mode_title": "Select Game Mode",
-      "mode_desc": "Choose your opponent, conquer the realm",
+      "mode_title": "Select Battle Mode",
+      "mode_desc": "Choose your opponent, battle for the realm",
       "ai_mode": "AI Battle",
-      "ai_desc": "Solo challenge · Random leader · Best of 3",
+      "ai_desc": "Single player challenge · Random leader · Best of 3",
       "hotseat": "Hot Seat",
       "hotseat_desc": "Friend vs friend · Same screen · Take turns",
       "online": "Online Battle",
-      "online_desc": "Steam friend · Remote duel · Real-time sync",
+      "online_desc": "Steam friends · Remote duel · Real-time sync",
       "back_home": "Back to Home",
       "seal_title": "天下对弈",
       "main_title": "Northern & Southern Dynasties · Battle for the World",
@@ -50,7 +50,15 @@
       "hand_label": "{count} cards",
       "use_ability": "Use Ability",
       "surrender": "Surrender",
-      "waiting_text": "Waiting for opponent..."
+      "waiting_text": "Waiting for opponent...",
+      "round_of": "Round {round} / 3",
+      "rounds_won": "You {p1} wins · AI {p2} wins",
+      "your_turn": "Your Turn",
+      "ai_turn": "AI Thinking...",
+      "leader_ability": "Leader Ability",
+      "ability_used": "Used",
+      "opponent_playing": "Opponent playing...",
+      "opponent_turn": "Opponent's turn"
     },
     "leader": {
       "select": "Select Leader",
@@ -59,7 +67,7 @@
       "title": "Choose Your Commander",
       "your_leader": "Your Commander",
       "desc": "Your leader determines faction and special ability",
-      "march": "March to Battle"
+      "march": "Confirm March"
     },
     "card": {
       "strength": "Power",
@@ -192,7 +200,7 @@
       "player1_hand": "Player 1's hand",
       "opponent_turn": "Opponent's turn",
       "no_hand_cards": "No cards",
-      "player2_hand": "P2's hand ({count})",
+      "player2_hand": "Player 2's hand",
       "pass_round": "Pass Round"
     },
     "dialog": {
@@ -209,6 +217,27 @@
       "right1": "澄 江 静 如 练",
       "right2": "客 心 悲 未 央",
       "right3": "鸟 鸣 山 更 幽"
+    },
+    "log": {
+      "you_win_round": "You won this round!",
+      "ai_win_round": "AI won this round!",
+      "tie_round": "Draw!",
+      "round_end": "═══ Round {round} End ═══",
+      "round_start": "═══ Round {round} Start ═══",
+      "power_compare": "Your power: {player} vs AI power: {ai}",
+      "both_draw": "Both sides draw {count} cards",
+      "game_over_you_win": "You have conquered the realm!",
+      "game_over_tie": "A worthy opponent, no winner!",
+      "game_over_ai_win": "AI has conquered the realm!",
+      "you_pass": "You passed this round",
+      "pass_wait": "Passed, waiting for AI...",
+      "no_cards": "You have no playable cards",
+      "ai_no_provisions": "AI has no provisions, automatically passed",
+      "ai_no_cards": "AI has no cards, passed",
+      "ai_pass": "AI passed this round",
+      "ai_pass_short": "AI passed",
+      "guest_pass": "Guest passed this round",
+      "host_pass": "Passed this round"
     }
   },
   "combo": {
