@@ -1963,7 +1963,7 @@ function renderGameResult(el){
     </div>
     <div class="decorative-line" style="width:200px;margin:20px auto"></div>
         <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
-          ${t(playerWin?'ui.result.victory_message':isDraw?'ui.result.draw_message':'ui.result.loss_message')}
+          ${t(playerWin?'ui.game_result.victory_message':isDraw?'ui.game_result.draw_message':'ui.game_result.defeat_message')}
         </p>
         <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
           </div>`;
