@@ -1610,10 +1610,10 @@ function renderMulligan(app){
     const cf=FACTIONS[c.faction];
     const isSelected=sel.has(i);
     const cost=getCardCost(c.strength);
-    const rowName=ROW_NAMES[c.row];
+    const rowName=t("ui.row."+c.row);
     const desc=(c.desc||'')+(c.protectArmor?` 🛡${c.protectArmor}`:'');
     return`<div class="card ${isSelected?'selected':''}" onclick="onMulliganCardClick(${i})" title="${cn(c)} - ${cd(c)}"
-      style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px);':''}width:96px;min-width:96px;max-width:96px;flex:0 0 96px">
+      style="--faction-color:${cf.color};--faction-glow:${cf.color}40;${isSelected?'transform:translateY(-8px);':''}width:96px;min-width:96px;max-width:96px;flex:0 0 96px;overflow:hidden">
       <div class="card-cost">${cost}</div>
       <div class="card-illustration"><img src="${CARD_DATA_URIS[c.id]||`assets/cards/card_${c.id}.png`}" alt="${cn(c)}"/><div class="card-art-fallback" style="display:none!important">${cn(c)}</div></div>
             <div class="card-name">${cn(c)}</div>
@@ -1844,10 +1844,10 @@ function renderHandCard(card,idx){
   const playable=G.currentTurn==='player'&&!G.players[0].passed&&cost<=G.provisions[0];
   const selected=G.selectedCard===idx;
   const cls=selected?'selected':(!playable?'unplayable':'');
-  const rowName=ROW_NAMES[card.row];
+  const rowName=t("ui.row."+card.row);
   const desc=(card.desc||'')+(card.protectArmor?` 🛡${card.protectArmor}`:'');
   return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${cn(card)} - ${cd(card)}"
-    style="--faction-color:${f.color};--faction-glow:${f.color}40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px">
+    style="--faction-color:${f.color};--faction-glow:${f.color}40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;overflow:hidden">
     <div class="card-cost">${cost}</div>
     <div class="card-illustration"><img src="${CARD_DATA_URIS[card.id]||`assets/cards/card_${card.id}.png`}" alt="${cn(card)}"/><div class="card-art-fallback" style="display:none!important">${cn(card)}</div></div>
         <div class="card-name">${cn(card)}</div>
@@ -3461,7 +3461,7 @@ function timeoutReconnect() {
             var desc=(card.desc||'')+(card.protectArmor?' 🛡'+card.protectArmor:'');
             return'<div class="card '+cls+'" '+(myTurn?'onclick="onCardClick('+idx+')" ':'')+
               'title="'+cn(card)+' - '+rowName+'" style="'+
-              '--faction-color:'+f.color+';--faction-glow:'+f.color+'40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px">'+
+              '--faction-color:'+f.color+';--faction-glow:'+f.color+'40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;overflow:hidden">'+
               '<div class="card-cost">'+cost+'</div>'+
               '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[card.id]||'assets/cards/card_'+card.id+'.png')+
                 '" alt="'+cn(card)+'"/></div>'+
@@ -3624,6 +3624,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 <style>
+.card-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px;font-size:11px;line-height:1.2}
 /* Combo guide panel */
 .combo-guide-panel{background:rgba(30,20,10,0.6);border:1px solid #8B7355;border-radius:8px;padding:12px 16px;margin-top:16px}
 .combo-guide-title{color:#D4A84B;font-size:14px;font-weight:bold;margin-bottom:8px;text-align:center}
