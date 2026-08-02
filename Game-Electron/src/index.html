@@ -2222,7 +2222,7 @@ function renderGameResult(el){
               '</div>' +
               '<div class="decorative-line"></div>' +
               '<div class="board-section player-rows">' +
-                '<div class="section-label">— 己方阵营 · 战力 ' + pow0 + ' —</div>' +
+                '<div class="section-label">' + t("ui.game.your_side",{power:pow0}) + '</div>' +
                 renderRow('infantry', p0.board.infantry, true, lastUid, lastR) +
                 renderRow('cavalry', p0.board.cavalry, true, lastUid, lastR) +
                 renderRow('navy', p0.board.navy, true, lastUid, lastR) +
@@ -2232,7 +2232,7 @@ function renderGameResult(el){
           '</div>' +
           '<div class="turn-indicator"><span>' + appearText + '</span></div>' +
           '<div class="hand-area">' +
-            '<div class="hand-label">— 你的手牌 —</div>' +
+            '<div class="hand-label">' + t("ui.game.your_hand",{count:p0.hand.length}) + '</div>' +
             '<div class="hand-cards' + (p0.hand.length === 0 ? ' empty' : '') +
                 (p0.hand.length >= 5 ? ' many-cards' : '') +
                 (p0.hand.length >= 7 ? ' overflow-cards' : '') + '">' +
@@ -3406,7 +3406,7 @@ function timeoutReconnect() {
                   '</div>'+
                   '<div class="decorative-line"></div>'+
                   '<div class="board-section player-rows">'+
-                    '<div class="section-label">— 玩家1 阵营 · 战力 '+pow0+' —</div>'+
+                    '<div class="section-label">' + t("ui.hotseat.player1_side",{power:pow0}) + '</div>' +
                     renderRow('infantry',p0.board.infantry,true,lastUid,lastR)+
                     renderRow('cavalry',p0.board.cavalry,true,lastUid,lastR)+
                     renderRow('navy',p0.board.navy,true,lastUid,lastR)+
