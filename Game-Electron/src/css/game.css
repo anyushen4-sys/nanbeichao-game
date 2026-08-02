@@ -44,7 +44,7 @@ html, body {
 }
 
 /* ===== 菜单屏幕 ===== */
-#menu-screen {
+.menu-screen {
     position: relative;
     width: 100%;
     min-height: 100vh;
