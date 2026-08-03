@@ -106,7 +106,7 @@ window.t = window.t || function(key, vars){
     'ui.multiplayer.continue':'继续',
     'ui.multiplayer.you_win':'你赢得了天下！',
     'ui.multiplayer.they_win':'对方赢得了天下！',
-    'ui.multiplayer.draw_game':'棋逢对手，不分胜负！',
+    'ui.multiplayer.draw_game':t('ui.log.game_over_tie'),
     'ui.multiplayer.concede':'我认输',
     'ui.multiplayer.reconnect_title':'对方未响应',
     'ui.multiplayer.pass_round':'放弃本局',
@@ -122,8 +122,8 @@ window.t = window.t || function(key, vars){
     'ui.hotseat.score':'当前比分：{s0} : {s1}',
     'ui.hotseat.player1_win':'玩家1胜利',
     'ui.hotseat.player2_win':'玩家2胜利',
-    'ui.hotseat.player1_crown':'玩家1 天下归一',
-    'ui.hotseat.player2_crown':'玩家2 天下归一',
+    'ui.game_result.victory_title':'玩家1 天下归一',
+    'ui.game_result.defeat_title':'玩家2 天下归一',
     'ui.hotseat.loading':'加载中',
     'ui.hotseat.player1_label':'玩家1',
     'ui.hotseat.player2_label':'玩家2',
@@ -165,7 +165,7 @@ window.t = window.t || function(key, vars){
     'ui.log.power_compare':'你的战力：{player} vs AI战力：{ai}',
     'ui.log.both_draw':'双方各抽{count}张牌',
     'ui.log.game_over_you_win':'你赢得了天下！',
-    'ui.log.game_over_tie':'棋逢对手，不分胜负！',
+    'ui.log.game_over_tie':t('ui.log.game_over_tie'),
     'ui.log.game_over_ai_win':'AI赢得了天下！',
     'ui.log.you_pass':'你放弃了本局',
     'ui.log.pass_wait':'已放弃本局,等待 AI',
@@ -1209,7 +1209,7 @@ function endRound(){
 }
 
 function checkGameEnd(){
-  if(G.scores[0]>=2||G.scores[1]>=2||G.round>=3){
+  if(G.scores[0]>=2||G.scores[1]>=2||G.round >= 3){
     G.phase='game_result';
     render();
     const winText=t("ui.log.game_over_"+(G.scores[0]>G.scores[1]?"you_win":G.scores[0]===G.scores[1]?"tie":"ai_win"));
@@ -1966,7 +1966,7 @@ function renderRoundResult(el){
     </div>
     <div class="result-text ${pWin?'result-win':aWin?'result-lose':'result-tie'}">${t(pWin?'ui.round_result.player_win':aWin?'ui.round_result.ai_win':'ui.round_result.draw_round')}</div>
     <div class="result-score">${t("ui.round_result.score",{s0:G.scores[0],s1:G.scores[1]})}</div>
-    <button class="btn btn-primary btn-result" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续下一局'}</button>
+    <button class="btn btn-primary btn-result" onclick="nextRoundOrGame()">${G.scores[0]>=2||G.scores[1]>=2||G.round >= 3?t('ui.round_result.view_final'):t('ui.round_result.next_round')}</button>
   </div>`;
 }
 
@@ -1991,8 +1991,8 @@ function renderGameResult(el){
   })();
   el.innerHTML=`
   <div class="game-result">
-    <div class="menu-seal" style="margin:0 auto 30px">${playerWin?'胜利':isDraw?'平局':'败北'}</div>
-    <h1 class="${playerWin?'victory':isDraw?'draw':'defeat'}">${playerWin?'天下归一':isDraw?'棋逢对手':'功败垂成'}</h1>
+    <div class="menu-seal" style="margin:0 auto 30px">${t(playerWin?'ui.game_result.victory':isDraw?'ui.game_result.draw':'ui.game_result.defeat')}</div>
+    <h1 class="${playerWin?'victory':isDraw?'draw':'defeat'}">${t(playerWin?'ui.game_result.victory_title':isDraw?'ui.game_result.draw_title':'ui.game_result.defeat_title')}</h1>
     <div class="final-score">${G.scores[0]} : ${G.scores[1]}</div>
     <div class="detail">
       ${ln(G.players[0].leader)}（${getFactionName(G.players[0].leader.faction)}）VS ${ln(G.players[1].leader)}（${getFactionName(G.players[1].leader.faction)}）
@@ -2001,7 +2001,7 @@ function renderGameResult(el){
         <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
           ${t(playerWin?'ui.game_result.victory_message':isDraw?'ui.game_result.draw_message':'ui.game_result.defeat_message')}
         </p>
-        <button class="btn btn-primary" onclick="resetGame()">再 战 一 局</button>
+        <button class="btn btn-primary" onclick="resetGame()">${t('ui.game_result.play_again')}</button>
           </div>`;
         }
 
@@ -2147,9 +2147,9 @@ function renderGameResult(el){
           // --- ROUND RESULT ---
           if (phase === 'round_result') {
             var rr = G._roundResult || {};
-            var wTxt = rr.winner === 0 ? '你胜利！' : rr.winner === 1 ? '对方胜利！' : '平局！';
+            var wTxt = rr.winner === 0 ? t('ui.hotseat.player1_win') : rr.winner === 1 ? t('ui.hotseat.player2_win') : t('ui.round_result.draw_round');
             el.innerHTML = '<div class="round-result" style="text-align:center;padding:30px 20px">' +
-              '<h2 style="color:#E0D0F0;margin:15px 0">第' + (G.round) + '局结束</h2>' +
+              '<h2 style="color:#E0D0F0;margin:15px 0">' + t('ui.round_result.title',{round:G.round}) + '</h2>' +
               '<div style="display:flex;justify-content:center;gap:50px;margin:20px 0">' +
                 '<div><div style="color:#4A90D9;font-size:1.4em;font-weight:bold">我方</div>' +
                   '<div style="color:#FFD700;font-size:1.8em">' + (rr.playerPower||0) + '战力</div></div>' +
@@ -2895,7 +2895,7 @@ function renderGameResult(el){
                                                     G._mpPhase = 'game_result';
                                                     render();
                                                     var txt = G.scores[0] > G.scores[1] ? '你赢得了天下！' :
-                                                      G.scores[0] === G.scores[1] ? '棋逢对手，不分胜负！' : '对方赢得了天下！';
+                                                      G.scores[0] === G.scores[1] ? t('ui.log.game_over_tie') : '对方赢得了天下！';
                                                     showNotification(txt, 4000);
                                                     return true;
                                                   } else {
@@ -3102,7 +3102,7 @@ function timeoutReconnect() {
                                                                 }
                                                                 // 玩家2 换完 → 随机决定先手 + 进入 game
                                                                                                   G._firstPlayer=Math.floor(Math.random()*2);
-                                                                                                  G.round=1;
+                                                                                                  G.round=0;
                                                                                                   G._hsPhase='game';
                                                                                                   G.activePlayer=G._firstPlayer;
                                                                                                   G.players[0].passed=false; G.players[1].passed=false;
@@ -3152,11 +3152,11 @@ function timeoutReconnect() {
             }
 
             function hotSeatCheckGameEnd(){
-              if(G.scores[0]>=2||G.scores[1]>=2||G.round>=3){
+              if(G.scores[0]>=2||G.scores[1]>=2||G.round >= 3){
                 G._hsPhase='game_result';
                 render();
                 const txt=G.scores[0]>G.scores[1]?'玩家1赢得了天下！':
-                  G.scores[0]===G.scores[1]?'棋逢对手，不分胜负！':'玩家2赢得了天下！';
+                  G.scores[0]===G.scores[1]?t('ui.log.game_over_tie'):'玩家2赢得了天下！';
                 showNotification(txt,3000);
               }else{
                 G.round++;
@@ -3323,7 +3323,7 @@ function timeoutReconnect() {
                             G.phase='hot_seat_playing';
                             var wTxt=pWin?'玩家1胜利！':aWin?'玩家2胜利！':'平局！';
                             el.innerHTML='<div class="round-result">'+
-                              '<h2>第'+G.round+'局 结果</h2>'+
+                              '<h2>' + t('ui.round_result.title',{round:G.round}) + '</h2>'+
                               '<div class="power-compare">'+
                                 '<div class="power-row">'+
                                   '<div class="power-side '+(pWin?'win-side':'lose-side')+'">'+
@@ -3344,8 +3344,8 @@ function timeoutReconnect() {
                                 '</div>'+
                               '</div>'+
                               '<div class="result-text '+(pWin?'result-win':aWin?'result-lose':'result-tie')+'">'+wTxt+'</div>'+
-                              '<div class="result-score">当前比分：<span style="color:#4A90D9;font-size:1.2em">'+G.scores[0]+'</span> : <span style="color:#E23E57;font-size:1.2em">'+G.scores[1]+'</span></div>'+
-                              '<button class="btn btn-primary btn-result" onclick="hotSeatCheckGameEnd()">'+(G.scores[0]>=2||G.scores[1]>=2||G.round>=3?'查看最终结果':'继续')+'</button>'+
+                              '<div class="result-score">' + t('ui.round_result.score',{s0:G.scores[0],s1:G.scores[1]}) + '</div>'+
+                              '<button class="btn btn-primary btn-result" onclick="hotSeatCheckGameEnd()">'+(G.scores[0]>=2||G.scores[1]>=2||G.round >= 3?t('ui.round_result.view_final'):t('ui.round_result.next_round'))+'</button>'+
                             '</div>';
                             return;
                         }
@@ -3357,7 +3357,7 @@ function timeoutReconnect() {
                             var tie=winner===-1;
                             el.innerHTML='<div class="game-result">'+
                               '<div class="menu-seal-hs" style="margin:0 auto 30px">'+(t(p1Win?'ui.hotseat.player1_win':p2Win?'ui.hotseat.player2_win':'ui.hotseat.draw_round'))+'</div>'+
-                              '<h1 class="'+(p1Win?'victory':p2Win?'defeat':'draw')+'">'+(t(p1Win?'ui.hotseat.player1_crown':p2Win?'ui.hotseat.player2_crown':'ui.hotseat.draw_title'))+'</h1>'+
+                              '<h1 class="'+(p1Win?'victory':p2Win?'defeat':'draw')+'">'+(t(p1Win?'ui.game_result.victory_title':p2Win?'ui.game_result.defeat_title':'ui.game_result.draw_title'))+'</h1>'+
                               '<div class="final-score">'+G.scores[0]+' : '+G.scores[1]+'</div>'+
                               '<div class="detail">'+
                                 ln(G.players[0].leader)+'（'+getFactionName(G.players[0].leader.faction)+'）VS '+
@@ -3365,9 +3365,9 @@ function timeoutReconnect() {
                               '</div>'+
                               '<div class="decorative-line" style="width:200px;margin:20px auto"></div>'+
                               '<p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">'+
-                                (p1Win?'运筹帷幄之中，决胜千里之外。':tie?'将遇良才，棋逢对手。':'胜败乃兵家常事，再接再厉。')+
+                                (t(p1Win?'ui.game_result.victory_message':tie?'ui.game_result.draw_message':'ui.game_result.defeat_message'))+
                               '</p>'+
-                              '<button class="btn btn-primary" onclick="resetGame()">' + t("ui.menu.back_to_menu") + '</button>'+
+                              '<button class="btn btn-primary" onclick="resetGame()">' + t('ui.game_result.play_again') + '</button>'+
                             '</div>';
                             return;
                         }
