@@ -277,8 +277,10 @@ export function switchLocale(locale) {
 
 
 // ── global exposure for inline scripts ──
+// IMPORTANT: always replace window.t with module version
 if (typeof window !== "undefined") {
-  if (typeof window !== "undefined" && !window.t) { window.t = t; }
+  window._inlineT = window.t;
+  window.t = t;
   window._i18nT = t;
   window.initLocale = initLocale;
   window.Locale = {

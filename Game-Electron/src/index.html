@@ -447,6 +447,8 @@ function random(){
 }
 
 const ROW_NAMES={infantry:'步兵',cavalry:'骑兵',navy:'水军',strategy:'谋略'};
+// i18n wrapper: getRowName returns translated row name
+function getRowName(key){return t('ui.row.'+key)||ROW_NAMES[key]||key;}
 
 const ROW_ICONS={
 infantry:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M16 18L5 22V30L16 36L27 30V22Z" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><path d="M16 22L9 24V28.5L16 32L23 28.5V24Z" stroke="currentColor" stroke-width="1" fill="none" opacity=".25"/><line x1="6" y1="2" x2="22" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><line x1="26" y1="2" x2="10" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><path d="M9 6L13 9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".3"/><path d="M23 6L19 9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".3"/><circle cx="16" cy="9" r="1.5" fill="currentColor" opacity=".3"/><path d="M3 5L5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".3"/><path d="M29 5L27 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".3"/></svg>`,
@@ -459,9 +461,9 @@ commander:`<svg viewBox="0 0 32 40" width="24" height="30"><path d="M8 4L16 2L24
 
 function getCardCategory(card){
   if(!card.ability) return 'commander';
-  const t=card.ability.split(':')[0];
-  if(t==='boost_row'||t==='weaken_row'||t==='discard'||t==='combo_boost'||t==='destroy'||t==='resurrect'||t==='protect'||t==='spy'||t==='draw_extra') return 'strategy';
-  if(t==='draw'||t==='gain_provisions') return 'weather';
+  const abilityType=card.ability.split(':')[0];
+  if(abilityType==='boost_row'||abilityType==='weaken_row'||abilityType==='discard'||abilityType==='combo_boost'||abilityType==='destroy'||abilityType==='resurrect'||abilityType==='protect'||abilityType==='spy'||abilityType==='draw_extra') return 'strategy';
+  if(abilityType==='draw'||abilityType==='gain_provisions') return 'weather';
   return 'commander';
 }
 
@@ -626,7 +628,7 @@ function applyLeaderAbilityForRound(leader,playerIdx){
     const h=getHand(opp);
     for(let i=0;i<a.value&&h.length>0;i++){
       const idx=Math.floor(random()*h.length);
-      addLog(`【${leader.name}】效果：${opp===0?'你':'AI'}弃掉了${h[idx].name}`);
+      addLog(t('ui.log.ability_discard', {leader: ln(leader), who: opp===0?t('ui.log.you'):t('ui.log.ai'), card: cn(h[idx])}));
       h.splice(idx,1);
     }
   }
@@ -639,7 +641,7 @@ function applyLeaderAbilityForRound(leader,playerIdx){
       if(p>maxPower){maxPower=p;bestRow=r}
     });
     myBoard[bestRow].forEach(c=>{if(c)c.strength+=a.value});
-    addLog(`【${leader.name}】效果：${ROW_NAMES[bestRow]}行+${a.value}`);
+    addLog(t('ui.log.ability_row_buff', {leader: ln(leader), row: getRowName(bestRow), value: a.value}));
   }
 }
 
@@ -700,42 +702,42 @@ function weakestOpponentRow(opponentBoard,oppIdx){
 
 function triggerAbility(card,playerIdx){
   if(!card.ability)return;
-  const[t,v]=card.ability.split(':');
+  const[abilityType,v]=card.ability.split(':');
   const n=parseInt(v);
   const opp=1-playerIdx;
   const myBoard=getBoard(playerIdx);
   const oppBoard=getBoard(opp);
-  switch(t){
+  switch(abilityType){
     case'draw':
       drawCards(playerIdx,n);
-      addLog(`${cn(card)}的效果：抽${n}张牌`);
+      addLog(t('ui.log.card_ability_28568e', {card: cn(card)}));
       break;
     case'discard':{
       const oppH=getHand(opp);
       for(let i=0;i<n&&oppH.length>0;i++){
         const idx=Math.floor(random()*oppH.length);
-        addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}弃掉了${oppH[idx].name}`);
+        addLog(t('ui.log.card_ability_4488c8', {card: cn(card)}));
         oppH.splice(idx,1);
       }
       break;}
     case'boost_row':
       myBoard[card.row].forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
-      addLog(`${cn(card)}的效果：本行+${n}`);
+      addLog(t('ui.log.card_ability_af5723', {card: cn(card)}));
       break;
     case'weaken_row':{
       const wk=weakestOpponentRow(oppBoard,opp);
       oppBoard[wk].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-n)});
-      addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}${ROW_NAMES[wk]}行-${n}`);
+      addLog(t('ui.log.card_ability_9eaa13', {card: cn(card)}));
       break;}
     case'gain_provisions':
       G.provisions[playerIdx]+=n;
-      addLog(`${cn(card)}的效果：+${n}粮草`);
+      addLog(t('ui.log.card_ability_d57c37', {card: cn(card)}));
       break;
     case'ambush':
       if(G.turnCount===0&&!G.globalBuffs.ambushTriggered){
         myBoard.infantry.forEach(c=>{if(c)c.strength+=n});
         G.globalBuffs.ambushTriggered=true;
-        addLog(`${cn(card)}的效果：突袭！步兵行+${n}`);
+        addLog(t('ui.log.card_ability_f8bcd2', {card: cn(card)}));
       }
       break;
     case'command':{
@@ -744,10 +746,10 @@ function triggerAbility(card,playerIdx){
         let weakIdx=0,weakStr=Infinity;
         cmdH.forEach((c,i)=>{if(c&&c.strength<weakStr){weakStr=c.strength;weakIdx=i}});
         const discarded=cmdH.splice(weakIdx,1)[0];
-        addLog(`${cn(card)}的效果：弃掉了${discarded.name}（${discarded.strength}）`);
+        addLog(t('ui.log.card_ability_3b7d5c', {card: cn(card)}));
         if(cmdH.length>0){
           drawCards(playerIdx,n);
-          addLog(`${cn(card)}的效果：抽${n}张牌`);
+          addLog(t('ui.log.card_ability_28568e', {card: cn(card)}));
         }
       }
       break;}
@@ -758,34 +760,34 @@ function triggerAbility(card,playerIdx){
         if(p>ctrlMaxP){ctrlMaxP=p;ctrlMaxRow=r}
       });
       oppBoard[ctrlMaxRow].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-1)});
-      addLog(`${cn(card)}的效果：离间计！${opp===0?'你':'AI'}${ROW_NAMES[ctrlMaxRow]}行-1`);
+      addLog(t('ui.log.card_ability_728251', {card: cn(card)}));
       break;}
     case'skirmish':
       if(playerIdx===0) G.players[1].passed=true;
       else G.players[0].passed=true;
-      addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}被迫跳过`);
+      addLog(t('ui.log.card_ability_8cf356', {card: cn(card)}));
       break;
     case'shield':
       ['infantry','cavalry','navy','strategy'].forEach(r=>{
         myBoard[r].forEach(c=>{if(c)c.strength+=n});
       });
-      addLog(`${cn(card)}的效果：全场+${n}`);
+      addLog(t('ui.log.card_ability_602aac', {card: cn(card)}));
       break;
     case'navy_boost':
       myBoard.navy.forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
-      addLog(`${cn(card)}的效果：水军行+${n}`);
+      addLog(t('ui.log.card_ability_8f9607', {card: cn(card)}));
       break;
     case'farm':
       if(playerIdx===0) G.globalBuffs.playerFarm=n;
       else G.globalBuffs.aiFarm=n;
-      addLog(`${cn(card)}的效果：每回合+${n}粮草`);
+      addLog(t('ui.log.card_ability_9a402e', {card: cn(card)}));
       break;
     case'fortify':
       myBoard[card.row].forEach(c=>{if(c&&c.uid!==card.uid)c.strength+=n});
-      addLog(`${cn(card)}的效果：本行+${n}`);
+      addLog(t('ui.log.card_ability_af5723', {card: cn(card)}));
       break;
     case'flex':
-      addLog(`${cn(card)}的效果：可放入任意行`);
+      addLog(t('ui.log.card_ability_a7ff4b', {card: cn(card)}));
       break;
     case'assimilate':{
       let aMinCard=null,aMinStr=Infinity,aMinRow=null;
@@ -797,13 +799,13 @@ function triggerAbility(card,playerIdx){
       if(aMinCard){
         oppBoard[aMinRow]=oppBoard[aMinRow].filter(c=>c.uid!==aMinCard.uid);
         getHandSafe(playerIdx).push(aMinCard);
-        addLog(`${cn(card)}的效果：吸收了${opp===0?'你':'AI'}的${aMinCard.name}`);
+        addLog(t('ui.log.card_ability_531e34', {card: cn(card)}));
       }
       break;}
     case'armor':
       if(playerIdx===0) G.globalBuffs.playerArmor+=n;
       else G.globalBuffs.aiArmor+=n;
-      addLog(`${cn(card)}的效果：全军护甲+${n}`);
+      addLog(t('ui.log.card_ability_c04ed6', {card: cn(card)}));
       break;
     case'siege':{
       let sMaxP=-1,sMaxRow='infantry';
@@ -812,29 +814,29 @@ function triggerAbility(card,playerIdx){
         if(p>sMaxP){sMaxP=p;sMaxRow=r}
       });
       oppBoard[sMaxRow].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-n)});
-      addLog(`${cn(card)}的效果：围城！${opp===0?'你':'AI'}${ROW_NAMES[sMaxRow]}行-${n}`);
+      addLog(t('ui.log.card_ability_c2eef3', {card: cn(card)}));
       break;}
     case'coordinate':
       myBoard[card.row].forEach(c=>{
         if(c.uid!==card.uid&&c.faction===card.faction) c.strength+=n;
       });
-      addLog(`${cn(card)}的效果：联防，同阵营+${n}`);
+      addLog(t('ui.log.card_ability_250365', {card: cn(card)}));
       break;
     case'ambush_card':{
       drawCards(playerIdx,1);
       const ambH=getHand(opp);
       if(ambH.length>0){
         const idx=Math.floor(random()*ambH.length);
-        addLog(`${cn(card)}的效果：${opp===0?'你':'AI'}弃掉了${ambH[idx].name}`);
+        addLog(t('ui.log.card_ability_3d3e99', {card: cn(card)}));
         ambH.splice(idx,1);
       }
-      addLog(`${cn(card)}的效果：抽1牌，对手弃1牌`);
+      addLog(t('ui.log.card_ability_6f7cca', {card: cn(card)}));
       break;}
     case'berserk':
       card.strength*=2;
       if(playerIdx===0) G.globalBuffs.playerBerserkCard=card.uid;
       else G.globalBuffs.aiBerserkCard=card.uid;
-      addLog(`${cn(card)}的效果：狂攻！战力翻倍为${card.strength}`);
+      addLog(t('ui.log.card_ability_44fc99', {card: cn(card)}));
       break;
     case'crit':{
       let cMaxCard=null,cMaxStr=-1,cMaxRow=null;
@@ -845,26 +847,26 @@ function triggerAbility(card,playerIdx){
       });
       if(cMaxCard){
         oppBoard[cMaxRow]=oppBoard[cMaxRow].filter(c=>c.uid!==cMaxCard.uid);
-        addLog(`${cn(card)}的效果：消灭了${opp===0?'你':'AI'}的${cMaxCard.name}（${cMaxStr}）`);
+        addLog(t('ui.log.card_ability_7f01d0', {card: cn(card)}));
       }
       break;}
     case'unify':
       if(playerIdx===0) G.globalBuffs.playerUnify+=1;
       else G.globalBuffs.aiUnify+=1;
-      addLog(`${cn(card)}的效果：统一之力+1`);
+      addLog(t('ui.log.card_ability_eb93e9', {card: cn(card)}));
       break;
     case'anti_south':{
       const southFactions=['song','qi','liang','chen'];
       const oppLeaderFaction=(playerIdx===0?G.players[1].leader:G.players[0].leader)?.faction||'';
       if(southFactions.includes(oppLeaderFaction)){
         card.strength+=n;
-        addLog(`${cn(card)}的效果：灭${oppLeaderFaction}！战力+${n}`);
+        addLog(t('ui.log.card_ability_a2961b', {card: cn(card)}));
       }
       break;}
     case'combo_boost':{
       const sameType=Object.values(myBoard).flat().filter(c=>c.uid!==card.uid&&c.ability&&c.ability.split(':')[0]==='combo_boost');
       sameType.forEach(c=>{if(c)c.strength+=n});
-      addLog(`${cn(card)}的效果：连携！友方连携卡+${n}`);
+      addLog(t('ui.log.card_ability_dfcee5', {card: cn(card)}));
       break;}
     case'destroy':{
       const oppAll=Object.entries(oppBoard).flatMap(([r,cards])=>cards.map(c=>({...c,_row:r})));
@@ -873,7 +875,7 @@ function triggerAbility(card,playerIdx){
         const target=oppAll.splice(ri,1)[0];
         oppBoard[target._row]=oppBoard[target._row].filter(c=>c.uid!==target.uid);
         G.graveyard.push(target);
-        addLog(`${cn(card)}的效果：消灭了${opp===0?'你':'AI'}的${target.name}`);
+        addLog(t('ui.log.card_ability_4a9119', {card: cn(card)}));
       }
       break;}
     case'resurrect':{
@@ -881,12 +883,12 @@ function triggerAbility(card,playerIdx){
         const ri=Math.floor(random()*G.graveyard.length);
         const card2=G.graveyard.splice(ri,1)[0];
         getHandSafe(playerIdx).push(card2);
-        addLog(`${cn(card)}的效果：从墓地回收了${card2.name}`);
+        addLog(t('ui.log.card_ability_e2a563', {card: cn(card)}));
       }
       break;}
     case'protect':
       card.protectArmor=(card.protectArmor||0)+n;
-      addLog(`${cn(card)}的效果：获得${n}点护甲`);
+      addLog(t('ui.log.card_ability_dfda8c', {card: cn(card)}));
       break;
     case'spy':{
       const oppH2=getHand(opp);
@@ -895,12 +897,12 @@ function triggerAbility(card,playerIdx){
         oppH2.forEach((c,i)=>{if(c&&c.strength>spyMax){spyMax=c.strength;spyIdx=i}});
         const discarded=oppH2.splice(spyIdx,1)[0];
         G.graveyard.push(discarded);
-        addLog(`${cn(card)}的效果：间谍行动，${opp===0?'你':'AI'}弃掉了${discarded.name}（${discarded.strength}）`);
+        addLog(t('ui.log.card_ability_b75e60', {card: cn(card)}));
       }
       break;}
     case'draw_extra':
       drawCards(playerIdx,n);
-      addLog(`${cn(card)}的效果：额外抽${n}张牌`);
+      addLog(t('ui.log.card_ability_c25433', {card: cn(card)}));
       break;
   }
 }
@@ -939,7 +941,7 @@ function playCard(playerIdx,handIdx,row){
       const bCard=board[r].find(c=>c.uid===berserkUid);
       if(bCard){
         bCard.strength=Math.max(1,bCard.strength-2);
-        addLog(`${bCard.name} 狂攻反噬，战力-2`);
+        addLog(t('ui.log.fierce_attack_penalty', {card: cn(bCard)}));
         break;
       }
     }
@@ -952,7 +954,7 @@ function playCard(playerIdx,handIdx,row){
   G._lastPlayedUid=card.uid;
   G._lastPlayedBy=playerIdx;
   const name=playerIdx===0?'你':'AI';
-  addLog(`${name}打出了 ${cn(card)}（${ROW_NAMES[row]} ${card.strength}）`);
+  addLog(t('ui.log.played_card', {player: name, card: `${cn(card)} (${getRowName(row)} ${card.strength})`}));
   setTimeout(()=>{
     const rowEl=document.querySelector('.row[data-row="'+row+'"]')||document.querySelectorAll('.row')[getRowIdx(row)];
     const cardEl=card.uid?getCardEl(card.uid):null;
@@ -991,17 +993,21 @@ function startRound(){
 }
 
 function playerPlayCard(handIdx,row){
+  if(G._busy){console.log('[ppc] busy');return;}
   if(G.phase!=='playing'||G.currentTurn!=='player'||G.players[0].passed)return;
   const card=G.players[0].hand[handIdx];
-  if(!card)return;  // 防御：手牌可能已被 splice
+  if(!card)return;
   if(getCardCost(card.strength)>G.provisions[0])return;
-  playCard(0,handIdx,row);
+  G._busy=true;
   G.selectedCard=null;
   G.turnCount++;
-  afterPlayerTurn();
+  try{playCard(0,handIdx,row);}catch(e){console.error(e);G._busy=false;return;}
+  try{afterPlayerTurn();}catch(e){console.error(e);}
+  setTimeout(()=>{G._busy=false;},800);
 }
 
 function playerPass(){
+  console.log('[playerPass] called, G.phase=', G.phase, 'currentTurn=', G.currentTurn, 'passed=', G.players[0].passed);
   if(G.phase!=='playing')return;
   if(G.players[0].passed)return;
   if(G.currentTurn!=='player')return;
@@ -1039,7 +1045,7 @@ function afterPlayerTurn(){
   G.currentTurn='ai';
   if(G.globalBuffs.aiFarm>0){
     G.provisions[1]+=G.globalBuffs.aiFarm;
-    addLog(`AI获得${G.globalBuffs.aiFarm}粮草（屯田）`);
+    addLog(t('ui.log.ai_gain_provisions', {count: G.globalBuffs.aiFarm}));
   }
   render();
   setTimeout(aiTurn,600);
@@ -1052,6 +1058,7 @@ function hasPlayableCard(p){
 }
 
 function aiTurn(){
+  console.log('[aiTurn] called, G.phase=', G.phase, 'currentTurn=', G.currentTurn, 'AI passed=', G.players[1].passed);
   try{
   if(G.phase!=='playing')return;
   // 防御性检查: 如果AI粮草为0且手牌无费用可出，立即pass
@@ -1094,7 +1101,7 @@ function aiTurn(){
       playCard(1,choice.handIdx,choice.row);
     }catch(e){
       console.error('[AI playCard]',e);
-      addLog('AI出牌失败:'+e.message);
+      addLog(t('ui.log.ai_play_failed', {error: e.message}));
     }
     try{
       G.turnCount++;
@@ -1102,14 +1109,14 @@ function aiTurn(){
       G.currentTurn='player';
       if(G.globalBuffs.playerFarm>0){
         G.provisions[0]+=G.globalBuffs.playerFarm;
-        addLog(`你获得${G.globalBuffs.playerFarm}粮草（屯田）`);
+        addLog(t('ui.log.you_gain_provisions', {count: G.globalBuffs.playerFarm}));
       }
     }catch(e){}
     render();
   },600);
   }catch(e){
     console.error('[aiTurn outer]',e);
-    addLog('AI 出现异常:'+e.message);
+    addLog(t('ui.log.ai_error', {error: e.message}));
     G.currentTurn='player';
     render();
   }
@@ -1351,6 +1358,7 @@ function showNotification(text,dur=2500){
 }
 
 function render(){
+  console.log('[render] called, G.phase=', G.phase);
   const app=document.getElementById('app');
   const lastUid=G._lastPlayedUid;
   const lastBy=G._lastPlayedBy;
@@ -1623,7 +1631,7 @@ function confirmLeader(){
   drawCards(1,7);
   G.phase='mulligan';
   G.mulliganSelected=new Set();
-  addLog('进入换牌阶段');
+  addLog(t('ui.log.mulligan_start'));
   render();
 }
 
@@ -1685,7 +1693,7 @@ function confirmMulligan(){
   G.mulliganSelected=new Set();
   G.currentTurn='player';
   G.phase='playing';
-  addLog('换牌完成！');
+  addLog(t('ui.log.mulligan_done'));
   showNotification('换牌完成！');
   startRound();
 }
@@ -1698,28 +1706,28 @@ function useLeaderAbility(playerIdx){
   switch(ability.type){
     case'row_boost':
       getBoard(playerIdx)[ability.row].forEach(c=>{if(c)c.strength+=ability.value});
-      addLog(`【${leader.name}】技能：${ROW_NAMES[ability.row]}行+${ability.value}`);
+      addLog(t('ui.log.leader_ability_row', {leader: ln(leader), row: getRowName(ability.row), value: ability.value}));
       break;
     case'extra_draw':
       drawCards(playerIdx,ability.value);
-      addLog(`【${leader.name}】技能：抽${ability.value}张牌`);
+      addLog(t('ui.log.leader_ability_draw', {leader: ln(leader), count: ability.value}));
       break;
     case'opponent_discard':{
       const opp=1-playerIdx;
       const oppH=getHand(opp);
       for(let i=0;i<ability.value&&oppH.length>0;i++){
         const ri=Math.floor(random()*oppH.length);
-        addLog(`【${leader.name}】技能：对手弃${oppH[ri].name}`);
+        addLog(t('ui.log.leader_ability_opp_discard', {leader: ln(leader), card: cn(oppH[ri])}));
         oppH.splice(ri,1);
       }
       break;}
     case'extra_provisions':
       G.provisions[playerIdx]+=ability.value;
-      addLog(`【${leader.name}】技能：粮草+${ability.value}`);
+      addLog(t('ui.log.leader_ability_provisions', {leader: ln(leader), value: ability.value}));
       break;
     case'all_boost':
       ['infantry','cavalry','navy','strategy'].forEach(r=>getBoard(playerIdx)[r].forEach(c=>{if(c)c.strength+=ability.value}));
-      addLog(`【${leader.name}】技能：全场+${ability.value}`);
+      addLog(t('ui.log.leader_ability_all_buff', {leader: ln(leader), value: ability.value}));
       break;
     case'double_edge':{
       const myBoard=getBoard(playerIdx);
@@ -1733,14 +1741,14 @@ function useLeaderAbility(playerIdx){
       if(bestR===worstR) bestR=rows.find(r=>r!==worstR)||'infantry';
       myBoard[bestR].forEach(c=>{if(c)c.strength+=ability.value});
       myBoard[worstR].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-1)});
-      addLog(`【${leader.name}】技能：${ROW_NAMES[bestR]}行+${ability.value}，${ROW_NAMES[worstR]}行-1`);
+      addLog(t('ui.log.leader_ability_best_worst', {leader: ln(leader), bestRow: getRowName(bestR), value: ability.value, worstRow: getRowName(worstR)}));
       break;}
     case'hand_boost':{
       const hand=getHand(playerIdx);
       const shuffled=[...hand].sort(()=>random()-0.5);
       const cnt=Math.min(ability.value,shuffled.length);
       for(let i=0;i<cnt;i++) shuffled[i].strength+=2;
-      addLog(`【${leader.name}】技能：手牌${cnt}张+2`);
+      addLog(t('ui.log.leader_ability_hand_buff', {leader: ln(leader), count: cnt}));
       break;}
   }
   G.leaderAbilityUsed[playerIdx]=true;
@@ -1856,7 +1864,8 @@ function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
       }).join('');
     const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.players[playerIdx].hand[G.selectedCard]&&G.players[playerIdx].hand[G.selectedCard].row===rowType;
   const canPlayRow=isMatch&&canPlay;
-  return`<div class="row ${canPlayRow?'highlight':''}" ${canPlay?`onclick="onRowClick('${rowType}')"`:''}>
+  // Only bind onclick to the matching row to prevent accidental clicks on other rows
+  return`<div class="row ${canPlayRow?'highlight':''}" ${canPlay&&isMatch?`onclick="onRowClick('${rowType}')"`:''}>
     <div class="row-label">${t('ui.row.'+rowType)}</div>
     <div class="row-cards">${cardsHtml}</div>
     <div class="row-power"><div class="val">${power}</div></div>
@@ -1905,13 +1914,14 @@ function onCardClick(idx){
 }
 
 function onRowClick(rowType){
+  console.log('[onRowClick] rowType=', rowType, 'selectedCard=', G.selectedCard, 'busy=', G._busy, 'typeof t=', typeof t);
   // Hot-seat 模式
   if(G._hsPhase==='game'){
       if(G.selectedCard===null||G.selectedCard===undefined)return;
       let act=G.activePlayer;
       let c=G.players[act].hand[G.selectedCard];
       if(!c)return;
-      if(c.row!==rowType){addLog('该卡牌只能放入'+ROW_NAMES[c.row]);return}
+      if(c.row!==rowType){addLog(t('ui.log.card_row_only', {row: getRowName(c.row)}));return}
       hotSeatPlayCard(G.selectedCard,rowType);
       return;
   }
@@ -1920,9 +1930,10 @@ function onRowClick(rowType){
   if(!card)return;
   // 只能放到对应行
   if(card.row!==rowType){
-    addLog('该卡牌只能放入'+ROW_NAMES[card.row]);
+    addLog(t('ui.log.card_row_only', {row: getRowName(card.row)}));
     return;
   }
+  console.log('[onRowClick] calling playerPlayCard');
   playerPlayCard(G.selectedCard,rowType);
 }
 
@@ -2102,7 +2113,7 @@ function renderGameResult(el){
                         var picked = sel && sel.has(i);
                         var f = FACTIONS[c.faction];
                         var cost = getCardCost(c.strength);
-                        var rowName = ROW_NAMES[c.row];
+                        var rowName = getRowName(c.row);
                         var desc = (c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
                         return '<div class="card '+(picked?'selected':'')+'" onclick="toggleMulligan(' + i + ');render()" title="'+cn(c)+' - '+cd(c)+'" ' +
                           'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">' +
@@ -2419,8 +2430,8 @@ function renderGameResult(el){
                                                   // 发送自己的 RNG 值给 guest
                                                   var pkt = packMessage('action', { action: 'rng_value', data: {
                                                     v: '' + arr[0],
-                                                    leaderP0: G.players[0].leader && (G.players[0].leader.id || G.players[0].ln(leader)),
-                                                    leaderP1: G.players[1].leader && (G.players[1].leader.id || G.players[1].ln(leader))
+                                                    leaderP0: G.players[0].leader && (G.players[0].leader.id || G.players[0].leader.id),
+                                                    leaderP1: G.players[1].leader && (G.players[1].leader.id || G.players[1].leader.id)
                                                   } });
                                                   sendP2P(pkt, G._mpState.peerId);
                                                   if (G._mpState._host === 'host') {
@@ -2582,7 +2593,7 @@ function renderGameResult(el){
                                                   var p0 = G.players[0], p1 = G.players[1];
                                                   var deckHashP0 = _multiplayerDeckHash(buildDeck(p0.leader.faction));
                                                   var deckHashP1 = _multiplayerDeckHash(buildDeck(p1.leader.faction));
-                                                  var msg = packStateInit(seed, deckHashP0, deckHashP1, p0.leader.id||p0.leader.name, p1.leader.id||p1.leader.name, G.activePlayer);
+                                                  var msg = packStateInit(seed, deckHashP0, deckHashP1, p0.leader.id||p0.leader.id, p1.leader.id||p1.leader.id, G.activePlayer);
                                                   sendP2P(msg, mp.peerId);
                                                   _setupMultiplayerGameState();
                                                   G.phase = 'multiplayer_playing';
@@ -2608,12 +2619,12 @@ function renderGameResult(el){
                                                   drawCards(0, 7); drawCards(1, 7);
                                                   G.provisions = [30, 30];
                                                   G._mpPhase = 'mulligan';
-                                                  addLog('═══ 多人对战 · 换牌阶段 ═══');
+                                                  addLog(t('ui.log.mp_mulligan_start'));
                                                 }
 
                                                 function _multiplayerDeckHash(deck) {
                                                   var text = (deck || []).map(function(card) {
-                                                    return [card.id, card.name, card.strength, card.row, card.faction].join(':');
+                                                    return [card.id, cn(card), card.strength, card.row, card.faction].join(':');
                                                   }).join('|');
                                                   var hash = 2166136261;
                                                   for (var i = 0; i < text.length; i++) {
@@ -2770,7 +2781,7 @@ function renderGameResult(el){
                                                   }
                                                   var cnt = 7 - keeperIdx.size;
                                                   if (cnt > 0) drawCards(p, cnt);
-                                                  addLog('换了' + cnt + '张牌');
+                                                  addLog(t('ui.log.cards_swapped', {count: cnt}));
                                                   G.mulliganSelected = new Set();
                                                   if (p === 0 && G._mpState.isHost) {
                                                     // host 等 guest mulligan
@@ -2802,7 +2813,7 @@ function renderGameResult(el){
                                                   if (!G._mpState.isHost) {
                                                     // guest 等待 host 的 state_diff
                                                   }
-                                                  addLog('═══ 对战开始 ═══');
+                                                  addLog(t('ui.log.battle_start'));
                                                   render();
                                                 }
 
@@ -2857,10 +2868,10 @@ function renderGameResult(el){
                                                   if (pP > aP) { winner = 0; G.scores[0]++; }
                                                   else if (aP > pP) { winner = 1; G.scores[1]++; }
                                                   else { winner = -1; }
-                                                  addLog('═══ 第' + (G.round+1) + '局结束 ═══');
-                                                  if (winner === 0) addLog('你战力:' + pP + ' vs 对方:' + aP + ' → 你胜利！');
-                                                  else if (winner === 1) addLog('你战力:' + pP + ' vs 对方:' + aP + ' → 对方胜利！');
-                                                  else addLog('你战力:' + pP + ' vs 对方:' + aP + ' → 平局！');
+                                                  addLog(t('ui.log.round_end', {round: G.round+1}));
+                                                  if (winner === 0) addLog(t('ui.log.you_win_battle', {player: pP, opponent: aP}));
+                                                  else if (winner === 1) addLog(t('ui.log.you_lose_battle', {player: pP, opponent: aP}));
+                                                  else addLog(t('ui.log.tie_battle', {player: pP, opponent: aP}));
                                                   G._roundResult = { playerPower: pP, aiPower: aP, winner: winner };
 
                                                   // host sends match_result
@@ -2903,8 +2914,8 @@ function renderGameResult(el){
                                                     var drawCount = G.round <= 1 ? 0 : 4;
                                                     if (drawCount > 0) { drawCards(0, drawCount); drawCards(1, drawCount); }
                                                     applyRoundStartAbilities();
-                                                    addLog('═══ 第' + (G.round) + '局开始 ═══');
-                                                    if (drawCount > 0) addLog('双方各抽' + drawCount + '张牌');
+                                                    addLog(t('ui.log.round_start', {round: G.round}));
+                                                    if (drawCount > 0) addLog(t('ui.log.both_draw', {count: drawCount}));
                                                     G._mpPhase = 'playing';
                                                     render();
                                                     return false;
@@ -3056,8 +3067,8 @@ function timeoutReconnect() {
                                     drawCards(0,7); drawCards(1,7);
                                     G._hsPhase='mulligan';
                                     G._firstPlayer=0;
-                                    addLog('═══ 热座模式：双方换牌 ═══');
-                                    addLog('玩家1先换牌');
+                                    addLog(t('ui.log.hotseat_mulligan'));
+                                    addLog(t('ui.log.hotseat_p1_first'));
                                     render();
                                   }
 
@@ -3097,7 +3108,7 @@ function timeoutReconnect() {
                                                                                                   G.players[0].passed=false; G.players[1].passed=false;
                                                                                                   G.selectedCard=null;
                                                                                                   G.turnCount=0;
-                                                                                                  addLog('═══ 换牌结束，玩家'+(G._firstPlayer+1)+'先手 ═══');
+                                                                                                  addLog(t('ui.log.mulligan_end_p') + (G._firstPlayer+1)+'先手 ═══');
                                                                                                   render();
                                                                                                   // 双方移交控制: 先手方需点"开始我的回合"才能进入主界面
                                                                                                   showTransferModal(G._firstPlayer,'对局开始 — 请将设备交给玩家'+(G._firstPlayer+1),'gamestart');
@@ -3131,10 +3142,10 @@ function timeoutReconnect() {
               if(pP>aP){winner=0;G.scores[0]++}
               else if(aP>pP){winner=1;G.scores[1]++}
               else{winner=-1}
-              addLog('═══ 第'+G.round+'局结束 ═══');
-              if(winner===0) addLog('玩家1战力:'+pP+' vs 玩家2战力:'+aP+' → 玩家1胜利！');
-              else if(winner===1) addLog('玩家1战力:'+pP+' vs 玩家2战力:'+aP+' → 玩家2胜利！');
-              else addLog('玩家1战力:'+pP+' vs 玩家2战力:'+aP+' → 平局！');
+              addLog(t('ui.log.round_end', {round: G.round}));
+              if(winner===0) addLog(t('ui.log.hotseat_p1_win', {p1: pP, p2: aP}));
+              else if(winner===1) addLog(t('ui.log.hotseat_p2_win', {p1: pP, p2: aP}));
+              else addLog(t('ui.log.hotseat_tie', {p1: pP, p2: aP}));
               G._roundResult={playerPower:pP,aiPower:aP,winner};
               G._hsPhase='round_result';
               render();
@@ -3163,8 +3174,8 @@ function timeoutReconnect() {
                 const drawCount=G.round<=1?0:4;
                 if(drawCount>0){drawCards(0,drawCount);drawCards(1,drawCount);}
                 applyRoundStartAbilities();
-                addLog('═══ 第'+G.round+'局开始 ═══');
-                if(drawCount>0) addLog('双方各抽'+drawCount+'张牌');
+                addLog(t('ui.log.round_start', {round: G.round}));
+                if(drawCount>0) addLog(t('ui.log.both_draw', {count: drawCount}));
                 G._hsPhase='game';
                 render();
               }
@@ -3184,7 +3195,7 @@ function timeoutReconnect() {
                           const opp=1-a;
                           if(!hasPlayableCard(opp)){
                             G.players[opp].passed=true;
-                            addLog('玩家'+(opp+1)+'无牌可出，自动放弃');
+                            addLog(t('ui.log.player_no_cards', {player: opp+1}));
                           }
                           if(G.players[0].passed&&G.players[1].passed){
                             hotSeatEndRound();
@@ -3274,7 +3285,7 @@ function timeoutReconnect() {
                                 var picked=sel.has(i);
                                 var f=FACTIONS[c.faction];
                                 var cost=getCardCost(c.strength);
-                                var rowName=ROW_NAMES[c.row];
+                                var rowName=getRowName(c.row);
                                 var desc=(c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
                                 return'<div class="card '+(picked?'selected':'')+'" onclick="hotSeatToggleMulligan('+i+')" title="'+cn(c)+' - '+cd(c)+'" '+
                                   'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">'+
@@ -3482,7 +3493,7 @@ function timeoutReconnect() {
             var playable=myTurn&&!G.players[activeIdx].passed&&cost<=G.provisions[activeIdx];
             var selected=myTurn&&G.selectedCard===idx;
             var cls=selected?'selected':(!playable?'unplayable':'');
-            var rowName=ROW_NAMES[card.row];
+            var rowName=getRowName(card.row);
             var desc=(card.desc||'')+(card.protectArmor?' 🛡'+card.protectArmor:'');
             return'<div class="card '+cls+'" '+(myTurn?'onclick="onCardClick('+idx+')" ':'')+
               'title="'+cn(card)+' - '+rowName+'" style="'+
