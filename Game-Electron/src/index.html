@@ -1218,9 +1218,8 @@ function endRound(){
       if(myBoard){
         const all=cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
         all.signals.forEach(sig=>{
-          const pName=pIdx===0?t('ui.log.you'):t('ui.log.ai');
-          const faction=(myLeader&&myLeader.faction)||'';
-          switch(sig){
+                  const faction=(myLeader&&myLeader.faction)||'';
+                  switch(sig){
             case'weaken_opponent':addLog(t('ui.log.combo_weaken',{faction}));break;
             case'discard_opponent':addLog(t('ui.log.combo_discard',{faction}));break;
             case'draw_card':addLog(t('ui.log.combo_draw',{faction}));break;
