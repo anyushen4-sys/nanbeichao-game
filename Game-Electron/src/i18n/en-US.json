@@ -111,7 +111,13 @@
       "combo_counter_desc": "South vs North — bonus against opposing faction",
       "combo_juzhongqu": "Leader Synergy",
       "combo_juzhongqu_desc": "Same faction ≥count in row → all +bonus",
-      "combo_hint": "Gold +N on a card means combo is active"
+      "combo_hint": "Gold +N on a card means combo is active",
+      "combo_type_synergy": "Card Type Synergy",
+      "combo_type_synergy_desc": "≥2 same type on board, that type +1",
+      "combo_row_stacking": "Row Stacking",
+      "combo_row_stacking_desc": "≥3 same faction in row, that row +1",
+      "combo_scholar_circle": "Scholar Circle",
+      "combo_scholar_circle_desc": "Poets+ministers ≥3, all scholars +1"
     },
     "mulligan": {
       "title": "Mulligan Phase",
@@ -316,7 +322,10 @@
       "combo_weaken": "{faction} Fubing Synergy: Weaken opponent strongest row -1",
       "combo_discard": "{faction} Power Check: Opponent discards 1 card",
       "combo_draw": "{faction} Strategist: Draw 1 extra card next round",
-      "combo_armor": "{faction} Wu Reform: All faction cards +1 armor"
+      "combo_armor": "{faction} Wu Reform: All faction cards +1 armor",
+      "combo_type_synergy": "{type} Type Synergy: All {type} cards +1",
+      "combo_row_stacking": "{row} Row Stacking: All {row} cards +1",
+      "combo_scholar_circle": "Scholar Circle: Poets and ministers +1"
     }
   },
   "combo": {

@@ -111,7 +111,13 @@
       "combo_counter_desc": "对手≥3张武将牌时，counter_faction 牌+2",
       "combo_juzhongqu": "领袖羁绊",
       "combo_juzhongqu_desc": "同势力同行数≥count，全体+bonus",
-      "combo_hint": "卡牌出现金色 +N 表示已触发"
+      "combo_hint": "卡牌出现金色 +N 表示已触发",
+      "combo_type_synergy": "卡牌类型联动",
+      "combo_type_synergy_desc": "场上同类型牌≥2张，该类型牌+1强度",
+      "combo_row_stacking": "同行强化",
+      "combo_row_stacking_desc": "同行同阵营≥3张，该行该阵营牌+1",
+      "combo_scholar_circle": "文人圈联动",
+      "combo_scholar_circle_desc": "诗人+文臣≥3张，所有文人+1强度"
     },
     "mulligan": {
       "title": "换牌阶段",
@@ -280,7 +286,10 @@
       "combo_weaken": "{faction} 府兵整合：削弱对手最强行 -1",
       "combo_discard": "{faction} 权谋制衡：对手随机弃 1 张牌",
       "combo_draw": "{faction} 文臣运筹：下回合多抽 1 张牌",
-      "combo_armor": "{faction} 武帝改革：同阵营所有牌 +1 护甲"
+      "combo_armor": "{faction} 武帝改革：同阵营所有牌 +1 护甲",
+      "combo_type_synergy": "{type} 类型联动：所有{type}牌 +1",
+      "combo_row_stacking": "{row} 同行强化：所有{row}牌 +1",
+      "combo_scholar_circle": "文人圈：诗人+文臣 +1"
     }
   },
   "combo": {
