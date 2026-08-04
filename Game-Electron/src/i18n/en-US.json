@@ -67,7 +67,8 @@
       "title": "Choose Your Commander",
       "your_leader": "Your Commander",
       "desc": "Your leader determines faction and special ability",
-      "march": "Confirm March"
+      "march": "Confirm March",
+      "select_hint": "Please select a leader first"
     },
     "card": {
       "strength": "Power",
@@ -146,8 +147,8 @@
       "start_leader": "Start Leader Select",
       "switch_guest": "Switch to Guest View",
       "select_leader": "Select Leader",
-      "host_label": "You are Host",
-      "guest_label": "You are Guest",
+      "host_label": "You are host",
+      "guest_label": "You are guest",
       "opponent": "Opponent",
       "confirm_leader": "Confirm Leader",
       "mulligan_title": "Mulligan Phase",
@@ -172,15 +173,19 @@
       "pass_round": "Pass Round",
       "dispute_title": "Settlement Mismatch",
       "dispute_msg": "Opponent's end power differs from your replay",
-      "dispute_details": "Them: {remote} vs You: {local}"
+      "dispute_details": "Them: {remote} vs You: {local}",
+      "peer_label": "Opponent: {name}",
+      "state_init_sent": "state_init sent! Game starting",
+      "host_init": "You are host! Initializing game...",
+      "guest_wait": "You are guest, waiting for host..."
     },
     "hotseat": {
       "select_leader_title": "Player {player} Select Leader",
       "select_leader_hint": "Your leader determines faction and ability — click a card first",
-      "confirm_leader": "Confirm",
+      "confirm_leader": "Confirm Selection",
       "mulligan_title": "Player {player} Mulligan",
       "mulligan_hint": "Click cards to replace (max {count})",
-      "confirm_mulligan": "Confirm ({count} selected)",
+      "confirm_mulligan": "Confirm Swap ({count} selected)",
       "round_title": "Round {round} Result",
       "player1_power": "Player 1 Power",
       "player2_power": "Player 2 Power",
@@ -202,7 +207,13 @@
       "no_hand_cards": "No cards",
       "player2_hand": "Player 2's hand",
       "pass_round": "Pass Round",
-      "draw_round": "Draw!"
+      "draw_round": "Draw!",
+      "player_label": "Player {n}",
+      "confirm_leader_hint": "Click Confirm below to finish selection",
+      "transfer_leader": "Pass device to Player {player} to select leader",
+      "transfer_mulligan": "Mulligan phase — pass device to Player {player}",
+      "transfer_turn": "Game start — pass device to Player {player}",
+      "transfer_btn": "Start My Turn"
     },
     "dialog": {
       "confirm": "Confirm",

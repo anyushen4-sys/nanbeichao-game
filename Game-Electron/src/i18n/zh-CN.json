@@ -59,7 +59,8 @@
       "title": "选择主将",
       "your_leader": "你的主将",
       "desc": "你的领袖将决定阵营与特殊能力",
-      "march": "确认出征"
+      "march": "确认出征",
+      "select_hint": "请先选择主将"
     },
     "card": {
       "strength": "战力",
@@ -164,7 +165,11 @@
       "pass_round": "放弃本局",
       "dispute_title": "结算不一致",
       "dispute_msg": "对手终局战力与你的回合过程不一致",
-      "dispute_details": "对方: {remote} vs 你: {local}"
+      "dispute_details": "对方: {remote} vs 你: {local}",
+      "peer_label": "对手: {name}",
+      "state_init_sent": "state_init 已发送！对局开始",
+      "host_init": "你是主机！初始化对局中...",
+      "guest_wait": "你是客机，等待主机初始化..."
     },
     "hotseat": {
       "select_leader_title": "玩家 {player} 选择主将",
@@ -194,7 +199,13 @@
       "no_hand_cards": "无手牌",
       "player2_hand": "玩家2 的手牌 ({count}张)",
       "pass_round": "放弃本局",
-      "draw_round": "平局！"
+      "draw_round": "平局！",
+      "player_label": "玩家{n}",
+      "confirm_leader_hint": "点击下方「确认选择」按钮完成选择",
+      "transfer_leader": "请将设备交给玩家{player}选择主将",
+      "transfer_mulligan": "换牌阶段 — 请将设备交给玩家{player}",
+      "transfer_turn": "对局开始 — 请将设备交给玩家{player}",
+      "transfer_btn": "开始我的回合"
     },
     "dialog": {
       "confirm": "确认",

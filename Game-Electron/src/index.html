@@ -195,6 +195,7 @@ window.t = window.t || function(key, vars){
         }
         window.addEventListener('localechange', function(e) {
           window.currentLocale = (e && e.detail && e.detail.locale) || window.Locale.getLocale();
+          if (typeof render === 'function') render();
         });
 
         window.cn=function(c){return c&&c.name_en&&window.currentLocale!=='zh-CN'?c.name_en:c&&c.name||'';};
@@ -2096,10 +2097,10 @@ function renderGameResult(el){
                       }).join('');
                       el.innerHTML = '<div class="leader-select">' +
                         '<h2>🌐 ' + t('ui.multiplayer.select_leader') + '</h2>' +
-                        '<p class="subtitle">'+(isHost ? '你是主机' : '你是客机')+(mp.peerName ? ' · 对手: ' + mp.peerName : '')+' — 请先点击一张卡片</p>' +
+                        '<p class="subtitle">' + t(isHost?'ui.multiplayer.host_label':'ui.multiplayer.guest_label') + (mp.peerName ? ' · ' + t('ui.multiplayer.peer_label',{name:mp.peerName}) : '') + ' — ' + t('ui.leader.select_hint') + '</p>' +
                         '<div class="leader-grid">' + cardsHtml + '</div>' +
                         '<div style="text-align:center;margin:20px">' +
-                          '<button class="btn btn-primary btn-confirm-leader" onclick="multiplayerPickLeader()" '+(G._selectedLeader?'':'disabled')+'>'+(G._selectedLeader?'确认选择':'请先选择主将')+'</button>' +
+                          '<button class="btn btn-primary btn-confirm-leader" onclick="multiplayerPickLeader()" '+(G._selectedLeader?'':'disabled')+'>' + t(G._selectedLeader?'ui.leader.confirm':'ui.leader.select_hint') + '</button>' +
                         '</div>' +
                         '</div>';
                       return;
@@ -2126,13 +2127,13 @@ function renderGameResult(el){
                           '</div>';
                       }).join('');
                       el.innerHTML = '<div class="leader-select">' +
-                        '<h2>🌐 换牌阶段</h2>' +
-                        '<p class="subtitle">点击选择要替换的牌（可换 '+(sel?sel.size:0)+' 张）</p>' +
+                        '<h2>🌐 ' + t('ui.mulligan.title') + '</h2>' +
+                        '<p class="subtitle">' + t('ui.mulligan.hint',{count:sel?sel.size:0}) + '</p>' +
                         '<div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">' +
                         cardsHtml +
                         '</div>' +
                         '<div style="text-align:center;margin-top:20px">' +
-                          '<button class="btn btn-primary" onclick="multiplayerMulliganConfirm(0)">确认换牌</button>' +
+                          '<button class="btn btn-primary" onclick="multiplayerMulliganConfirm(0)">' + t('ui.mulligan.confirm') + '</button>' +
                         '</div>' +
                         '</div>';
                       return;
@@ -2484,7 +2485,7 @@ function renderGameResult(el){
                                                                                                         var pkt = packMessage('action', { action: 'rng_value', data: { v: arr[0] } });
                                                                                                         sendP2P(pkt, mp.peerId);
                                                                                                         if (mp.isHost) {
-                                                                                                          showNotification('你是主机！初始化对局中...', 2000);
+                                                                                                          showNotification(t('ui.multiplayer.host_init'), 2000);
                                                                                                           sendMultiplayerStateInit();
                                                                                                         } else {
                                                                                                           showNotification('已回复随机数，等待主机初始化...', 2000);
@@ -2496,11 +2497,11 @@ function renderGameResult(el){
                                                                                                       mp.isHost = (mp.myRngValue > v);
                                                                                                       mp._host = mp.isHost ? 'host' : 'guest';
                                                                                                       if (mp.isHost) {
-                                                                                                        showNotification('你是主机！初始化对局中...', 2000);
+                                                                                                        showNotification(t('ui.multiplayer.host_init'), 2000);
                                                                                                         sendMultiplayerStateInit();
                                                                                                       } else {
                                                                                                         mp._host = 'guest';
-                                                                                                        showNotification('你是客机，等待主机初始化...', 2500);
+                                                                                                        showNotification(t('ui.multiplayer.guest_wait'), 2500);
                                                                                                       }
                                                                                                       return;
                                                                                                     }
@@ -2598,7 +2599,7 @@ function renderGameResult(el){
                                                   _setupMultiplayerGameState();
                                                   G.phase = 'multiplayer_playing';
                                                   G._mpPhase = 'mulligan';
-                                                  showNotification('state_init 已发送！对局开始', 2000);
+                                                  showNotification(t('ui.multiplayer.state_init_sent'), 2000);
                                                   render();
                                                 }
 
@@ -3034,7 +3035,7 @@ function timeoutReconnect() {
                           G._selectedLeader=null;
                           if(p===0){
                             G.activePlayer=1;
-                            showTransferModal(1, '请将设备交给玩家 2 选择主将', 'leaderselect');
+                            showTransferModal(1, t('ui.hotseat.transfer_leader',{player:2}), 'leaderselect');
                             render();
                             return;
                           }
@@ -3096,7 +3097,7 @@ function timeoutReconnect() {
                                                                 // 玩家1 换完 → 切到玩家2
                                                                 if(G.activePlayer===0){
                                                                   G.activePlayer=1;
-                                                                  showTransferModal(1,'换牌阶段 — 请将设备交给玩家 2','mulligan');
+                                                                  showTransferModal(1,t('ui.hotseat.transfer_mulligan',{player:2}),'mulligan');
                                                                   render();
                                                                   return;
                                                                 }
@@ -3111,7 +3112,7 @@ function timeoutReconnect() {
                                                                                                   addLog(t('ui.log.mulligan_end_p') + (G._firstPlayer+1)+'先手 ═══');
                                                                                                   render();
                                                                                                   // 双方移交控制: 先手方需点"开始我的回合"才能进入主界面
-                                                                                                  showTransferModal(G._firstPlayer,'对局开始 — 请将设备交给玩家'+(G._firstPlayer+1),'gamestart');
+                                                                                                  showTransferModal(G._firstPlayer,t('ui.hotseat.transfer_turn',{player:G._firstPlayer+1}),'gamestart');
                                                                                                 }
 
             function hotSeatToggleMulligan(idx){
@@ -3130,7 +3131,7 @@ function timeoutReconnect() {
                             hotSeatEndRound();
                           }else{
                             G.activePlayer=b;
-                            showTransferModal(b,'请将设备交给玩家'+(b+1),'turnevent');
+                            showTransferModal(b,t('ui.hotseat.transfer_turn',{player:b+1}),'turnevent');
                             render();
                           }
                         }
@@ -3211,7 +3212,7 @@ function timeoutReconnect() {
                             G.activePlayer=next;
                             // force re-render game + modal overlay
                             render();
-                            showTransferModal(next,'请将设备交给玩家'+(next+1),'turnevent');
+                            showTransferModal(next,t('ui.hotseat.transfer_turn',{player:next+1}),'turnevent');
                           }
                         }
 
@@ -3229,10 +3230,10 @@ function timeoutReconnect() {
                                         '<div class="transfer-player-icon" style="color:'+colors[playerIdx]+'">'+
                                         icons[playerIdx]+'</div>'+
                                         '<div class="transfer-title" style="color:'+colors[playerIdx]+'">'+
-                                        '玩家 '+(playerIdx+1)+'</div>'+
+                                        t('ui.hotseat.player_label',{n:playerIdx+1})+'</div>'+
                                         '<div class="transfer-msg">'+msg+'</div>'+
                                         '<button class="transfer-btn" onclick="transferConfirm()">'+
-                                        '开始我的回合</button>'+
+                                        t('ui.hotseat.transfer_btn')+'</button>'+
                                         '</div>';
                                       document.body.appendChild(overlay);
                                     }
@@ -3268,10 +3269,10 @@ function timeoutReconnect() {
                             }).join('');
                             el.innerHTML='<div class="leader-select">'+
                                                           '<h2>👥 '+t('ui.hotseat.select_leader_title',{player:p+1})+'</h2>'+
-                                                          '<p class="subtitle">'+(G._selectedLeader?'点击下方「确认选择」按钮完成选择':'你的主将将决定阵营与特殊能力 — 请先点击一张卡片')+'</p>'+
+                                                          '<p class="subtitle">' + t(G._selectedLeader?'ui.hotseat.confirm_leader_hint':'ui.hotseat.select_leader_hint') + '</p>'+
                                                           '<div class="leader-grid">'+cardsHtml+'</div>'+
                                                           '<div style="text-align:center;margin:20px">'+
-                                                            '<button class="btn btn-primary btn-confirm-leader" onclick="hotSeatPickLeader()" '+(G._selectedLeader?'':'disabled')+'>玩家'+(p+1)+(G._selectedLeader?' 确认选择':' 请先选择主将')+'</button>'+
+                                                            '<button class="btn btn-primary btn-confirm-leader" onclick="hotSeatPickLeader()" '+(G._selectedLeader?'':'disabled')+'>' + t('ui.hotseat.player_label',{n:p+1}) + ' ' + t(G._selectedLeader?'ui.hotseat.confirm_leader':'ui.leader.select_hint') + '</button>'+
                                                           '</div>'+
                                                         '</div>';
                             return;
@@ -3299,7 +3300,7 @@ function timeoutReconnect() {
                               }).join('');
                               el.innerHTML='<div class="leader-select">'+
                                 '<h2>👥 '+t('ui.hotseat.mulligan_title',{player:a+1})+'</h2>'+
-                                '<p class="subtitle">点击选择要替换的牌（可换 '+sel.size+' 张）</p>'+
+                                '<p class="subtitle">' + t('ui.hotseat.mulligan_hint',{count:sel.size}) + '</p>'+
                                 '<div class="hand-cards" style="justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px">'+
                                 cardsHtml+
                                 '</div>'+
