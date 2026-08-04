@@ -982,10 +982,13 @@ function startRound(){
   G.logs=[];
   // 第1局不自动抽牌（换牌阶段已经处理）
   const drawCount=G.round<=1?0:4;
+  const extraDraw=(G._comboDrawBonus&&G._comboDrawBonus[0])||0;
+  G._comboDrawBonus=G._comboDrawBonus||[0,0];
   if(drawCount>0){
-    drawCards(0,drawCount);
-    drawCards(1,drawCount);
+    drawCards(0,drawCount+extraDraw);
+    drawCards(1,drawCount+(G._comboDrawBonus[1]||0));
   }
+  G._comboDrawBonus=[0,0];
   applyRoundStartAbilities();
   G.currentTurn='player';
   addLog(`═══ `+t("ui.log.round_start",{round:G.round})+` ═══`);
@@ -1203,10 +1206,81 @@ function endRound(){
   const winText=winner===0?t('ui.log.you_win_round'):winner===1?t('ui.log.ai_win_round'):t('ui.log.tie_round');
   addLog(`═══ `+t('ui.log.round_end',{round:G.round})+` ═══`);
   addLog(t('ui.log.power_compare',{player:pP,ai:aP})+` → `+winText);
+  // Log combo triggers
+  const cb=(typeof window!=='undefined'&&window.ComboEngine)?window.ComboEngine:null;
+  if(cb){
+    [0,1].forEach(pIdx=>{
+      const oppIdx=1-pIdx;
+      const myBoard=G.players[pIdx]&&G.players[pIdx].board;
+      const oppBoard=G.players[oppIdx]&&G.players[oppIdx].board;
+      const myHand=G.players[pIdx]&&G.players[pIdx].hand;
+      const myLeader=G.players[pIdx]&&G.players[pIdx].leader;
+      if(myBoard){
+        const all=cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
+        all.signals.forEach(sig=>{
+          const pName=pIdx===0?t('ui.log.you'):t('ui.log.ai');
+          const faction=(myLeader&&myLeader.faction)||'';
+          switch(sig){
+            case'weaken_opponent':addLog(t('ui.log.combo_weaken',{faction}));break;
+            case'discard_opponent':addLog(t('ui.log.combo_discard',{faction}));break;
+            case'draw_card':addLog(t('ui.log.combo_draw',{faction}));break;
+            case'armor_all':addLog(t('ui.log.combo_armor',{faction}));break;
+          }
+        });
+        // Apply extra effects after round结算
+        applyComboExtras(pIdx,all.signals);
+      }
+    });
+  }
   G.phase='round_result';
   G._roundResult={playerPower:pP,aiPower:aP,winner};
   render();
   showNotification(winText);
+}
+
+function applyComboExtras(playerIdx,signals){
+  if(!signals||!signals.length)return;
+  signals.forEach(sig=>{
+    const oppIdx=1-playerIdx;
+    switch(sig){
+      case'weaken_opponent':{
+        const oppBoard=G.players[oppIdx].board;
+        const rows=['infantry','cavalry','navy','strategy'];
+        let maxPower=-1,maxRow='infantry';
+        rows.forEach(r=>{
+          const p=oppBoard[r].reduce((s,c)=>s+(c?c.strength:0),0);
+          if(p>maxPower){maxPower=p;maxRow=r;}
+        });
+        oppBoard[maxRow].forEach(c=>{if(c)c.strength=Math.max(1,c.strength-1);});
+        break;
+      }
+      case'discard_opponent':{
+        const oppHand=G.players[oppIdx].hand;
+        if(oppHand.length>0){
+          const idx=Math.floor(Math.random()*oppHand.length);
+          oppHand.splice(idx,1);
+        }
+        break;
+      }
+      case'draw_card':
+        G._comboDrawBonus=G._comboDrawBonus||[0,0];
+        G._comboDrawBonus[playerIdx]=(G._comboDrawBonus[playerIdx]||0)+1;
+        break;
+      case'armor_all':{
+        const myBoard=G.players[playerIdx].board;
+        const leader=G.players[playerIdx].leader;
+        if(!leader)return;
+        ['infantry','cavalry','navy','strategy'].forEach(r=>{
+          myBoard[r].forEach(c=>{
+            if(c&&c.faction===leader.faction){
+              c.protectArmor=(c.protectArmor||0)+1;
+            }
+          });
+        });
+        break;
+      }
+    }
+  });
 }
 
 function checkGameEnd(){
@@ -1853,14 +1927,30 @@ function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
   const isMyTurn=isHotSeat?(act===playerIdx):(G.currentTurn==='player'&&isPlayer);
   const highlight=isMyTurn&&!G.players[playerIdx].passed&&G.selectedCard!==null;
       const canPlay=highlight;
+    // Compute combo bonuses for display
+    const cb=(typeof window!=='undefined'&&window.ComboEngine)?window.ComboEngine:null;
+    let _bonuses={};
+    if(cb&&!isHotSeat){
+      const oppIdx=1-playerIdx;
+      const oppBoard=G.players[oppIdx]&&G.players[oppIdx].board;
+      const myBoard=G.players[playerIdx]&&G.players[playerIdx].board;
+      const myHand=G.players[playerIdx]&&G.players[playerIdx].hand;
+      const myLeader=G.players[playerIdx]&&G.players[playerIdx].leader;
+      if(myBoard){
+        const all=cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
+        _bonuses=all.total;
+      }
+    }
     const cardsHtml=cards.length===0?'<span style="color:#B8A88A;font-size:.75em">空</span>':
       cards.map(c=>{
         const f=FACTIONS[c.faction];
         const animClass=c.uid===lastUid?(lastBy===1?' ai-play-card':' play-animation'):'';
+        const bonus=_bonuses[c.id]||0;
+        const bonusHtml=bonus>0?`<span class="bonus-num" style="color:#DAA520;font-size:.7em;font-weight:bold;margin-left:3px">+${bonus}</span>`:'';
         return`<div class="card-mini ${c.ability?'has-ability':''}${animClass}" style="perspective:600px">
           <div class="c-faction-dot" style="background:${f.color}"></div>
           <div class="c-name" title="${cn(c)}">${cn(c)}</div>
-          <div class="c-str">${c.strength}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
+          <div class="c-str">${c.strength}${bonusHtml}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
         </div>`;
       }).join('');
     const isMatch=G.selectedCard!==null&&G.selectedCard!==undefined&&G.players[playerIdx].hand[G.selectedCard]&&G.players[playerIdx].hand[G.selectedCard].row===rowType;

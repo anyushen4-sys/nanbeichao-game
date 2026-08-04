@@ -312,7 +312,11 @@
       "card_ability_e2a563": "[{card}] Ability: Recycled {card} from graveyard",
       "card_ability_dfda8c": "[{card}] Ability: Gained {n} armor",
       "card_ability_b75e60": "[{card}] Ability: Spy operation, {who} discarded {card} ({strength})",
-      "card_ability_c25433": "[{card}] Ability: Extra draw {n} cards"
+      "card_ability_c25433": "[{card}] Ability: Extra draw {n} cards",
+      "combo_weaken": "{faction} Fubing Synergy: Weaken opponent strongest row -1",
+      "combo_discard": "{faction} Power Check: Opponent discards 1 card",
+      "combo_draw": "{faction} Strategist: Draw 1 extra card next round",
+      "combo_armor": "{faction} Wu Reform: All faction cards +1 armor"
     }
   },
   "combo": {

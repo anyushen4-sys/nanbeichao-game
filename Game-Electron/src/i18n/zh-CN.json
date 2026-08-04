@@ -276,7 +276,11 @@
       "ability_row_buff": "{leader} 强化 {row} 战力 +{value}",
       "card_row_only": "{card} 只能放在 {row}",
       "fierce_attack_penalty": "{card} 猛攻扣除2点战力",
-      "mp_mulligan_start": "对手正在换牌"
+      "mp_mulligan_start": "对手正在换牌",
+      "combo_weaken": "{faction} 府兵整合：削弱对手最强行 -1",
+      "combo_discard": "{faction} 权谋制衡：对手随机弃 1 张牌",
+      "combo_draw": "{faction} 文臣运筹：下回合多抽 1 张牌",
+      "combo_armor": "{faction} 武帝改革：同阵营所有牌 +1 护甲"
     }
   },
   "combo": {
