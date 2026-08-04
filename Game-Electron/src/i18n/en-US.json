@@ -58,7 +58,8 @@
       "leader_ability": "Leader Ability",
       "ability_used": "Used",
       "opponent_playing": "Opponent playing...",
-      "opponent_turn": "Opponent's turn"
+      "opponent_turn": "Opponent's turn",
+      "opponent_side": "— Opponent side · Power {power} —"
     },
     "leader": {
       "select": "Select Leader",

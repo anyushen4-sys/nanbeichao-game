@@ -50,7 +50,16 @@
       "hand_label": "{count} 张手牌",
       "use_ability": "使用技能",
       "surrender": "认输",
-      "waiting_text": "等待对手..."
+      "waiting_text": "等待对手...",
+      "opponent_side": "— 对方阵营 · 战力 {power} —",
+      "round_of": "第 {round} / 3 局",
+      "rounds_won": "你 {p1}胜 · AI {p2}胜",
+      "your_turn": "你的回合",
+      "ai_turn": "AI思考中...",
+      "opponent_playing": "对方出牌中...",
+      "opponent_turn": "对方的回合",
+      "leader_ability": "主将技能",
+      "ability_used": "已使用"
     },
     "leader": {
       "select": "选择领袖",
@@ -262,7 +271,12 @@
       "hotseat_p1_win": "玩家1战力: {p1} vs 玩家2战力: {p2} → 玩家1胜利！",
       "hotseat_p2_win": "玩家1战力: {p1} vs 玩家2战力: {p2} → 玩家2胜利！",
       "hotseat_tie": "玩家1战力: {p1} vs 玩家2战力: {p2} → 平局！",
-      "player_no_cards": "玩家{player}无牌可出，自动放弃"
+      "player_no_cards": "玩家{player}无牌可出，自动放弃",
+      "ability_discard": "{leader} 让 {who} 弃掉 {count} 张牌",
+      "ability_row_buff": "{leader} 强化 {row} 战力 +{value}",
+      "card_row_only": "{card} 只能放在 {row}",
+      "fierce_attack_penalty": "{card} 猛攻扣除2点战力",
+      "mp_mulligan_start": "对手正在换牌"
     }
   },
   "combo": {
