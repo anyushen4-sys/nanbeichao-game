@@ -1918,17 +1918,19 @@ function onRowClick(rowType){
   console.log('[onRowClick] rowType=', rowType, 'selectedCard=', G.selectedCard, 'busy=', G._busy, 'typeof t=', typeof t);
   // Hot-seat 模式
   if(G._hsPhase==='game'){
-      if(G.selectedCard===null||G.selectedCard===undefined)return;
+      if(G.selectedCard===null||G.selectedCard===undefined){console.log('[onRowClick] RET: hs no sel');return;}
       let act=G.activePlayer;
       let c=G.players[act].hand[G.selectedCard];
-      if(!c)return;
+      if(!c){console.log('[onRowClick] RET: hs card null');return;}
+      console.log('[onRowClick] hs card', cn(c), 'row=', c.row, 'vs', rowType);
       if(c.row!==rowType){addLog(t('ui.log.card_row_only', {row: getRowName(c.row)}));return}
       hotSeatPlayCard(G.selectedCard,rowType);
       return;
   }
-  if(G.selectedCard===null||G.selectedCard===undefined)return;
+  if(G.selectedCard===null||G.selectedCard===undefined){console.log('[onRowClick] RET: no sel');return;}
   const card=G.players[0].hand[G.selectedCard];
-  if(!card)return;
+  if(!card){console.log('[onRowClick] RET: card null idx=', G.selectedCard, 'hand.length=', G.players[0].hand.length);return;}
+  console.log('[onRowClick] card', cn(card), 'id=', card.id, 'row=', card.row, 'vs rowType=', rowType, 'match=', card.row===rowType);
   // 只能放到对应行
   if(card.row!==rowType){
     addLog(t('ui.log.card_row_only', {row: getRowName(card.row)}));
@@ -2115,7 +2117,7 @@ function renderGameResult(el){
                         var f = FACTIONS[c.faction];
                         var cost = getCardCost(c.strength);
                         var rowName = getRowName(c.row);
-                        var desc = (c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
+                        var desc = (cd(c)||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
                         return '<div class="card '+(picked?'selected':'')+'" onclick="toggleMulligan(' + i + ');render()" title="'+cn(c)+' - '+cd(c)+'" ' +
                           'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">' +
                           '<div class="card-cost">' + cost + '</div>' +
@@ -3287,7 +3289,7 @@ function timeoutReconnect() {
                                 var f=FACTIONS[c.faction];
                                 var cost=getCardCost(c.strength);
                                 var rowName=getRowName(c.row);
-                                var desc=(c.desc||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
+                                var desc=(cd(c)||'')+(c.protectArmor?' 🛡'+c.protectArmor:'');
                                 return'<div class="card '+(picked?'selected':'')+'" onclick="hotSeatToggleMulligan('+i+')" title="'+cn(c)+' - '+cd(c)+'" '+
                                   'style="--faction-color:'+f.color+';--faction-glow:'+f.color+'40;cursor:pointer;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;'+(picked?'transform:translateY(-8px);':'')+'">'+
                                   '<div class="card-cost">'+cost+'</div>'+
@@ -3495,7 +3497,7 @@ function timeoutReconnect() {
             var selected=myTurn&&G.selectedCard===idx;
             var cls=selected?'selected':(!playable?'unplayable':'');
             var rowName=getRowName(card.row);
-            var desc=(card.desc||'')+(card.protectArmor?' 🛡'+card.protectArmor:'');
+            var desc=(cd(card)||'')+(card.protectArmor?' 🛡'+card.protectArmor:'');
             return'<div class="card '+cls+'" '+(myTurn?'onclick="onCardClick('+idx+')" ':'')+
               'title="'+cn(card)+' - '+rowName+'" style="'+
               '--faction-color:'+f.color+';--faction-glow:'+f.color+'40;width:96px;min-width:96px;max-width:96px;flex:0 0 96px;overflow:hidden">'+
