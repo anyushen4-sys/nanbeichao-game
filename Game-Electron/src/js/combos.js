@@ -1,11 +1,11 @@
-// combos.js — 六层叠加 Combo Bonus 引擎 V3
-// ref: spec-v2.md §Solution, ADR-0007, ADR-0008, ADR-0009
+// combos.js — 六层叠加 Combo Bonus 引擎 V4
+// V4 refactor: unified threshold=3, skip general type, dynamic sync, toast notifications
 //
 // 六层叠加 (按优先级叠加):
-//   1. 同阵营加成 (Same-Faction Buff): 只计 ID 1-50 武将牌, per-faction threshold/bonus/extra
+//   1. 同阵营加成 (Same-Faction Buff): 只计 ID 1-50 武将牌, per-faction threshold=3/bonus/extra
 //   2. 异阵营反制 (Cross-Faction Counter): 对手场上 f ≥ 3 → 我方手牌/board 的 counter_faction 牌 +X
 //   3. 领袖羁绊 (Leader Juzhongqu): 我方场上同 f 同 row 牌 ≥ count → 该 f 所有牌 +bonus_value
-//   4. 卡牌类型联动 (Card Type Synergy): 场上同 type 牌 ≥2 → 所有该 type 牌 +1 强度
+//   4. 卡牌类型联动 (Card Type Synergy): 场上同 type 牌 ≥3 → 所有该 type 牌 +1 强度 (跳过 type=general/未设置)
 //   5. 同行强化 (Row Stacking): 场上同行 (infantry/cavalry/navy/strategy) 同 faction 牌 ≥3 → 该行该 faction 牌 +1 额外
 //   6. 文人圈联动 (Scholar Circle): 场上诗人牌 + 文臣牌 总数 ≥3 → 所有诗人+文臣牌 +1
 //
@@ -35,14 +35,22 @@ window.ComboEngine = (function() {
     return m;
   }
 
-  // Layer 4: 同 type 牌 ≥2 → 所有该 type 牌 +1 强度
+  // Layer 4: 同 type 牌 ≥3 → 所有该 type 牌 +1 强度 (V4: skip 'general' + threshold 3)
   function computeTypeSynergy(board) {
     const cards = boardFlatList(board);
-    const byType = countByType(cards);
+    const byType = new Map();
+    cards.forEach(c => {
+      if (!c || typeof c !== 'object') return;
+      const t = c.type;
+      // V4: skip cards without explicit type or type='general'
+      if (!t || t === 'general') return;
+      if (!byType.has(t)) byType.set(t, []);
+      byType.get(t).push(c);
+    });
     const strength = {};
     const signals = [];
     byType.forEach((arr, t) => {
-      if (arr.length >= 2) {
+      if (arr.length >= 3) {
         arr.forEach(c => {
           strength[c.id] = (strength[c.id] || 0) + 1;
         });
@@ -95,16 +103,17 @@ window.ComboEngine = (function() {
   }
 
   // ADR-0008: Per-Faction Bonus Map — 每个阵营独立的 threshold / bonus / extra 效果
+  // V4 refactor: unified threshold=3 for all factions (was 2 for South, 4 for North)
   const FACTION_BONUS_MAP = {
-    song:    { threshold: 2, bonus: 1, extra: 'infantry_boost',    desc: '步兵精锐' },
-    qi:      { threshold: 2, bonus: 1, extra: 'draw_card',        desc: '文臣运筹' },
-    liang:   { threshold: 2, bonus: 1, extra: 'armor_boost',      desc: '佛佑护甲' },
-    chen:    { threshold: 2, bonus: 1, extra: 'navy_boost',       desc: '水军制胜' },
-    beiwei:  { threshold: 4, bonus: 2, extra: 'cavalry_boost',    desc: '铁骑冲锋' },
-    dongwei: { threshold: 4, bonus: 2, extra: 'discard_opponent', desc: '权谋制衡' },
-    xiwei:   { threshold: 4, bonus: 2, extra: 'weaken_opponent',  desc: '府兵整合' },
-    beiqi:   { threshold: 4, bonus: 2, extra: 'self_weaken',      desc: '双刃暴君' },
-    beizhou: { threshold: 4, bonus: 2, extra: 'armor_all',        desc: '武帝改革' },
+    song:    { threshold: 3, bonus: 1, extra: 'infantry_boost',    desc: '步兵精锐' },
+    qi:      { threshold: 3, bonus: 1, extra: 'draw_card',        desc: '文臣运筹' },
+    liang:   { threshold: 3, bonus: 1, extra: 'armor_boost',      desc: '佛佑护甲' },
+    chen:    { threshold: 3, bonus: 1, extra: 'navy_boost',       desc: '水军制胜' },
+    beiwei:  { threshold: 3, bonus: 2, extra: 'cavalry_boost',    desc: '铁骑冲锋' },
+    dongwei: { threshold: 3, bonus: 2, extra: 'discard_opponent', desc: '权谋制衡' },
+    xiwei:   { threshold: 3, bonus: 2, extra: 'weaken_opponent',  desc: '府兵整合' },
+    beiqi:   { threshold: 3, bonus: 2, extra: 'self_weaken',      desc: '双刃暴君' },
+    beizhou: { threshold: 3, bonus: 2, extra: 'armor_all',        desc: '武帝改革' },
   };
 
   function boardFlatList(board) {
@@ -310,6 +319,183 @@ window.ComboEngine = (function() {
     return bonus;
   }
 
+  // ── V4: 动态 combo 状态追踪 ──
+  // 跟踪当前激活的 combos, 用于检测 delta (新增/消失) 和 UI 展示
+  window.G = window.G || {};
+  let _activeCombos = {
+    same_faction: {},     // { 'qi': { count, bonus, uids:[], signal, extra } }
+    type_synergy: {},     // { 'minister': { count, bonus, uids:[], signal } }
+    row_stacking: {},     // { 'song:infantry': { ... } }
+    scholar_circle: null, // { count, bonus, uids:[], signal }
+    juzhongqu: null,      // { count, bonus, uids:[], signal }
+  };
+
+  // 快照当前 combos 状态 (深拷贝, 不带引用)
+  function _snapshotActive() {
+    return JSON.parse(JSON.stringify(_activeCombos));
+  }
+
+  // 从 faction 获取中文标签
+  function _factionLabel(faction) {
+    const names = {
+      song: '宋', qi: '齐', liang: '梁', chen: '陈',
+      beiwei: '北魏', dongwei: '东魏', xiwei: '西魏',
+      beiqi: '北齐', beizhou: '北周',
+    };
+    return names[faction] || faction;
+  }
+
+  // 重建 _activeCombos 从最新牌面状态和 signals
+  function _rebuildActiveCombos(board, leader, signals) {
+    const cards = boardFlatList(board);
+    const factionCounts = factionCount(cards);
+
+    // 清空当前追踪
+    _activeCombos.same_faction = {};
+    _activeCombos.type_synergy = {};
+    _activeCombos.row_stacking = {};
+    _activeCombos.scholar_circle = null;
+    _activeCombos.juzhongqu = null;
+
+    // Layer 1: same_faction — 从牌面 faction 计数推断
+    FACTIONS_WITH_COMBO.forEach(faction => {
+      const cfg = FACTION_BONUS_MAP[faction];
+      if (!cfg) return;
+      const n = factionCounts.get(faction) || 0;
+      if (n >= cfg.threshold) {
+        const factionCards = cards.filter(c => c.faction === faction && isNamedCard(c));
+        _activeCombos.same_faction[faction] = {
+          count: n,
+          bonus: cfg.bonus,
+          uids: factionCards.map(c => c.uid !== undefined ? c.uid : c.id),
+          extra: cfg.extra,
+          desc: cfg.desc,
+        };
+      }
+    });
+
+    // Layer 4: type_synergy — 跳过 type='general' 和未设置 type
+    const byType = new Map();
+    cards.forEach(c => {
+      if (!c || typeof c !== 'object') return;
+      const t = c.type;
+      if (!t || t === 'general') return;
+      if (!byType.has(t)) byType.set(t, []);
+      byType.get(t).push(c);
+    });
+    byType.forEach((arr, t) => {
+      if (arr.length >= 3) {
+        _activeCombos.type_synergy[t] = {
+          count: arr.length,
+          bonus: 1,
+          uids: arr.map(c => c.uid !== undefined ? c.uid : c.id),
+        };
+      }
+    });
+
+    // Layer 5: row_stacking
+    const keyMap = new Map();
+    cards.forEach(c => {
+      if (!c || typeof c !== 'object') return;
+      const f = c.faction;
+      const r = c.row;
+      if (!f || !r) return;
+      const key = f + '::' + r;
+      if (!keyMap.has(key)) keyMap.set(key, []);
+      keyMap.get(key).push(c);
+    });
+    keyMap.forEach((arr, key) => {
+      if (arr.length >= 3) {
+        _activeCombos.row_stacking[key] = {
+          count: arr.length,
+          bonus: 1,
+          uids: arr.map(c => c.uid !== undefined ? c.uid : c.id),
+          row: key.split('::')[1],
+          faction: key.split('::')[0],
+        };
+      }
+    });
+
+    // Layer 6: scholar_circle
+    const scholarCards = cards.filter(c => c && (c.type === 'poet' || c.type === 'minister'));
+    if (scholarCards.length >= 3) {
+      _activeCombos.scholar_circle = {
+        count: scholarCards.length,
+        bonus: 1,
+        uids: scholarCards.map(c => c.uid !== undefined ? c.uid : c.id),
+      };
+    }
+
+    // Layer 3: juzhongqu
+    if (leader && leader.juzhongqu) {
+      const jz = leader.juzhongqu;
+      const matchCount = cards.filter(c =>
+        c.faction === leader.faction && c.row === jz.row
+      ).length;
+      if (matchCount >= (jz.count || 2)) {
+        _activeCombos.juzhongqu = {
+          count: matchCount,
+          bonus: jz.bonus_value || 2,
+          uids: cards.filter(c => c.faction === leader.faction).map(c => c.uid !== undefined ? c.uid : c.id),
+        };
+      }
+    }
+  }
+
+  // 对比新旧 active combos, 返回新增和消失的 combos
+  function diffActiveCombos(newBonuses) {
+    const prev = _snapshotActive();
+    const added = [];
+    const removed = [];
+
+    // same_faction
+    const prevSF = prev.same_faction || {};
+    Object.keys(newBonuses.same_faction || {}).forEach(k => {
+      if (!prevSF[k]) {
+        added.push({ layer: 'same_faction', key: k, desc: prevSF[k] ? prevSF[k].desc : '' });
+      }
+    });
+    Object.keys(prevSF).forEach(k => {
+      if (!(newBonuses.same_faction || {})[k]) {
+        removed.push({ layer: 'same_faction', key: k });
+      }
+    });
+
+    // type_synergy
+    const prevTS = prev.type_synergy || {};
+    const newTS = newBonuses.type_synergy || {};
+    Object.keys(newTS).forEach(t => {
+      if (!prevTS[t]) added.push({ layer: 'type_synergy', key: t });
+    });
+    Object.keys(prevTS).forEach(t => {
+      if (!newTS[t]) removed.push({ layer: 'type_synergy', key: t });
+    });
+
+    // row_stacking
+    const prevRow = prev.row_stacking || {};
+    const newRow = newBonuses.row_stacking || {};
+    Object.keys(newRow).forEach(k => {
+      if (!prevRow[k]) added.push({ layer: 'row_stacking', key: k });
+    });
+    Object.keys(prevRow).forEach(k => {
+      if (!newRow[k]) removed.push({ layer: 'row_stacking', key: k });
+    });
+
+    // scholar_circle
+    const prevSC = prev.scholar_circle;
+    const newSC = newBonuses.scholar_circle;
+    if (!prevSC && newSC) added.push({ layer: 'scholar_circle' });
+    if (prevSC && !newSC) removed.push({ layer: 'scholar_circle' });
+
+    // juzhongqu
+    const prevJZ = prev.juzhongqu;
+    const newJZ = newBonuses.juzhongqu;
+    if (!prevJZ && newJZ) added.push({ layer: 'juzhongqu' });
+    if (prevJZ && !newJZ) removed.push({ layer: 'juzhongqu' });
+
+    return { added, removed };
+  }
+
   // 合并所有层 → 最终 per-card bonus
   function computeAllBonuses({ board, opponentBoard, hand, leader, cardIdToUid }) {
     const layer1 = computeFactionBonus(board);  // { strength, armor, signals }
@@ -345,7 +531,7 @@ window.ComboEngine = (function() {
     layer6.signals.forEach(s => signalSet.add(s));
     const allSignals = Array.from(signalSet);
 
-    return {
+    const result = {
       same_faction: layer1.strength,  // 向后兼容: { cardId → strength }
       anti_faction: layer2,
       juzhongqu: layer3,
@@ -356,6 +542,11 @@ window.ComboEngine = (function() {
       armor: mergedArmor,              // V2: { cardId → armor }
       signals: allSignals,             // V2: game-level signals
     };
+
+    // V4: 重建 active combos 追踪状态
+    _rebuildActiveCombos(board, leader, allSignals);
+
+    return result;
   }
 
   return {
@@ -372,5 +563,8 @@ window.ComboEngine = (function() {
     NAMED_CARD_IDS,
     FACTION_BONUS_MAP,
     isNamedCard,
+    // V4: 暴露动态同步
+    getActiveCombos: () => _activeCombos,
+    diffActiveCombos,
   };
 })();
