@@ -746,12 +746,19 @@ function checkComboDelta(){
   if(!myBoard) return;
   const all=cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
   // build nested structure for diff
+  // IMPORTANT: only include layers that are ACTUALLY active. Empty objects are truthy in JS
+  // and would cause diffActiveCombos to falsely fire "added" toasts.
+  // For each layer, check the underlying signal/marker:
+  // - same_faction / type_synergy / row_stacking: strength has entries?
+  // - scholar_circle: signals array has entries?
+  // - juzhongqu: result has entries?
+  const hasEntries = (o) => o && typeof o === 'object' && Object.keys(o).length > 0;
   const nested={
-    same_faction:all.same_faction||{},
-    type_synergy:all.type_synergy||{},
-    row_stacking:all.row_stacking||{},
-    scholar_circle:all.scholar_circle||null,
-    juzhongqu:all.juzhongqu||null,
+    same_faction: hasEntries(all.same_faction) ? all.same_faction : null,
+    type_synergy: hasEntries(all.type_synergy) ? all.type_synergy : null,
+    row_stacking: hasEntries(all.row_stacking) ? all.row_stacking : null,
+    scholar_circle: (all.scholar_circle && all.scholar_circle.signals && all.scholar_circle.signals.length > 0) ? all.scholar_circle : null,
+    juzhongqu: hasEntries(all.juzhongqu) ? all.juzhongqu : null,
   };
   const diff=cb.diffActiveCombos(nested);
   if(diff.added && diff.added.length>0){
