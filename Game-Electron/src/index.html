@@ -702,6 +702,51 @@ function drawCards(playerIdx,count){
   for(let i=0;i<count&&realHand.length<10&&deck.length>0;i++) realHand.push(deck.shift());
 }
 
+// V4: Combo 触发 toast 通知
+const _comboToastQueue=[];
+function showComboToast(title,desc,dur=2500){
+  const el=document.createElement('div');
+  el.className='combo-toast';
+  el.innerHTML=`<div class="combo-toast-title">${title}</div><div class="combo-toast-desc">${desc}</div>`;
+  Object.assign(el.style,{
+    position:'fixed',top:'80px',left:'50%',transform:'translateX(-50%)',
+    background:'linear-gradient(135deg, rgba(218,165,32,0.95), rgba(184,134,11,0.95))',
+    color:'#1a1a1a',padding:'16px 32px',borderRadius:'8px',
+    border:'2px solid #DAA520',boxShadow:'0 4px 20px rgba(218,165,32,0.6)',
+    zIndex:'1100',fontSize:'16px',fontWeight:'bold',textAlign:'center',
+    pointerEvents:'none',
+    animation:'combo-toast-slide 2.5s ease-out forwards'
+  });
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),dur+200);
+}
+// V4: 触发 combo 触发动画 (一次性) - 给最近触发 combo 的 card-mini 加 class
+const _comboActiveCards=new Set();
+function flashComboCards(cardIds){
+  cardIds.forEach(id=>_comboActiveCards.add(id));
+  // Trigger re-render
+  if(typeof render==='function') render();
+  // Clear after animation
+  setTimeout(()=>{
+    cardIds.forEach(id=>_comboActiveCards.delete(id));
+    if(typeof render==='function') render();
+  },900);
+}
+// V4: 检测 combo 增量, 触发 toast + flash
+function checkComboDelta(bonuses){
+  const cb=window.ComboEngine;
+  if(!cb || !cb.diffActiveCombos) return;
+  const diff=cb.diffActiveCombos(bonuses);
+  if(diff.added && diff.added.length>0){
+    diff.added.forEach(c=>{
+      const desc=c.faction?`${c.faction} +${c.bonus||1}`:`+${c.bonus||1}`;
+      showComboToast(c.title,desc);
+      // Flash affected cards
+      if(c.cardIds && c.cardIds.length>0) flashComboCards(c.cardIds);
+    });
+  }
+}
+
 function getRowPower(cards,playerIdx){
   const buffs=G.globalBuffs;
   const armor=playerIdx===0?buffs.playerArmor:buffs.aiArmor;
@@ -718,6 +763,8 @@ function getRowPower(cards,playerIdx){
     if(myBoard){
       const all = cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
       _bonuses = all.total;
+      // V4: detect newly triggered combos and show toast + flash
+      checkComboDelta(_bonuses);
     }
   }
   return cards.reduce((s,c)=>s+(c?Math.max(1,c.strength+armor+Math.floor(unify*0.5)+(_bonuses[c.id]||0)):0),0);
@@ -1993,12 +2040,14 @@ function renderRow(rowType,cards,isPlayer,lastUid,lastBy){
       }
     }
     const cardsHtml=cards.length===0?'<span style="color:#B8A88A;font-size:.75em">空</span>':
-      cards.map(c=>{
-        const f=FACTIONS[c.faction];
-        const animClass=c.uid===lastUid?(lastBy===1?' ai-play-card':' play-animation'):'';
-        const bonus=_bonuses[c.id]||0;
-        const bonusHtml=bonus>0?`<span class="bonus-num" style="color:#DAA520;font-size:.7em;font-weight:bold;margin-left:3px">+${bonus}</span>`:'';
-        return`<div class="card-mini ${c.ability?'has-ability':''}${animClass}" style="perspective:600px">
+    cards.map(c=>{
+      const f=FACTIONS[c.faction];
+      const animClass=c.uid===lastUid?(lastBy===1?' ai-play-card':' play-animation'):'';
+      // V4: highlight cards that just triggered a combo
+      const comboClass=(_comboActiveCards&&_comboActiveCards.has(c.id))?' combo-active':'';
+      const bonus=_bonuses[c.id]||0;
+      const bonusHtml=bonus>0?`<span class="bonus-num" style="color:#DAA520;font-size:.7em;font-weight:bold;margin-left:3px">+${bonus}</span>`:'';
+        return`<div class="card-mini ${c.ability?'has-ability':''}${animClass}${comboClass}" style="perspective:600px">
           <div class="c-faction-dot" style="background:${f.color}"></div>
           <div class="c-name" title="${cn(c)}">${cn(c)}</div>
           <div class="c-str">${c.strength}${bonusHtml}${c.protectArmor?`<span style="color:#4A90D9;font-size:.7em">🛡${c.protectArmor}</span>`:''}</div>
@@ -3812,6 +3861,21 @@ document.addEventListener('DOMContentLoaded',()=>{
 .combo-faction-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .combo-guide-text{color:#C4A882;font-size:12px;line-height:1.4}
 .combo-guide-hint{color:#8B7355;font-size:11px;text-align:center;margin-top:8px;font-style:italic}
+/* V4: Combo trigger toast + visual effect */
+.combo-toast-title{font-size:18px;font-weight:bold}
+.combo-toast-desc{font-size:14px;opacity:0.85;margin-top:4px}
+@keyframes combo-toast-slide{
+0%{transform:translateX(-50%) translateY(-30px);opacity:0}
+15%{transform:translateX(-50%) translateY(0);opacity:1}
+85%{transform:translateX(-50%) translateY(0);opacity:1}
+100%{transform:translateX(-50%) translateY(-10px);opacity:0}
+}
+.card-mini.combo-active{animation:combo-glow 0.8s ease-out}
+@keyframes combo-glow{
+0%{box-shadow:0 0 0 rgba(218,165,32,0)}
+30%{box-shadow:0 0 16px rgba(218,165,32,0.9),inset 0 0 8px rgba(218,165,32,0.4)}
+100%{box-shadow:0 0 8px rgba(218,165,32,0.4)}
+}
 </style>
 </body>
 </html>
