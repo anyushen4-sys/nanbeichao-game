@@ -940,6 +940,7 @@ function triggerAbility(card,playerIdx){
 
 function triggerAbilityWithFlash(card,playerIdx,row){
   triggerAbility(card,playerIdx);
+  render();
   const board=getBoard(playerIdx);
   const cards=board[row];
   const lastCard=cards[cards.length-1];
