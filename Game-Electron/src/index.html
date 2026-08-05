@@ -733,16 +733,42 @@ function flashComboCards(cardIds){
   },900);
 }
 // V4: 检测 combo 增量, 触发 toast + flash
-function checkComboDelta(bonuses){
+function checkComboDelta(){
   const cb=window.ComboEngine;
-  if(!cb || !cb.diffActiveCombos) return;
-  const diff=cb.diffActiveCombos(bonuses);
+  if(!cb || !cb.diffActiveCombos || !cb.computeAllBonuses) return;
+  // 从 board 实时计算 nested bonus 结构（diffActiveCombos 需要的格式）
+  const oppIdx=1-(G.currentPlayerIdx||0);
+  const playerIdx=G.currentPlayerIdx||0;
+  const oppBoard=G.players[oppIdx]&&G.players[oppIdx].board;
+  const myBoard=G.players[playerIdx]&&G.players[playerIdx].board;
+  const myHand=G.players[playerIdx]&&G.players[playerIdx].hand;
+  const myLeader=G.players[playerIdx]&&G.players[playerIdx].leader;
+  if(!myBoard) return;
+  const all=cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
+  // build nested structure for diff
+  const nested={
+    same_faction:all.same_faction||{},
+    type_synergy:all.type_synergy||{},
+    row_stacking:all.row_stacking||{},
+    scholar_circle:all.scholar_circle||null,
+    juzhongqu:all.juzhongqu||null,
+  };
+  const diff=cb.diffActiveCombos(nested);
   if(diff.added && diff.added.length>0){
     diff.added.forEach(c=>{
-      const desc=c.faction?`${c.faction} +${c.bonus||1}`:`+${c.bonus||1}`;
-      showComboToast(c.title,desc);
-      // Flash affected cards
-      if(c.cardIds && c.cardIds.length>0) flashComboCards(c.cardIds);
+      const labelMap={
+        same_faction:c.key||'阵营',
+        type_synergy:c.key||'类型',
+        row_stacking:`${c.faction||''}·${c.row||''}`,
+        scholar_circle:'文臣诗人',
+        juzhongqu:'领袖羁绊',
+      };
+      const desc=labelMap[c.layer]||'组合技';
+      const title=`⚔ 触发${c.layer==='same_faction'?'同阵营加成':c.layer==='type_synergy'?'卡牌类型联动':c.layer==='row_stacking'?'同行强化':c.layer==='scholar_circle'?'文人圈联动':'领袖羁绊'}`;
+      showComboToast(title,`${desc} +${c.bonus||1}`);
+      // Flash affected cards - need to find card ids from the active combos
+      if(c.uids && c.uids.length>0) flashComboCards(c.uids);
+      else if(c.cardIds && c.cardIds.length>0) flashComboCards(c.cardIds);
     });
   }
 }
@@ -764,7 +790,7 @@ function getRowPower(cards,playerIdx){
       const all = cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
       _bonuses = all.total;
       // V4: detect newly triggered combos and show toast + flash
-      checkComboDelta(_bonuses);
+      checkComboDelta();
     }
   }
   return cards.reduce((s,c)=>s+(c?Math.max(1,c.strength+armor+Math.floor(unify*0.5)+(_bonuses[c.id]||0)):0),0);
