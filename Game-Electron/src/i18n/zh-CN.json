@@ -278,7 +278,7 @@
       "hotseat_p2_win": "玩家1战力: {p1} vs 玩家2战力: {p2} → 玩家2胜利！",
       "hotseat_tie": "玩家1战力: {p1} vs 玩家2战力: {p2} → 平局！",
       "player_no_cards": "玩家{player}无牌可出，自动放弃",
-      "ability_discard": "{leader} 让 {who} 弃掉 {count} 张牌",
+      "ability_discard": "{leader} 让 {who} 弃掉 {card} ({count} 张牌)",
       "ability_row_buff": "{leader} 强化 {row} 战力 +{value}",
       "card_row_only": "{card} 只能放在 {row}",
       "fierce_attack_penalty": "{card} 猛攻扣除2点战力",
@@ -295,8 +295,7 @@
   "combo": {
     "juzhongqu": {
       "label": "聚众曲",
-      "desc": "聚众曲：{faction}{row} ≥{count} → 全{faction} +{value}",
-      "undefined": "未定义"
+      "desc": "聚众曲：{faction}{row} ≥{count} → 全{faction} +{value}"
     },
     "sameFaction": {
       "buff": "+{value}",

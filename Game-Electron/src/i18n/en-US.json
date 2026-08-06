@@ -212,7 +212,7 @@
       "player1_hand": "Player 1's hand",
       "opponent_turn": "Opponent's turn",
       "no_hand_cards": "No cards",
-      "player2_hand": "Player 2's hand",
+      "player2_hand": "Player 2 hand ({count} cards)",
       "pass_round": "Pass Round",
       "draw_round": "Draw!",
       "player_label": "Player {n}",
@@ -257,7 +257,7 @@
       "ai_pass_short": "AI passed",
       "guest_pass": "Guest passed this round",
       "host_pass": "Passed this round",
-      "ability_discard": "[{leader}] Ability: {who} discarded {card}",
+      "ability_discard": "{leader} made {who} discard {count} {card}",
       "ability_row_buff": "[{leader}] Ability: {row} row +{value}",
       "fierce_attack_penalty": "{card} fierce attack backfire, power -2",
       "played_card": "{player} played {card}",
@@ -274,7 +274,7 @@
       "leader_ability_all_buff": "[{leader}] Ability: all units +{value}",
       "leader_ability_best_worst": "[{leader}] Ability: {bestRow} row +{value}, {worstRow} row -1",
       "leader_ability_hand_buff": "[{leader}] Ability: hand {count} cards +2",
-      "card_row_only": "This card can only go in {row}",
+      "card_row_only": "{card} can only be placed in {row}",
       "mp_mulligan_start": "═══ Multiplayer · Mulligan Phase ═══",
       "cards_swapped": "Swapped {count} cards",
       "battle_start": "═══ Battle Start ═══",
@@ -331,8 +331,7 @@
   "combo": {
     "juzhongqu": {
       "label": "Juzhongqu",
-      "desc": "Juzhongqu: {faction}{row} ≥{count} → all {faction} +{value}",
-      "undefined": "undefined"
+      "desc": "Juzhongqu: {faction}{row} ≥{count} → all {faction} +{value}"
     },
     "sameFaction": {
       "buff": "+{value}",
