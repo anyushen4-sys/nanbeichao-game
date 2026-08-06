@@ -1686,7 +1686,7 @@ function renderMenu(el){
 
 function renderTutorial(el){
   el.innerHTML=`
-  <div class="tutorial-overlay" onclick="event.target===this&&(G.phase='leader_select';render())">
+  <div class="tutorial-overlay" onclick="event.target===this&&(G.phase='leader_select',render())">
     <div class="tutorial-card">
       <div class="tut-title">${t('ui.tutorial.title')}</div>
       <div class="tut-subtitle">${t('ui.tutorial.subtitle')}</div>
