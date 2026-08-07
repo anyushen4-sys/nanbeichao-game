@@ -326,3 +326,58 @@ describe('V4: common cards (id > 50) excluded from combos', () => {
     assert.strictEqual(result.signals.length, 1);
   });
 });
+
+// ===== Test 10: diff.added items include count, bonus, uids =====
+describe('V4: diff.added items have full data for rich toast', () => {
+  it('same_faction added has count, bonus, uids', () => {
+    cb.resetNotifiedCombos();
+    const board = mkBoard(
+      NAMED(7, 'qi', 'infantry'),
+      NAMED(9, 'qi', 'infantry'),
+      NAMED(10, 'qi', 'cavalry')
+    );
+    cb.computeAllBonuses({ board, hand: [], leader: null });
+    const diff = cb.diffActiveCombos(cb.getActiveCombos());
+    const sf = diff.added.find(c => c.layer === 'same_faction');
+    assert.ok(sf, 'same_faction should be in added');
+    assert.strictEqual(sf.key, 'qi', 'key should be faction name');
+    assert.strictEqual(sf.count, 3, 'count should be 3 qi cards');
+    assert.strictEqual(sf.bonus, 1, 'qi bonus is 1');
+    assert.ok(Array.isArray(sf.uids), 'uids should be array');
+    assert.strictEqual(sf.uids.length, 3, 'uids should have 3 entries');
+  });
+
+  it('row_stacking added has count, bonus, uids, faction, row', () => {
+    cb.resetNotifiedCombos();
+    const board = mkBoard(
+      NAMED(7, 'qi', 'infantry'),
+      NAMED(9, 'qi', 'infantry'),
+      NAMED(10, 'qi', 'infantry')
+    );
+    cb.computeAllBonuses({ board, hand: [], leader: null });
+    const diff = cb.diffActiveCombos(cb.getActiveCombos());
+    const rs = diff.added.find(c => c.layer === 'row_stacking');
+    assert.ok(rs);
+    assert.strictEqual(rs.faction, 'qi');
+    assert.strictEqual(rs.row, 'infantry');
+    assert.strictEqual(rs.count, 3);
+    assert.strictEqual(rs.bonus, 1);
+    assert.strictEqual(rs.uids.length, 3);
+  });
+
+  it('scholar_circle added has count, bonus, uids', () => {
+    cb.resetNotifiedCombos();
+    const board = mkBoard(
+      MINISTER(56, 'song', 'infantry'),
+      MINISTER(57, 'song', 'infantry'),
+      POET(61, 'song', 'infantry')
+    );
+    cb.computeAllBonuses({ board, hand: [], leader: null });
+    const diff = cb.diffActiveCombos(cb.getActiveCombos());
+    const sc = diff.added.find(c => c.layer === 'scholar_circle');
+    assert.ok(sc, 'scholar_circle should be in added');
+    assert.strictEqual(sc.count, 3);
+    assert.strictEqual(sc.bonus, 1);
+    assert.strictEqual(sc.uids.length, 3);
+  });
+});

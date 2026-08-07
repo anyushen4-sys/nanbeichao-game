@@ -704,18 +704,19 @@ function drawCards(playerIdx,count){
 
 // V4: Combo 触发 toast 通知
 const _comboToastQueue=[];
-function showComboToast(title,desc,dur=2500){
+function showComboToast(title,subtitle,desc,dur=2800){
   const el=document.createElement('div');
   el.className='combo-toast';
-  el.innerHTML=`<div class="combo-toast-title">${title}</div><div class="combo-toast-desc">${desc}</div>`;
+  el.innerHTML=`<div class="combo-toast-title">${title}</div><div class="combo-toast-subtitle">${subtitle}</div><div class="combo-toast-desc">${desc}</div>`;
   Object.assign(el.style,{
     position:'fixed',top:'80px',left:'50%',transform:'translateX(-50%)',
     background:'linear-gradient(135deg, rgba(218,165,32,0.95), rgba(184,134,11,0.95))',
-    color:'#1a1a1a',padding:'16px 32px',borderRadius:'8px',
+    color:'#1a1a1a',padding:'14px 28px',borderRadius:'8px',
     border:'2px solid #DAA520',boxShadow:'0 4px 20px rgba(218,165,32,0.6)',
     zIndex:'1100',fontSize:'16px',fontWeight:'bold',textAlign:'center',
     pointerEvents:'none',
-    animation:'combo-toast-slide 2.5s ease-out forwards'
+    animation:'combo-toast-slide 2.8s ease-out forwards',
+    minWidth:'280px',maxWidth:'420px'
   });
   document.body.appendChild(el);
   setTimeout(()=>el.remove(),dur+200);
@@ -743,19 +744,40 @@ function checkComboDelta(){
   const diff=cb.diffActiveCombos(active);
   if(diff.added && diff.added.length>0){
     diff.added.forEach(c=>{
-      const labelMap={
-        same_faction:c.key||'阵营',
-
-        row_stacking:`${c.faction||''}·${c.row||''}`,
-        scholar_circle:'文臣诗人',
+      // 构造详细 toast: title + scope (faction/row/type) + effect + count
+      const nameMap={
+        same_faction:'同阵营加成',
+        row_stacking:'同行强化',
+        scholar_circle:'文人圈联动',
         juzhongqu:'领袖羁绊',
       };
-      const desc=labelMap[c.layer]||'组合技';
-      const title=`⚔ 触发${c.layer==='same_faction'?'同阵营加成':c.layer==='row_stacking'?'同行强化':c.layer==='scholar_circle'?'文人圈联动':'领袖羁绊'}`;
-      showComboToast(title,`${desc} +${c.bonus||1}`);
-      // Flash affected cards - need to find card ids from the active combos
+      const comboName = nameMap[c.layer] || '组合技';
+      // scope: 显示触发条件 (faction + row + count)
+      let scope='';
+      let effectDesc='';
+      let cardCount=0;
+      if(c.layer==='same_faction'){
+        scope = `${c.key || ''}阵营 × ${c.count || '?'} 张`;
+        effectDesc = `全员 +${c.bonus||1}`;
+        cardCount = (c.uids || []).length || (c.count || 0);
+      } else if(c.layer==='row_stacking'){
+        scope = `${c.faction||''}·${c.row||''} × ${c.count || '?'} 张`;
+        effectDesc = `该行 +${c.bonus||1}`;
+        cardCount = (c.uids || []).length;
+      } else if(c.layer==='scholar_circle'){
+        scope = `poet + minister × ${c.count || '?'} 张`;
+        effectDesc = `文人 +${c.bonus||1}`;
+        cardCount = (c.uids || []).length;
+      } else if(c.layer==='juzhongqu'){
+        scope = `领袖羁绊 ${c.row||''} × ${c.count || '?'} 张`;
+        effectDesc = `同阵营 +${c.bonus||1}`;
+        cardCount = (c.uids || []).length;
+      }
+      const title=`⚔ ${comboName}`;
+      const desc = `${effectDesc} → 影响 ${cardCount} 张牌`;
+      showComboToast(title, scope, desc);
+      // Flash affected cards
       if(c.uids && c.uids.length>0) flashComboCards(c.uids);
-      else if(c.cardIds && c.cardIds.length>0) flashComboCards(c.cardIds);
     });
   }
 }
@@ -3873,8 +3895,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 .combo-guide-text{color:#C4A882;font-size:12px;line-height:1.4}
 .combo-guide-hint{color:#8B7355;font-size:11px;text-align:center;margin-top:8px;font-style:italic}
 /* V4: Combo trigger toast + visual effect */
-.combo-toast-title{font-size:18px;font-weight:bold}
-.combo-toast-desc{font-size:14px;opacity:0.85;margin-top:4px}
+.combo-toast-title{font-size:18px;font-weight:bold;margin-bottom:2px}
+.combo-toast-subtitle{font-size:14px;opacity:0.95;background:rgba(0,0,0,0.15);padding:2px 8px;border-radius:4px;display:inline-block;margin-top:2px}
+.combo-toast-desc{font-size:13px;opacity:0.85;margin-top:6px}
 @keyframes combo-toast-slide{
 0%{transform:translateX(-50%) translateY(-30px);opacity:0}
 15%{transform:translateX(-50%) translateY(0);opacity:1}

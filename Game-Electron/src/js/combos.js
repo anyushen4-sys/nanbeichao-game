@@ -391,6 +391,7 @@ window.ComboEngine = (function() {
         count: scholarCards.length,
         bonus: 1,
         uids: scholarCards.map(c => c.uid !== undefined ? c.uid : c.id),
+        signals: ['combo_scholar_circle'],
       };
     }
 
@@ -421,7 +422,8 @@ window.ComboEngine = (function() {
     Object.keys(newBonuses.same_faction || {}).forEach(k => {
       const nk = _notifiedKey('same_faction', k);
       if (!prevSF[k] && !_notifiedCombos.has(nk)) {
-        added.push({ layer: 'same_faction', key: k, desc: prevSF[k] ? prevSF[k].desc : '' });
+        const data = newBonuses.same_faction[k] || {};
+        added.push({ layer: 'same_faction', key: k, count: data.count, bonus: data.bonus, uids: data.uids });
         _notifiedCombos.add(nk);
       }
     });
@@ -438,7 +440,8 @@ window.ComboEngine = (function() {
     Object.keys(newRow).forEach(k => {
       const nk = _notifiedKey('row_stacking', k);
       if (!prevRow[k] && !_notifiedCombos.has(nk)) {
-        added.push({ layer: 'row_stacking', key: k, faction: k.split('::')[0], row: k.split('::')[1] });
+        const data = newBonuses.row_stacking[k] || {};
+        added.push({ layer: 'row_stacking', key: k, faction: k.split('::')[0], row: k.split('::')[1], count: data.count, bonus: data.bonus, uids: data.uids });
         _notifiedCombos.add(nk);
       }
     });
@@ -449,11 +452,11 @@ window.ComboEngine = (function() {
       }
     });
 
-    // scholar_circle (signals array indicates actual trigger; empty {} = inactive)
+    // scholar_circle: uids.length > 0 indicates active
     const prevSC = prev.scholar_circle;
-    const newSC = newBonuses.scholar_circle && newBonuses.scholar_circle.signals && newBonuses.scholar_circle.signals.length > 0 ? newBonuses.scholar_circle : null;
+    const newSC = newBonuses.scholar_circle && newBonuses.scholar_circle.uids && newBonuses.scholar_circle.uids.length > 0 ? newBonuses.scholar_circle : null;
     if (!prevSC && newSC && !_notifiedCombos.has(_notifiedKey('scholar_circle'))) {
-      added.push({ layer: 'scholar_circle' });
+      added.push({ layer: 'scholar_circle', count: newSC.count, bonus: newSC.bonus, uids: newSC.uids });
       _notifiedCombos.add(_notifiedKey('scholar_circle'));
     }
     if (prevSC && !newSC) {
@@ -465,7 +468,7 @@ window.ComboEngine = (function() {
     const prevJZ = prev.juzhongqu;
     const newJZ = newBonuses.juzhongqu && Object.keys(newBonuses.juzhongqu).length > 0 ? newBonuses.juzhongqu : null;
     if (!prevJZ && newJZ && !_notifiedCombos.has(_notifiedKey('juzhongqu'))) {
-      added.push({ layer: 'juzhongqu' });
+      added.push({ layer: 'juzhongqu', count: newJZ.count, bonus: newJZ.bonus, uids: newJZ.uids });
       _notifiedCombos.add(_notifiedKey('juzhongqu'));
     }
     if (prevJZ && !newJZ) {
