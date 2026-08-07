@@ -563,7 +563,7 @@ const CARDS_DATA=[
 {id:55,name:'慕容绍宗',name_en:'Murong Shaozong',faction:'dongwei',strength:5,row:'cavalry',ability:'counter_faction:2',desc:'东魏柱石，反制名将',desc_en:'Eastern Wei Pillar, counter specialist'},
 {id:56,name:'王导',name_en:'Wang Dao',faction:'song',strength:3,row:'strategy',ability:'draw:1',type:'minister',desc:'江左管仲，辅佐东晋',desc_en:'Prime Minister of Jiangzuo, Eastern Jin statesman'},
 {id:57,name:'沈约',name_en:'Shen Yue',faction:'liang',strength:4,row:'strategy',ability:'draw:1',type:'minister',desc:'史学家，四声说创立者',desc_en:'Historian, founder of Four Tones theory'},
-{id:58,name:'苏绰',name_en:'Su Chuo',faction:'xiwei',strength:3,row:'strategy',ability:'draw:1',type:'minister',desc:'六条诏书，宇文泰首席谋士',desc_en:'Six Edicts, Yuwen Tai\'s chief strategist'},
+{id:58,name:'苏绰',name_en:'Su Chuo',faction:'xiwei',strength:3,row:'strategy',ability:'command:1',type:'minister',desc:'六条诏书，宇文泰首席谋士',desc_en:'Six Edicts, Yuwen Tai\'s chief strategist'},
 {id:59,name:'高澄',name_en:'Gao Cheng',faction:'dongwei',strength:4,row:'strategy',ability:'discard:1',type:'minister',desc:'高欢长子，权谋制衡',desc_en:'Gao Huan\'s son, political mastermind'},
 {id:60,name:'魏收',name_en:'Wei Shou',faction:'beiqi',strength:3,row:'strategy',ability:'draw:1',type:'minister',desc:'《魏书》作者，史笔如铁',desc_en:'Author of Book of Wei, incisive historian'},
 {id:61,name:'谢灵运',name_en:'Xie Lingyun',faction:'song',strength:5,row:'cavalry',ability:'draw:1',type:'poet',desc:'山水诗派鼻祖，元嘉三大家',desc_en:'Founder of landscape poetry, Yuanjia master'},
@@ -574,7 +574,7 @@ const CARDS_DATA=[
 {id:66,name:'祖冲之',name_en:'Zu Chongzhi',faction:'song',strength:3,row:'strategy',ability:'draw:1',type:'industry',desc:'数学家，《大明历》，圆周率',desc_en:'Mathematician, Da Ming Calendar, pi constant'},
 {id:67,name:'陶弘景',name_en:'Tao Hongjing',faction:'liang',strength:2,row:'navy',ability:'gain_provisions:1',type:'industry',desc:'山中宰相，道士医者',desc_en:'Recluse minister, Daoist physician'},
 {id:68,name:'郦道元',name_en:'Li Daoyuan',faction:'beiwei',strength:3,row:'infantry',ability:'boost_row:1',type:'industry',desc:'《水经注》作者，地理学家',desc_en:'Author of Commentary on the Water Classic'},
-{id:69,name:'贾思勰',name_en:'Jia Sixie',faction:'beiqi',strength:2,row:'infantry',ability:'draw:1',type:'industry',desc:'《齐民要术》，农学家',desc_en:'Author of Qimin Yaoshu, agricultural encyclopedia'},
+{id:69,name:'贾思勰',name_en:'Jia Sixie',faction:'beiqi',strength:2,row:'infantry',ability:'gain_provisions:1',type:'industry',desc:'《齐民要术》，农学家',desc_en:'Author of Qimin Yaoshu, agricultural encyclopedia'},
 {id:70,name:'顾野王',name_en:'Gu Yewang',faction:'chen',strength:2,row:'strategy',ability:'draw:1',type:'industry',desc:'《玉篇》作者，文字学家',desc_en:'Author of Yupian, philologist'},
 {id:71,name:'慧远',name_en:'Hui Yuan',faction:'liang',strength:3,row:'strategy',ability:'shield:1',type:'monk',desc:'净土宗初祖，庐山白莲社',desc_en:'Founder of Pure Land sect, Lushan society'},
 {id:72,name:'昙曜',name_en:'Tan Yao',faction:'beiwei',strength:4,row:'infantry',ability:'boost_row:1',type:'monk',desc:'云冈石窟主持，佛教艺术',desc_en:'Master of Yungang Grottoes'},
@@ -735,43 +735,23 @@ function flashComboCards(cardIds){
 // V4: 检测 combo 增量, 触发 toast + flash
 function checkComboDelta(){
   const cb=window.ComboEngine;
-  if(!cb || !cb.diffActiveCombos || !cb.computeAllBonuses) return;
-  // 从 board 实时计算 nested bonus 结构（diffActiveCombos 需要的格式）
-  const oppIdx=1-(G.currentPlayerIdx||0);
-  const playerIdx=G.currentPlayerIdx||0;
-  const oppBoard=G.players[oppIdx]&&G.players[oppIdx].board;
-  const myBoard=G.players[playerIdx]&&G.players[playerIdx].board;
-  const myHand=G.players[playerIdx]&&G.players[playerIdx].hand;
-  const myLeader=G.players[playerIdx]&&G.players[playerIdx].leader;
-  if(!myBoard) return;
-  const all=cb.computeAllBonuses({board:myBoard,opponentBoard:oppBoard,hand:myHand,leader:myLeader});
-  // build nested structure for diff
-  // IMPORTANT: only include layers that are ACTUALLY active. Empty objects are truthy in JS
-  // and would cause diffActiveCombos to falsely fire "added" toasts.
-  // For each layer, check the underlying signal/marker:
-  // - same_faction / type_synergy / row_stacking: strength has entries?
-  // - scholar_circle: signals array has entries?
-  // - juzhongqu: result has entries?
-  const hasEntries = (o) => o && typeof o === 'object' && Object.keys(o).length > 0;
-  const nested={
-    same_faction: hasEntries(all.same_faction) ? all.same_faction : null,
-    type_synergy: hasEntries(all.type_synergy) ? all.type_synergy : null,
-    row_stacking: hasEntries(all.row_stacking) ? all.row_stacking : null,
-    scholar_circle: (all.scholar_circle && all.scholar_circle.signals && all.scholar_circle.signals.length > 0) ? all.scholar_circle : null,
-    juzhongqu: hasEntries(all.juzhongqu) ? all.juzhongqu : null,
-  };
-  const diff=cb.diffActiveCombos(nested);
+  if(!cb || !cb.diffActiveCombos || !cb.getActiveCombos) return;
+  // 使用 _activeCombos 的最新状态 (已经 rebuilt by computeAllBonuses)
+  // nested 结构: { same_faction:{faction:{...}}, type_synergy:{type:{...}}, ... }
+  // key shapes: same_faction keyed by faction, type_synergy by type, row_stacking by 'f::r'
+  const active=cb.getActiveCombos();
+  const diff=cb.diffActiveCombos(active);
   if(diff.added && diff.added.length>0){
     diff.added.forEach(c=>{
       const labelMap={
         same_faction:c.key||'阵营',
-        type_synergy:c.key||'类型',
+
         row_stacking:`${c.faction||''}·${c.row||''}`,
         scholar_circle:'文臣诗人',
         juzhongqu:'领袖羁绊',
       };
       const desc=labelMap[c.layer]||'组合技';
-      const title=`⚔ 触发${c.layer==='same_faction'?'同阵营加成':c.layer==='type_synergy'?'卡牌类型联动':c.layer==='row_stacking'?'同行强化':c.layer==='scholar_circle'?'文人圈联动':'领袖羁绊'}`;
+      const title=`⚔ 触发${c.layer==='same_faction'?'同阵营加成':c.layer==='row_stacking'?'同行强化':c.layer==='scholar_circle'?'文人圈联动':'领袖羁绊'}`;
       showComboToast(title,`${desc} +${c.bonus||1}`);
       // Flash affected cards - need to find card ids from the active combos
       if(c.uids && c.uids.length>0) flashComboCards(c.uids);
@@ -1091,6 +1071,8 @@ function startRound(){
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
   G.graveyard=[];
   G.logs=[];
+  // 新回合: 重置 combo toast 通知标记 (允许重新触发)
+  if(window.ComboEngine && ComboEngine.resetNotifiedCombos) ComboEngine.resetNotifiedCombos();
   // 第1局不自动抽牌（换牌阶段已经处理）
   const drawCount=G.round<=1?0:4;
   const extraDraw=(G._comboDrawBonus&&G._comboDrawBonus[0])||0;
@@ -1708,21 +1690,17 @@ function renderTutorial(el){
           <span class="combo-guide-text"><b>${t('ui.tutorial.combo_counter')}：</b>${t('ui.tutorial.combo_counter_desc')}</span>
         </div>
         <div class="combo-guide-row">
-          <span class="combo-faction-dot" style="background:#DAA520"></span>
-          <span class="combo-guide-text"><b>${t('ui.tutorial.combo_juzhongqu')}：</b>${t('ui.tutorial.combo_juzhongqu_desc')}</span>
-        </div>
-        <div class="combo-guide-row">
-          <span class="combo-faction-dot" style="background:#9B59B6"></span>
-          <span class="combo-guide-text"><b>${t('ui.tutorial.combo_type_synergy')}：</b>${t('ui.tutorial.combo_type_synergy_desc')}</span>
-        </div>
-        <div class="combo-guide-row">
-          <span class="combo-faction-dot" style="background:#1ABC9C"></span>
-          <span class="combo-guide-text"><b>${t('ui.tutorial.combo_row_stacking')}：</b>${t('ui.tutorial.combo_row_stacking_desc')}</span>
-        </div>
-        <div class="combo-guide-row">
-          <span class="combo-faction-dot" style="background:#E67E22"></span>
-          <span class="combo-guide-text"><b>${t('ui.tutorial.combo_scholar_circle')}：</b>${t('ui.tutorial.combo_scholar_circle_desc')}</span>
-        </div>
+                  <span class="combo-faction-dot" style="background:#DAA520"></span>
+                  <span class="combo-guide-text"><b>${t('ui.tutorial.combo_juzhongqu')}：</b>${t('ui.tutorial.combo_juzhongqu_desc')}</span>
+                </div>
+                <div class="combo-guide-row">
+                  <span class="combo-faction-dot" style="background:#1ABC9C"></span>
+                  <span class="combo-guide-text"><b>${t('ui.tutorial.combo_row_stacking')}：</b>${t('ui.tutorial.combo_row_stacking_desc')}</span>
+                </div>
+                <div class="combo-guide-row">
+                  <span class="combo-faction-dot" style="background:#E67E22"></span>
+                  <span class="combo-guide-text"><b>${t('ui.tutorial.combo_scholar_circle')}：</b>${t('ui.tutorial.combo_scholar_circle_desc')}</span>
+                </div>
         <div class="combo-guide-hint">${t('ui.tutorial.combo_hint')}</div>
       </div>
 
