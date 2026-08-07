@@ -36,47 +36,28 @@ window.ComboEngine = (function() {
   }
 
   // Layer 4: 同 type 牌 ≥3 → 所有该 type 牌 +1 强度 (V4: skip 'general' + threshold 3)
-  function computeTypeSynergy(board) {
-    const cards = boardFlatList(board);
-    const byType = new Map();
-    cards.forEach(c => {
-      if (!c || typeof c !== 'object') return;
-      const t = c.type;
-      // V4: skip cards without explicit type or type='general'
-      if (!t || t === 'general') return;
-      if (!byType.has(t)) byType.set(t, []);
-      byType.get(t).push(c);
-    });
-    const strength = {};
-    const signals = [];
-    byType.forEach((arr, t) => {
-      if (arr.length >= 3) {
-        arr.forEach(c => {
-          strength[c.id] = (strength[c.id] || 0) + 1;
-        });
-        signals.push('combo_type_synergy:' + t);
-      }
-    });
-    return { strength, signals };
-  }
+  
 
   // ── Layer 5: 同行强化 ──
-  // 场上同行同 faction 牌 ≥3 → 该行该 faction 牌 +1 额外
-  function computeRowStacking(board) {
-    const cards = boardFlatList(board);
-    const strength = {};
-    const signals = [];
-    // Group by (faction, row)
-    const keyMap = new Map();
-    cards.forEach(c => {
-      if (!c || typeof c !== 'object') return;
-      const f = c.faction;
-      const r = c.row;
-      if (!f || !r) return;
-      const key = f + '::' + r;
-      if (!keyMap.has(key)) keyMap.set(key, []);
-      keyMap.get(key).push(c);
-    });
+    // 场上同行同 faction **named 武将牌** (ID 1-50) ≥3 → 该行该 faction 牌 +1 额外
+    // 注意: 只计 named 武将牌, 普通牌 (id > 50, common faction) 不参与
+    function computeRowStacking(board) {
+      const cards = boardFlatList(board);
+      const strength = {};
+      const signals = [];
+      // Group by (faction, row)
+      const keyMap = new Map();
+      cards.forEach(c => {
+        if (!c || typeof c !== 'object') return;
+        // V4-fix: 只计 named 武将牌 (排除 common 普通牌)
+        if (!isNamedCard(c)) return;
+        const f = c.faction;
+        const r = c.row;
+        if (!f || !r) return;
+        const key = f + '::' + r;
+        if (!keyMap.has(key)) keyMap.set(key, []);
+        keyMap.get(key).push(c);
+      });
     keyMap.forEach((arr, key) => {
       if (arr.length >= 3) {
         const [faction, row] = key.split('::');
@@ -329,6 +310,9 @@ window.ComboEngine = (function() {
     scholar_circle: null, // { count, bonus, uids:[], signal }
     juzhongqu: null,      // { count, bonus, uids:[], signal }
   };
+  // 记录已通知过的 combo key (避免重复 toast)
+  let _notifiedCombos = new Set();
+  function _notifiedKey(layer, key) { return layer + ':' + (key || ''); }
 
   // 快照当前 combos 状态 (深拷贝, 不带引用)
   function _snapshotActive() {
@@ -347,12 +331,13 @@ window.ComboEngine = (function() {
 
   // 重建 _activeCombos 从最新牌面状态和 signals
   function _rebuildActiveCombos(board, leader, signals) {
+    // 保存当前状态作为 prev (供 diffActiveCombos)
+    _prevActiveCombos = JSON.parse(JSON.stringify(_activeCombos));
     const cards = boardFlatList(board);
     const factionCounts = factionCount(cards);
 
     // 清空当前追踪
     _activeCombos.same_faction = {};
-    _activeCombos.type_synergy = {};
     _activeCombos.row_stacking = {};
     _activeCombos.scholar_circle = null;
     _activeCombos.juzhongqu = null;
@@ -374,36 +359,19 @@ window.ComboEngine = (function() {
       }
     });
 
-    // Layer 4: type_synergy — 跳过 type='general' 和未设置 type
-    const byType = new Map();
-    cards.forEach(c => {
-      if (!c || typeof c !== 'object') return;
-      const t = c.type;
-      if (!t || t === 'general') return;
-      if (!byType.has(t)) byType.set(t, []);
-      byType.get(t).push(c);
-    });
-    byType.forEach((arr, t) => {
-      if (arr.length >= 3) {
-        _activeCombos.type_synergy[t] = {
-          count: arr.length,
-          bonus: 1,
-          uids: arr.map(c => c.uid !== undefined ? c.uid : c.id),
-        };
-      }
-    });
-
-    // Layer 5: row_stacking
-    const keyMap = new Map();
-    cards.forEach(c => {
-      if (!c || typeof c !== 'object') return;
-      const f = c.faction;
-      const r = c.row;
-      if (!f || !r) return;
-      const key = f + '::' + r;
-      if (!keyMap.has(key)) keyMap.set(key, []);
-      keyMap.get(key).push(c);
-    });
+    // Layer 4: row_stacking
+        // 只计 named 武将牌 (排除 common 普通牌)
+        const keyMap = new Map();
+        cards.forEach(c => {
+          if (!c || typeof c !== 'object') return;
+          if (!isNamedCard(c)) return;
+          const f = c.faction;
+          const r = c.row;
+          if (!f || !r) return;
+          const key = f + '::' + r;
+          if (!keyMap.has(key)) keyMap.set(key, []);
+          keyMap.get(key).push(c);
+        });
     keyMap.forEach((arr, key) => {
       if (arr.length >= 3) {
         _activeCombos.row_stacking[key] = {
@@ -444,54 +412,66 @@ window.ComboEngine = (function() {
 
   // 对比新旧 active combos, 返回新增和消失的 combos
   function diffActiveCombos(newBonuses) {
-    const prev = _snapshotActive();
+    const prev = _prevActiveCombos;
     const added = [];
     const removed = [];
 
     // same_faction
     const prevSF = prev.same_faction || {};
     Object.keys(newBonuses.same_faction || {}).forEach(k => {
-      if (!prevSF[k]) {
+      const nk = _notifiedKey('same_faction', k);
+      if (!prevSF[k] && !_notifiedCombos.has(nk)) {
         added.push({ layer: 'same_faction', key: k, desc: prevSF[k] ? prevSF[k].desc : '' });
+        _notifiedCombos.add(nk);
       }
     });
     Object.keys(prevSF).forEach(k => {
       if (!(newBonuses.same_faction || {})[k]) {
         removed.push({ layer: 'same_faction', key: k });
+        _notifiedCombos.delete(_notifiedKey('same_faction', k));
       }
-    });
-
-    // type_synergy
-    const prevTS = prev.type_synergy || {};
-    const newTS = newBonuses.type_synergy || {};
-    Object.keys(newTS).forEach(t => {
-      if (!prevTS[t]) added.push({ layer: 'type_synergy', key: t });
-    });
-    Object.keys(prevTS).forEach(t => {
-      if (!newTS[t]) removed.push({ layer: 'type_synergy', key: t });
     });
 
     // row_stacking
     const prevRow = prev.row_stacking || {};
     const newRow = newBonuses.row_stacking || {};
     Object.keys(newRow).forEach(k => {
-      if (!prevRow[k]) added.push({ layer: 'row_stacking', key: k });
+      const nk = _notifiedKey('row_stacking', k);
+      if (!prevRow[k] && !_notifiedCombos.has(nk)) {
+        added.push({ layer: 'row_stacking', key: k, faction: k.split('::')[0], row: k.split('::')[1] });
+        _notifiedCombos.add(nk);
+      }
     });
     Object.keys(prevRow).forEach(k => {
-      if (!newRow[k]) removed.push({ layer: 'row_stacking', key: k });
+      if (!newRow[k]) {
+        removed.push({ layer: 'row_stacking', key: k });
+        _notifiedCombos.delete(_notifiedKey('row_stacking', k));
+      }
     });
 
-    // scholar_circle
+    // scholar_circle (signals array indicates actual trigger; empty {} = inactive)
     const prevSC = prev.scholar_circle;
-    const newSC = newBonuses.scholar_circle;
-    if (!prevSC && newSC) added.push({ layer: 'scholar_circle' });
-    if (prevSC && !newSC) removed.push({ layer: 'scholar_circle' });
+    const newSC = newBonuses.scholar_circle && newBonuses.scholar_circle.signals && newBonuses.scholar_circle.signals.length > 0 ? newBonuses.scholar_circle : null;
+    if (!prevSC && newSC && !_notifiedCombos.has(_notifiedKey('scholar_circle'))) {
+      added.push({ layer: 'scholar_circle' });
+      _notifiedCombos.add(_notifiedKey('scholar_circle'));
+    }
+    if (prevSC && !newSC) {
+      removed.push({ layer: 'scholar_circle' });
+      _notifiedCombos.delete(_notifiedKey('scholar_circle'));
+    }
 
-    // juzhongqu
+    // juzhongqu (non-empty object = active)
     const prevJZ = prev.juzhongqu;
-    const newJZ = newBonuses.juzhongqu;
-    if (!prevJZ && newJZ) added.push({ layer: 'juzhongqu' });
-    if (prevJZ && !newJZ) removed.push({ layer: 'juzhongqu' });
+    const newJZ = newBonuses.juzhongqu && Object.keys(newBonuses.juzhongqu).length > 0 ? newBonuses.juzhongqu : null;
+    if (!prevJZ && newJZ && !_notifiedCombos.has(_notifiedKey('juzhongqu'))) {
+      added.push({ layer: 'juzhongqu' });
+      _notifiedCombos.add(_notifiedKey('juzhongqu'));
+    }
+    if (prevJZ && !newJZ) {
+      removed.push({ layer: 'juzhongqu' });
+      _notifiedCombos.delete(_notifiedKey('juzhongqu'));
+    }
 
     return { added, removed };
   }
@@ -501,9 +481,8 @@ window.ComboEngine = (function() {
     const layer1 = computeFactionBonus(board);  // { strength, armor, signals }
     const layer2 = computeAntiFaction(board, opponentBoard, hand);
     const layer3 = computeJuzhongqu(board, leader);
-    const layer4 = computeTypeSynergy(board);
-    const layer5 = computeRowStacking(board);
-    const layer6 = computeScholarCircle(board);
+    const layer4 = computeRowStacking(board);
+    const layer5 = computeScholarCircle(board);
 
     // 合并 strength bonus (向后兼容: total 只含 strength)
     const merged = {};
@@ -515,7 +494,6 @@ window.ComboEngine = (function() {
     merge(layer3);
     merge(layer4.strength);
     merge(layer5.strength);
-    merge(layer6.strength);
 
     // 合并 armor
     const mergedArmor = {};
@@ -528,16 +506,14 @@ window.ComboEngine = (function() {
     layer1.signals.forEach(s => signalSet.add(s));
     layer4.signals.forEach(s => signalSet.add(s));
     layer5.signals.forEach(s => signalSet.add(s));
-    layer6.signals.forEach(s => signalSet.add(s));
     const allSignals = Array.from(signalSet);
 
     const result = {
       same_faction: layer1.strength,  // 向后兼容: { cardId → strength }
       anti_faction: layer2,
       juzhongqu: layer3,
-      type_synergy: layer4.strength,
-      row_stacking: layer5.strength,
-      scholar_circle: layer6.strength,
+      row_stacking: layer4.strength,
+      scholar_circle: layer5.strength,
       total: merged,
       armor: mergedArmor,              // V2: { cardId → armor }
       signals: allSignals,             // V2: game-level signals
@@ -553,7 +529,6 @@ window.ComboEngine = (function() {
     computeFactionBonus,
     computeAntiFaction,
     computeJuzhongqu,
-    computeTypeSynergy,
     computeRowStacking,
     computeScholarCircle,
     computeAllBonuses,
@@ -566,5 +541,11 @@ window.ComboEngine = (function() {
     // V4: 暴露动态同步
     getActiveCombos: () => _activeCombos,
     diffActiveCombos,
+    // 清除已通知标记 (新一局/新回合调用)
+    resetNotifiedCombos: () => {
+      _notifiedCombos.clear();
+      _activeCombos = { same_faction: {}, row_stacking: {}, scholar_circle: null, juzhongqu: null };
+      _prevActiveCombos = JSON.parse(JSON.stringify(_activeCombos));
+    },
   };
 })();

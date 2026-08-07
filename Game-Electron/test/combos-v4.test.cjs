@@ -77,56 +77,6 @@ describe('V4: same_faction (unified threshold=3)', () => {
   });
 });
 
-// ===== Test 2: type_synergy (skip general, threshold 3) =====
-describe('V4: type_synergy (skip general, threshold 3)', () => {
-  it('3 general cards → no trigger (skipped because type=general)', () => {
-    const board = mkBoard(
-      GENERAL(1, 'song', 'infantry'),
-      GENERAL(2, 'song', 'cavalry'),
-      GENERAL(3, 'song', 'navy')
-    );
-    const result = cb.computeTypeSynergy(board);
-    assert.deepStrictEqual(result.strength, {});
-    assert.deepStrictEqual(result.signals, []);
-  });
-
-  it('2 minister + 1 general → no trigger (only 2 minister)', () => {
-    const board = mkBoard(
-      MINISTER(1, 'song', 'infantry'),
-      MINISTER(2, 'song', 'cavalry'),
-      GENERAL(3, 'song', 'navy')
-    );
-    const result = cb.computeTypeSynergy(board);
-    assert.deepStrictEqual(result.strength, {});
-  });
-
-  it('3 minister → +1 each (signal fires)', () => {
-    const board = mkBoard(
-      MINISTER(1, 'song', 'infantry'),
-      MINISTER(2, 'song', 'cavalry'),
-      MINISTER(3, 'song', 'navy')
-    );
-    const result = cb.computeTypeSynergy(board);
-    assert.strictEqual(result.strength[1], 1);
-    assert.strictEqual(result.strength[2], 1);
-    assert.strictEqual(result.strength[3], 1);
-    assert.deepStrictEqual(result.signals, ['combo_type_synergy:minister']);
-  });
-
-  it('3 poet → +1 each', () => {
-    const board = mkBoard(
-      POET(1, 'qi', 'strategy'),
-      POET(2, 'qi', 'strategy'),
-      POET(3, 'qi', 'strategy')
-    );
-    const result = cb.computeTypeSynergy(board);
-    assert.strictEqual(result.strength[1], 1);
-    assert.strictEqual(result.strength[2], 1);
-    assert.strictEqual(result.strength[3], 1);
-    assert.deepStrictEqual(result.signals, ['combo_type_synergy:poet']);
-  });
-});
-
 // ===== Test 3: row_stacking (threshold 3 same faction same row) =====
 describe('V4: row_stacking (threshold 3 same faction same row)', () => {
   it('2 same faction same row → no trigger', () => {
@@ -328,5 +278,51 @@ describe('V4: dynamic sync via _activeCombos', () => {
     const diff = cb.diffActiveCombos(nested);
     const sfAdded = diff.added.find(c => c.layer === 'same_faction');
     assert.ok(sfAdded, 'Should detect newly added same_faction combo');
+  });
+});
+
+// ===== Test 9: Common cards (id > 50) excluded from combos =====
+describe('V4: common cards (id > 50) excluded from combos', () => {
+  it('row_stacking: 3 common cards same row → no trigger', () => {
+    const COMMON = (id, faction, row) => ({ id, faction, row, strength: 3 });
+    const board = mkBoard(
+      COMMON(101, 'common', 'infantry'),
+      COMMON(102, 'common', 'infantry'),
+      COMMON(103, 'common', 'infantry')
+    );
+    const result = cb.computeRowStacking(board);
+    assert.deepStrictEqual(result.strength, {});
+    assert.deepStrictEqual(result.signals, []);
+  });
+
+  it('row_stacking: 2 named + 1 common → no trigger (2 named < 3)', () => {
+    const NAMED = (id, faction, row) => ({ id, faction, row, strength: 3 });
+    const COMMON = (id, faction, row) => ({ id, faction, row, strength: 3 });
+    const board = mkBoard(
+      NAMED(7, 'qi', 'infantry'),
+      NAMED(9, 'qi', 'infantry'),
+      COMMON(101, 'qi', 'infantry')
+    );
+    const result = cb.computeRowStacking(board);
+    assert.deepStrictEqual(result.strength, {});
+    assert.deepStrictEqual(result.signals, []);
+  });
+
+  it('row_stacking: 3 named + common cards → trigger, common excluded', () => {
+    const NAMED = (id, faction, row) => ({ id, faction, row, strength: 3 });
+    const COMMON = (id, faction, row) => ({ id, faction, row, strength: 3 });
+    const board = mkBoard(
+      NAMED(7, 'qi', 'infantry'),
+      NAMED(9, 'qi', 'infantry'),
+      NAMED(10, 'qi', 'infantry'),
+      COMMON(101, 'qi', 'infantry')
+    );
+    const result = cb.computeRowStacking(board);
+    // Only named cards get bonus (common excluded by isNamedCard)
+    assert.strictEqual(result.strength[7], 1);
+    assert.strictEqual(result.strength[9], 1);
+    assert.strictEqual(result.strength[10], 1);
+    assert.strictEqual(result.strength[101], undefined, 'common card does NOT get bonus');
+    assert.strictEqual(result.signals.length, 1);
   });
 });
