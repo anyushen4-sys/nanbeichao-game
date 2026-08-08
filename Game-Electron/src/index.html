@@ -208,7 +208,10 @@ window.t = window.t || function(key, vars){
         if(type==='poet')return'诗人';
         if(type==='monk')return'僧侣';
         if(type==='industry')return'行业';
-        if(type==='general'||(!type&&c.id&&c.id<=50))return'武将';
+        if(type==='general')return'武将';
+        // 兜底: 旧卡(id<=50) + common 通用兵 → 武将
+        if(c.faction==='common')return'武将';
+        if(c.id&&c.id<=50)return'武将';
         return'';
       };
       window.ln=function(l){return l&&l.name_en&&window.currentLocale!=='zh-CN'?l.name_en:l&&l.name||'';};
