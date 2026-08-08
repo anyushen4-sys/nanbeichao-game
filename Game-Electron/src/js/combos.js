@@ -75,7 +75,7 @@ window.ComboEngine = (function() {
   function computeScholarCircle(board) {
     const cards = boardFlatList(board);
     const strength = {};
-    const scholarCards = cards.filter(c => c && c.type === 'poet' || c && c.type === 'minister');
+    const scholarCards = cards.filter(c => c && (c.type === 'poet' || c.type === 'minister' || c.type === 'monk' || c.type === 'industry'));
     if (scholarCards.length < 3) return { strength: {}, signals: [] };
     scholarCards.forEach(c => {
       strength[c.id] = (strength[c.id] || 0) + 1;
@@ -385,7 +385,9 @@ window.ComboEngine = (function() {
     });
 
     // Layer 6: scholar_circle
-    const scholarCards = cards.filter(c => c && (c.type === 'poet' || c.type === 'minister'));
+    // V5: 文人圈扩展 — 包含所有"特殊身份"（文臣/诗人/僧侣/行业）
+    // 武将 (general) 不算文人, 普通牌 (id > 50) 也不算
+    const scholarCards = cards.filter(c => c && (c.type === 'poet' || c.type === 'minister' || c.type === 'monk' || c.type === 'industry'));
     if (scholarCards.length >= 3) {
       _activeCombos.scholar_circle = {
         count: scholarCards.length,

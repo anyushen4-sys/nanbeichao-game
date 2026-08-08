@@ -380,4 +380,38 @@ describe('V4: diff.added items have full data for rich toast', () => {
     assert.strictEqual(sc.bonus, 1);
     assert.strictEqual(sc.uids.length, 3);
   });
+// ===== Test 11: V5 scholar_circle includes all 4 special types =====
+describe('V5: scholar_circle includes all 4 special types', () => {
+  it('poet+minister+monk+industry: 2 minister + 1 monk → triggers', () => {
+    const board = mkBoard(
+      MINISTER(56, 'song', 'infantry'),
+      MINISTER(57, 'song', 'cavalry'),
+      MONK(71, 'song', 'strategy')
+    );
+    const result = cb.computeScholarCircle(board);
+    assert.ok(result.strength);
+    assert.strictEqual(Object.keys(result.strength).length, 3);
+  });
+
+  it('general cards do NOT count for scholar_circle', () => {
+    const board = mkBoard(
+      GENERAL(1, 'song', 'infantry'),
+      GENERAL(2, 'song', 'cavalry'),
+      GENERAL(3, 'song', 'navy')
+    );
+    const result = cb.computeScholarCircle(board);
+    assert.deepStrictEqual(result.strength, {});
+  });
+
+  it('mixed industry: 1 industry + 1 industry + 1 minister → triggers', () => {
+    const board = mkBoard(
+      INDUSTRY(66, 'song', 'strategy'),
+      INDUSTRY(67, 'song', 'infantry'),
+      MINISTER(56, 'song', 'cavalry')
+    );
+    const result = cb.computeScholarCircle(board);
+    assert.ok(result.strength);
+    assert.strictEqual(Object.keys(result.strength).length, 3);
+  });
+});
 });

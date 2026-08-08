@@ -200,6 +200,17 @@ window.t = window.t || function(key, vars){
 
         window.cn=function(c){return c&&c.name_en&&window.currentLocale!=='zh-CN'?c.name_en:c&&c.name||'';};
       window.cd=function(c){return c&&c.desc_en&&window.currentLocale!=='zh-CN'?c.desc_en:c&&c.desc||'';};
+      // V5: 卡牌类型标签 (文臣/诗人/僧侣/行业/武将)
+      window.ctl=function(c){
+        if(!c)return'';
+        const type=c.type;
+        if(type==='minister')return'文臣';
+        if(type==='poet')return'诗人';
+        if(type==='monk')return'僧侣';
+        if(type==='industry')return'行业';
+        if(type==='general'||(!type&&c.id&&c.id<=50))return'武将';
+        return'';
+      };
       window.ln=function(l){return l&&l.name_en&&window.currentLocale!=='zh-CN'?l.name_en:l&&l.name||'';};
       window.ld=function(l){return l&&l.desc_en&&window.currentLocale!=='zh-CN'?l.desc_en:l&&l.desc||'';}; function getFactionName(f){return f?t("ui.faction."+f):"";}
 
@@ -723,14 +734,28 @@ function showComboToast(title,subtitle,desc,dur=2800){
 }
 // V4: 触发 combo 触发动画 (一次性) - 给最近触发 combo 的 card-mini 加 class
 const _comboActiveCards=new Set();
+// V4-fix: debounce re-render to break infinite loop
+let _comboFlashRenderPending=false;
 function flashComboCards(cardIds){
   cardIds.forEach(id=>_comboActiveCards.add(id));
-  // Trigger re-render
-  if(typeof render==='function') render();
+  // Trigger re-render (debounced - 1 render per call batch)
+  if(!_comboFlashRenderPending && typeof render==='function'){
+    _comboFlashRenderPending=true;
+    setTimeout(()=>{
+      _comboFlashRenderPending=false;
+      try{render();}catch(e){}
+    },0);
+  }
   // Clear after animation
   setTimeout(()=>{
     cardIds.forEach(id=>_comboActiveCards.delete(id));
-    if(typeof render==='function') render();
+    if(typeof render==='function'){
+      _comboFlashRenderPending=true;
+      setTimeout(()=>{
+        _comboFlashRenderPending=false;
+        try{render();}catch(e){}
+      },0);
+    }
   },900);
 }
 // V4: 检测 combo 增量, 触发 toast + flash
@@ -1074,6 +1099,9 @@ function playCard(playerIdx,handIdx,row){
     const cardEl=card.uid?getCardEl(card.uid):null;
     try{playCardEffect(card,rowEl,{cardEl});}catch(e){}
   },50);
+  // V4-fix: Trigger combo delta check once per play (not in render loop)
+  // Use setTimeout to break any potential render cycle
+  setTimeout(()=>{ try{ checkComboDelta(); }catch(e){console.error('[checkComboDelta]',e);} },80);
   if(playerIdx===1){
     setTimeout(()=>triggerAbilityWithFlash(card,playerIdx,row),650);
   }else{
@@ -1357,6 +1385,8 @@ function endRound(){
   }
   G.phase='round_result';
   G._roundResult={playerPower:pP,aiPower:aP,winner};
+  // V4-fix: Trigger combo delta check once at end of round
+  try{ checkComboDelta(); }catch(e){console.error('[checkComboDelta]',e);}
   render();
   showNotification(winText);
 }
@@ -1856,7 +1886,7 @@ function renderMulligan(app){
       <div class="card-cost">${cost}</div>
       <div class="card-illustration"><img src="${CARD_DATA_URIS[c.id]||`assets/cards/card_${String(c.id).padStart(3,'0')}.png`}" alt="${cn(c)}" onerror="this.style.display='none';this.parentNode.querySelector('.card-art-fallback').style.display='flex'"/><div class="card-art-fallback" style="display:none!important">${cn(c)}</div></div>
             <div class="card-name">${cn(c)}</div>
-      <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
+      <div class="card-tags"><span class="card-type-tag">${rowName}</span><span class="card-role-tag">${window.ctl?window.ctl(card):''}</span></div>
       <div class="card-ability">${desc}</div>
       <div class="card-stats-bar"><span class="card-atk">⚔ ${c.strength}</span></div>
     </div>`;
@@ -2109,7 +2139,10 @@ function renderHandCard(card,idx){
     <div class="card-cost">${cost}</div>
     <div class="card-illustration"><img src="${CARD_DATA_URIS[card.id]||`assets/cards/card_${String(card.id).padStart(3,'0')}.png`}" alt="${cn(card)}" onerror="this.style.display='none';this.parentNode.querySelector('.card-art-fallback').style.display='flex'"/><div class="card-art-fallback" style="display:none!important">${cn(card)}</div></div>
         <div class="card-name">${cn(card)}</div>
-    <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
+    <div class="card-tags">
+      <span class="card-type-tag">${rowName}</span>
+      <span class="card-role-tag">${window.ctl?window.ctl(card):''}</span>
+    </div>
     <div class="card-ability">${desc}</div>
     <div class="card-stats-bar"><span class="card-atk">⚔ ${card.strength}</span></div>
   </div>`;
@@ -3518,7 +3551,7 @@ function timeoutReconnect() {
                                   '<div class="card-cost">'+cost+'</div>'+
                                   '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+cn(c)+'"/><div class="card-art-fallback" style="display:none!important">'+cn(c)+'</div></div>'+
                                   '<div class="card-name">'+cn(c)+'</div>'+
-                                  '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
+                                  '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span><span class="card-role-tag">'+(window.ctl?window.ctl(c):'')+'</span></div>'+
                                   '<div class="card-ability">'+desc+'</div>'+
                                   '<div class="card-stats-bar"><span class="card-atk">⚔ '+c.strength+'</span></div>'+
                                 '</div>';
@@ -3728,7 +3761,7 @@ function timeoutReconnect() {
               '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[card.id]||'assets/cards/card_'+card.id+'.png')+
                 '" alt="'+cn(card)+'"/></div>'+
               '<div class="card-name">'+cn(card)+'</div>'+
-              '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
+              '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span><span class="card-role-tag">'+(window.ctl?window.ctl(c):'')+'</span></div>'+
               '<div class="card-ability">'+desc+'</div>'+
               '<div class="card-stats-bar"><span class="card-atk">⚔ '+card.strength+'</span></div>'+
             '</div>';
