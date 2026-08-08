@@ -1893,7 +1893,7 @@ function renderMulligan(app){
       <div class="card-cost">${cost}</div>
       <div class="card-illustration"><img src="${CARD_DATA_URIS[c.id]||`assets/cards/card_${String(c.id).padStart(3,'0')}.png`}" alt="${cn(c)}" onerror="this.style.display='none';this.parentNode.querySelector('.card-art-fallback').style.display='flex'"/><div class="card-art-fallback" style="display:none!important">${cn(c)}</div></div>
             <div class="card-name">${cn(c)}</div>
-      <div class="card-tags"><span class="card-type-tag">${rowName}</span></div>
+      <div class="card-tags"><span class="card-type-tag">${rowName}</span><span class="card-role-tag">${window.ctl?window.ctl(c):''}</span></div>
       <div class="card-ability">${desc}</div>
       <div class="card-stats-bar"><span class="card-atk">⚔ ${c.strength}</span></div>
     </div>`;
@@ -2148,6 +2148,7 @@ function renderHandCard(card,idx){
         <div class="card-name">${cn(card)}</div>
     <div class="card-tags">
       <span class="card-type-tag">${rowName}</span>
+      <span class="card-role-tag">${window.ctl?window.ctl(card):''}</span>
     </div>
     <div class="card-ability">${desc}</div>
     <div class="card-stats-bar"><span class="card-atk">⚔ ${card.strength}</span></div>
@@ -3560,7 +3561,7 @@ function timeoutReconnect() {
                                   '<div class="card-cost">'+cost+'</div>'+
                                   '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[c.id]||('assets/cards/card_'+c.id+'.png'))+'" alt="'+cn(c)+'"/><div class="card-art-fallback" style="display:none!important">'+cn(c)+'</div></div>'+
                                   '<div class="card-name">'+cn(c)+'</div>'+
-                                  '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
+                                  '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span><span class="card-role-tag">'+(window.ctl?window.ctl(c):'')+'</span></div>'+
                                   '<div class="card-ability">'+desc+'</div>'+
                                   '<div class="card-stats-bar"><span class="card-atk">⚔ '+c.strength+'</span></div>'+
                                 '</div>';
@@ -3770,7 +3771,7 @@ function timeoutReconnect() {
               '<div class="card-illustration"><img src="'+(CARD_DATA_URIS[card.id]||'assets/cards/card_'+card.id+'.png')+
                 '" alt="'+cn(card)+'"/></div>'+
               '<div class="card-name">'+cn(card)+'</div>'+
-              '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span></div>'+
+              '<div class="card-tags"><span class="card-type-tag">'+rowName+'</span><span class="card-role-tag">'+(window.ctl?window.ctl(c):'')+'</span></div>'+
               '<div class="card-ability">'+desc+'</div>'+
               '<div class="card-stats-bar"><span class="card-atk">⚔ '+card.strength+'</span></div>'+
             '</div>';
