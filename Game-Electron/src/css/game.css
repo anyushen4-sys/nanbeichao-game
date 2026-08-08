@@ -37,6 +37,7 @@ html, body {
     display: none;
     width: 100%;
     min-height: 100vh;
+    overflow-y: auto;       /* 滚动条交给 .screen,出现在窗口最右端 */
 }
 .screen.active {
     display: flex;
@@ -869,8 +870,7 @@ html, body {
 
 /* 领袖选择页 */
 .leader-select {
-    max-height: 100vh;
-    overflow-y: auto;
+    /* max-height/overflow-y 移交给 .screen,让滚动条出现在窗口最右端(而非 1100px 处) */
     overflow-x: hidden;
     max-width: 1100px;
     margin: 0 auto;

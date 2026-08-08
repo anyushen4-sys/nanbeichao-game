@@ -88,19 +88,33 @@ try {
 // 窗口引用
 let mainWindow;
 
-// 成就/统计配置
+// 成就/统计配置 (对应 SteamIntegration.md 16 个成就 + 6 个统计)
 const ACHIEVEMENTS = {
   FIRST_WIN: 'ACH_FIRST_WIN',          // 初露锋芒 - 首次获胜
-  PERFECT_ROUND: 'ACH_PERFECT_ROUND',  // 运筹帷幄 - 3 局全胜
-  VETERAN: 'ACH_VETERAN',              // 百战不殆 - 玩 10 局
-  DEEP_DIVE: 'ACH_DEEP_DIVE',          // 历尽沧桑 - 完成 1 局 3 回合
+  TEN_WINS: 'ACH_TEN_WINS',            // 百战不殆 - 累计赢得 10 场
+  ALL_LEADERS: 'ACH_ALL_LEADERS',      // 九转功成 - 解锁所有 9 位领袖
+  PERFECT_VICTORY: 'ACH_PERFECT_VICTORY', // 摧枯拉朽 - 一场对局中输粮 ≤ 3
+  NO_PASS: 'ACH_NO_PASS',              // 一鼓作气 - 一局中从不跳过回合并获胜
+  SONG_MASTER: 'ACH_SONG_MASTER',      // 宋武扬威 - 用宋阵营赢 5 场
+  QI_MASTER: 'ACH_QI_MASTER',          // 齐高帝 - 用齐全阵营赢 5 场
+  LIANG_MASTER: 'ACH_LIANG_MASTER',    // 梁武崇佛 - 用梁阵营赢 5 场
+  CHEN_MASTER: 'ACH_CHEN_MASTER',      // 陈武开国 - 用陈阵营赢 5 场
+  BEIWEI_MASTER: 'ACH_BEIWEI_MASTER',  // 太武统一 - 用北魏阵营赢 5 场
+  DONGWEI_MASTER: 'ACH_DONGWEI_MASTER', // 神武雄主 - 用东魏阵营赢 5 场
+  XIWEI_MASTER: 'ACH_XIWEI_MASTER',    // 八柱国 - 用西魏阵营赢 5 场
+  BEIQI_MASTER: 'ACH_BEIQI_MASTER',    // 兰陵王 - 用北齐阵营赢 5 场
+  BEIZHOU_MASTER: 'ACH_BEIZHOU_MASTER', // 武帝雄才 - 用北周阵营赢 5 场
+  SPEEDRUN: 'ACH_SPEEDRUN',            // 速战速决 - 5 回合内获胜
+  COMBO_KING: 'ACH_COMBO_KING',        // 连环妙策 - 单场使用 3 张以上谋略卡并获胜
 };
 
 const STATS = {
-  TOTAL_GAMES: 'STAT_TOTAL_GAMES',
-  TOTAL_WINS: 'STAT_TOTAL_WINS',
-  TOTAL_LOSSES: 'STAT_TOTAL_LOSSES',
-  HIGHEST_POWER: 'STAT_HIGHEST_POWER',
+  TOTAL_GAMES: 'STAT_TOTAL_GAMES',     // 总对局数
+  TOTAL_WINS: 'STAT_TOTAL_WINS',       // 胜场
+  TOTAL_LOSSES: 'STAT_TOTAL_LOSSES',   // 败场
+  TOTAL_CARDS_PLAYED: 'STAT_CARDS_PLAYED', // 出牌总数
+  STRATEGY_RATE: 'STAT_STRATEGY_RATE', // 谋略卡使用率 (avgrate)
+  FASTEST_WIN: 'STAT_FASTEST_WIN',     // 最快回合取胜
 };
 
 // 暴露给 renderer 进程的 Steam API (通过 IPC)
@@ -248,10 +262,20 @@ function setupMultiplayerIPC() {
     }, 50);
   }
 
-  if (steamClient && steamClient.callback && steamClient.callback.register) {
-    steamClient.callback.register('P2PSessionRequest', (steamId64) => {
-      steamClient.networking.acceptP2PSession(steamId64);
-    });
+  if (steamClient && steamClient.callback) {
+    try {
+      // SteamCallback.P2PSessionRequest = 16 (numeric enum, not string)
+      const P2P_SESSION_REQUEST = 16;
+      steamClient.callback.register(P2P_SESSION_REQUEST, (steamId64) => {
+        try {
+          steamClient.networking.acceptP2PSession(steamId64);
+        } catch (e) {
+          console.error('[Steam] acceptP2PSession failed:', e);
+        }
+      });
+    } catch (e) {
+      console.warn('[Steam] callback.register failed:', e.message);
+    }
   }
 
   // --- 6. onSessionRequest (callback registration) ---
@@ -297,7 +321,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
+      sandbox: false
     }
   });
 
