@@ -1838,7 +1838,7 @@ function renderLeaderSelect(el){
         <div class="placeholder-block">${ln(l)[0] || "?"}</div>
       </div>
       <div class="leader-info">
-        <div class="era">${l.era_en||l.era}</div>
+        <div class="era">${(window.currentLocale!=='zh-CN'&&l.era_en)?l.era_en:l.era}</div>
         <div class="name">${ln(l)}</div>
         <span class="faction-tag">${getFactionName(l.faction)}</span>
         <div class="ability">✦ ${ld(l)}</div>
@@ -2356,7 +2356,7 @@ function renderGameResult(el){
                             '<div class="placeholder-block">' + (ln(l)[0] || '?') + '</div>' +
                           '</div>' +
                           '<div class="leader-info">' +
-                            '<div class="era">' + (l.era_en || l.era) + '</div>' +
+                            '<div class="era">' + ((window.currentLocale!=='zh-CN'&&l.era_en)?l.era_en:l.era) + '</div>' +
                             '<div class="name">' + ln(l) + '</div>' +
                             '<span class="faction-tag">' + getFactionName(l.faction) + '</span>' +
                             '<div class="ability">✦ ' + ld(l) + '</div>' +
@@ -3528,7 +3528,7 @@ function timeoutReconnect() {
                                   '<div class="placeholder-block">'+(ln(l)[0]||'?')+'</div>'+
                                 '</div>'+
                                 '<div class="leader-info">'+
-                                  '<div class="era">'+(l.era_en||l.era)+'</div>'+
+                                  '<div class="era">'+((window.currentLocale!=='zh-CN'&&l.era_en)?l.era_en:l.era)+'</div>'+
                                   '<div class="name">'+ln(l)+'</div>'+
                                   '<span class="faction-tag">'+getFactionName(l.faction)+'</span>'+
                                   '<div class="ability">✦ '+ld(l)+'</div>'+
