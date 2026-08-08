@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.nanbeichao.game",
     "productName": "南北朝天下对弈",
+    "asar": true,
     "directories": {
       "output": "dist"
     },

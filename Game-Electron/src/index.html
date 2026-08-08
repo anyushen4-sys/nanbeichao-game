@@ -2239,7 +2239,7 @@ function renderRoundResult(el){
 function renderGameResult(el){
   const playerWin=G.scores[0]>G.scores[1];
   const isDraw=G.scores[0]===G.scores[1];
-  // ===== Steam 统计/成就触发 =====
+  // ===== Steam 统计/成就触发 (使用 main.js 中定义的 ACHIEVEMENTS/STATS 常量) =====
   (async ()=>{
     await steamSetStat('STAT_TOTAL_GAMES',(Number(localStorage.getItem('steam_total_games')||0))+1);
     localStorage.setItem('steam_total_games',String(Number(localStorage.getItem('steam_total_games')||0)+1));
@@ -2251,9 +2251,12 @@ function renderGameResult(el){
       await steamSetStat('STAT_TOTAL_LOSSES',(Number(localStorage.getItem('steam_total_losses')||0))+1);
       localStorage.setItem('steam_total_losses',String(Number(localStorage.getItem('steam_total_losses')||0)+1));
     }
-    if(G.scores[0]===2&&G.scores[1]===0)await steamUnlock('ACH_PERFECT_ROUND');
+    // Perfect victory: 2-0 win (≤3 grain loss per round = perfect round)
+    if(G.scores[0]===2&&G.scores[1]===0)await steamUnlock('ACH_PERFECT_VICTORY');
     const total=Number(localStorage.getItem('steam_total_games')||0);
-    if(total>=10)await steamUnlock('ACH_VETERAN');
+    if(total>=10)await steamUnlock('ACH_TEN_WINS');
+    // TODO: ACH_ALL_LEADERS, ACH_NO_PASS, ACH_*_MASTER, ACH_SPEEDRUN, ACH_COMBO_KING
+    // Need to track these in game state (leader unlocks, pass count, faction wins, round count, strategy cards used)
   })();
   el.innerHTML=`
   <div class="game-result">
