@@ -264,8 +264,8 @@ function setupMultiplayerIPC() {
 
   if (steamClient && steamClient.callback) {
     try {
-      // SteamCallback.P2PSessionRequest = 16 (numeric enum, not string)
-      const P2P_SESSION_REQUEST = 16;
+      // SteamCallback.P2PSessionRequest = 6 (from steamworks.js client.d.ts)
+      const P2P_SESSION_REQUEST = 6;
       steamClient.callback.register(P2P_SESSION_REQUEST, (steamId64) => {
         try {
           steamClient.networking.acceptP2PSession(steamId64);
