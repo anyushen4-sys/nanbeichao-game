@@ -1277,8 +1277,15 @@ function aiShouldPass(){
   const prov=G.provisions[1];
   // 无牌可出必 Pass
   if(!hasPlayableCard(1))return true;
-  // 局势判断:AI 落后 5+ 战力,且剩余粮草只够出低费牌 → 战略性 Pass 让 AI 把赢面留给下一局
+  // 1) 局势判断:AI 已领先玩家 5+ 战力,考虑 Pass 守住优势
+  if(aiP > plP + 5)return true;
+  // 2) 局势判断:AI 落后 5+ 战力,且剩余粮草只够出低费牌 → 战略性 Pass 让 AI 把赢面留给下一局
   if(aiP < plP - 5 && prov <= 4)return true;
+  // 3) 手牌全是低费/无 combo 牌(无 minister/poet/industry/monk/general 类型),Pass
+  const hand=getHand(1);
+  const hasComboCard=hand.some(c=>c&&['minister','poet','industry','monk','general'].includes(c.type));
+  const hasHighCostCard=hand.some(c=>c&&getCardCost(c.strength)>3);
+  if(!hasComboCard && !hasHighCostCard)return true;
   // 双方都已 Pass 会进入结算,这里不必处理
   return false;
 }
