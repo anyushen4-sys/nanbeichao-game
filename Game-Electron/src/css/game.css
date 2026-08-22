@@ -2984,3 +2984,181 @@ html, body {
   display: block;
 }
 /* ── End Combo Bonus ── */
+
+/* ===== Splash Screen (片头动画) ===== */
+.splash-screen {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: #0A0806;
+  overflow: hidden;
+}
+
+/* 背景星空 */
+#splash-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 文字动画容器 */
+.splash-text {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 20px 40px;
+  text-align: center;
+  font-family: 'Noto Sans SC', 'STKaiti', 'KaiTi', serif;
+  color: #F5F0E8;
+  line-height: 1.6;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.splash-text.visible {
+  opacity: 1;
+}
+.splash-text.hidden {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* 大标题文字 — 逐字显示 */
+.splash-text .splash-title {
+  font-size: 2.4em;
+  font-weight: bold;
+  color: #D4A840;
+  text-shadow: 0 0 30px rgba(212,168,64,0.3);
+  letter-spacing: 8px;
+  margin-bottom: 16px;
+}
+.splash-text .splash-subtitle {
+  font-size: 1.1em;
+  color: #B8A070;
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+}
+.splash-text .splash-body {
+  font-size: 1em;
+  color: #C4B8A0;
+  letter-spacing: 2px;
+  line-height: 1.8;
+}
+
+/* 打字机效果 — 逐字显现 */
+.splash-typewriter {
+  display: inline-block;
+  overflow: hidden;
+  white-space: pre-wrap;
+  border-right: 2px solid #D4A840;
+  animation: splashBlinkCursor 0.8s step-end infinite;
+}
+@keyframes splashBlinkCursor {
+  50% { border-color: transparent; }
+}
+
+/* 分段淡入动画 */
+.splash-fade-in {
+  animation: splashFadeIn 0.8s ease forwards;
+}
+@keyframes splashFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 分段淡出动画 */
+.splash-fade-out {
+  animation: splashFadeOut 0.6s ease forwards;
+}
+@keyframes splashFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-20px); }
+}
+
+/* 视频播放器 */
+.splash-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.splash-video.visible {
+  opacity: 1;
+}
+.splash-video.fade-out {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* 视频容器过渡 */
+#splash-video-container {
+  transition: opacity 0.8s ease;
+  background: #000;
+}
+
+/* 跳过按钮 */
+.splash-skip-btn {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 10000;
+  padding: 8px 20px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(245,240,232,0.25);
+  border-radius: 4px;
+  color: #B8A070;
+  font-size: 0.85em;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+.splash-skip-btn:hover {
+  background: rgba(196,30,58,0.6);
+  color: #F5F0E8;
+  border-color: #C41E3A;
+}
+
+/* 底部进度条 */
+.splash-progress-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  z-index: 10000;
+}
+.splash-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #D4A840, #C41E3A);
+  transition: width 0.3s linear;
+}
+
+/* 全屏提示: 点击任意处继续 (用于视频结束后) */
+.splash-click-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(245,240,232,0.3);
+  font-size: 0.8em;
+  letter-spacing: 2px;
+  animation: splashPulseHint 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+@keyframes splashPulseHint {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
