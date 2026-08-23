@@ -667,7 +667,7 @@ players:[
 
 // 顶层属性（无需桥接 — 不属于单个玩家）
 phase:'menu',_menuScreen:'main',round:0,scores:[0,0],
-provisions:[30,30],
+provisions:[15,15],
 currentTurn:'player',
 selectedCard:null,logs:[],turnCount:0,
 globalBuffs:{playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null},
@@ -1155,7 +1155,18 @@ function startRound(){
   G.players[1].passed=false;
   G.selectedCard=null;
   G.turnCount=0;
-  // 粮草不再重置——开局30跨局共享（仅 confirmLeader/resetGame 初始化）
+  // 每回合补充粮草: 双方各 +3
+  G.provisions[0] += 3;
+  G.provisions[1] += 3;
+  // farm 修复: 之前 afterPlayerTurn/aiTurn 中 aiFarm/playerFarm 加错侧,统一在 startRound 兑现一次后由下方 globalBuffs 重置清零
+  if (G.globalBuffs.playerFarm > 0) {
+    G.provisions[0] += G.globalBuffs.playerFarm;
+    addLog(t('ui.log.you_gain_provisions', {count: G.globalBuffs.playerFarm}));
+  }
+  if (G.globalBuffs.aiFarm > 0) {
+    G.provisions[1] += G.globalBuffs.aiFarm;
+    addLog(t('ui.log.ai_gain_provisions', {count: G.globalBuffs.aiFarm}));
+  }
   G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
@@ -1230,10 +1241,7 @@ function afterPlayerTurn(){
     return;
   }
   G.currentTurn='ai';
-  if(G.globalBuffs.aiFarm>0){
-    G.provisions[1]+=G.globalBuffs.aiFarm;
-    addLog(t('ui.log.ai_gain_provisions', {count: G.globalBuffs.aiFarm}));
-  }
+  // farm 已统一在 startRound 兑现；此处不再加粮，避免错侧累加
   render();
   setTimeout(aiTurn,600);
 }
@@ -1295,10 +1303,7 @@ function aiTurn(){
     try{
       if(G.players[0].passed){endRound();return}
       G.currentTurn='player';
-      if(G.globalBuffs.playerFarm>0){
-        G.provisions[0]+=G.globalBuffs.playerFarm;
-        addLog(t('ui.log.you_gain_provisions', {count: G.globalBuffs.playerFarm}));
-      }
+      // farm 已统一在 startRound 兑现；此处不再加粮，避免错侧累加
     }catch(e){}
     // AI 出牌后检查 combo delta
     setTimeout(()=>{ try{ checkComboDelta(); }catch(e){console.error('[checkComboDelta]',e);} },100);
@@ -2057,7 +2062,7 @@ function renderGame(el,lastUid,lastBy){
       <div class="leader">${ln(G.players[0].leader)}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
-        <div class="pips">${renderPips(G.provisions[0],30,'player')}</div>
+        <div class="pips">${renderPips(G.provisions[0],15,'player')}</div>
         <span class="count">${G.provisions[0]}</span>
       </div>
     </div>
@@ -2071,7 +2076,7 @@ function renderGame(el,lastUid,lastBy){
       <div class="leader">${ln(G.players[1].leader)}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
-        <div class="pips">${renderPips(G.provisions[1],30,'ai')}</div>
+        <div class="pips">${renderPips(G.provisions[1],15,'ai')}</div>
         <span class="count">${G.provisions[1]}</span>
       </div>
       <div class="opponent-hand-pile">
@@ -2533,7 +2538,7 @@ function renderGameResult(el){
               '<div class="leader">' + (p0.leader ? ln(p0.leader) : '') + '</div>' +
               '<div class="provisions-bar">' +
                 '<span class="label">' + t('ui.game.provisions') + '</span>' +
-                '<div class="pips">' + renderPips(G.provisions[0], 30, 'player') + '</div>' +
+                '<div class="pips">' + renderPips(G.provisions[0], 15, 'player') + '</div>' +
                 '<span class="count">' + G.provisions[0] + '</span>' +
               '</div>' +
             '</div>' +
@@ -2546,7 +2551,7 @@ function renderGameResult(el){
               '<div class="leader">' + (p1.leader ? ln(p1.leader) : '') + '</div>' +
               '<div class="provisions-bar">' +
                 '<span class="label">粮草</span>' +
-                '<div class="pips">' + renderPips(G.provisions[1], 30, 'ai') + '</div>' +
+                '<div class="pips">' + renderPips(G.provisions[1], 15, 'ai') + '</div>' +
                 '<span class="count">' + G.provisions[1] + '</span>' +
               '</div>' +
             '</div>' +
@@ -2929,7 +2934,7 @@ function renderGameResult(el){
                                                   G.mulliganSelected = new Set();
                                                   G.leaderAbilityUsed = [false, false];
                                                   drawCards(0, 7); drawCards(1, 7);
-                                                  G.provisions = [30, 30];
+                                                  G.provisions = [15, 15];
                                                   G._mpPhase = 'mulligan';
                                                   addLog(t('ui.log.mp_mulligan_start'));
                                                 }
@@ -3332,7 +3337,7 @@ function timeoutReconnect() {
                           G._hsPhase='leader_select';
                           G._hsLeaderPicks=[null,null];
                           G.scores=[0,0]; G.round=0;
-                          G.provisions=[30,30];
+                          G.provisions=[15,15];
                           G.leaderAbilityUsed=[false,false];
                           render();
                         }
@@ -3714,7 +3719,7 @@ function timeoutReconnect() {
                   '<div class="leader">'+ln(p0.leader)+'</div>'+
                   '<div class="provisions-bar">'+
                     '<span class="label">粮草</span>'+
-                    '<div class="pips">'+renderPips(G.provisions[0],30,'player')+'</div>'+
+                    '<div class="pips">'+renderPips(G.provisions[0],15,'player')+'</div>'+
                     '<span class="count">'+G.provisions[0]+'</span>'+
                   '</div>'+
                   '<div style="font-size:0.85em;color:#B8B8D1;font-weight:500">🃏 '+(act===0?p0.hand.length+' 张手牌':'')+'</div>'+
@@ -3729,7 +3734,7 @@ function timeoutReconnect() {
                   '<div class="leader">'+ln(p1.leader)+'</div>'+
                   '<div class="provisions-bar">'+
                     '<span class="label">粮草</span>'+
-                    '<div class="pips">'+renderPips(G.provisions[1],30,'ai')+'</div>'+
+                    '<div class="pips">'+renderPips(G.provisions[1],15,'ai')+'</div>'+
                     '<span class="count">'+G.provisions[1]+'</span>'+
                   '</div>'+
                   '<div style="font-size:0.85em;color:#B8C9D1;font-weight:500">🃏 '+(act===1?p1.hand.length+' 张手牌':'')+'</div>'+
@@ -3828,7 +3833,7 @@ function timeoutReconnect() {
               G.players[0].hand=[];G.players[1].hand=[];
               G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
               G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
-              G.provisions=[30,30];G.currentTurn='player';
+              G.provisions=[15,15];G.currentTurn='player';
               G.players[0].passed=false;G.players[1].passed=false;
               G.selectedCard=null;G.logs=[];G.turnCount=0;
               G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
