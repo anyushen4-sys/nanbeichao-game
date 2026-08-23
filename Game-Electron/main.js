@@ -2,6 +2,13 @@ const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+// ── App User Model ID ──
+// Windows requires this so all Electron helper processes (GPU, utility, renderer)
+// collapse into a single taskbar icon. Without it, each helper process shows up
+// as its own "black" window in the taskbar / Alt+Tab, even though only the
+// renderer is the actual game UI. Must be set BEFORE app.whenReady().
+app.setAppUserModelId('com.nanbeichao.game');
+
 // ── PID Lock File ──
 // Fallback for npx scenario: each `npx electron .` spawns independent cmd.exe tree
 // so requestSingleInstanceLock may not coordinate across processes.
