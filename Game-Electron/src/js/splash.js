@@ -185,10 +185,64 @@ window._playNextVideo = function() {
   video.load();
 
   // 显示视频容器
-  if (videoContainer) {
-    videoContainer.style.display = 'flex';
-    videoContainer.style.opacity = '1';
-  }
+    if (videoContainer) {
+      videoContainer.style.display = 'flex';
+      videoContainer.style.opacity = '1';
+    }
+
+    // 初始化 Canvas 上下文 + video→canvas 帧复制循环
+    // 关键: <video> 元素仍保留用于解码 (readyState=4 / currentTime 推进),
+    // 但渲染走 Canvas 2D drawImage, 完全绕过 Chromium <video> 视频合成层.
+    // 这样即使 Electron 28/43 + Chromium 128/150 的 video compositor 有 bug,
+    // 也能正常显示视频帧 (因为 Canvas 2D 用的是 GPU 图像渲染管线, 不一样).
+    const canvas = document.getElementById('splash-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (!state._canvasRAF) {
+        const drawFrame = () => {
+          const v = document.getElementById('splash-video');
+          const c = document.getElementById('splash-canvas');
+          if (v && c && v.readyState >= 2 && v.videoWidth > 0 && v.videoHeight > 0) {
+            // 调整 canvas 像素尺寸匹配视频
+            if (c.width !== v.videoWidth) c.width = v.videoWidth;
+            if (c.height !== v.videoHeight) c.height = v.videoHeight;
+            try {
+              ctx.drawImage(v, 0, 0, c.width, c.height);
+            } catch (e) {
+              // CORS / tainted canvas 等错误, 静默
+            }
+          }
+        };
+        // 优先用 requestVideoFrameCallback (Chromium 116+, 帧同步)
+        // fallback 到 setInterval(33ms≈30fps) 兼容旧版
+        if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+          const rvfc = () => {
+            drawFrame();
+            const v = document.getElementById('splash-video');
+            if (v && !v.paused && !v.ended && v.requestVideoFrameCallback) {
+              v.requestVideoFrameCallback(rvfc);
+            }
+          };
+          state._canvasRAF = () => {
+            const v = document.getElementById('splash-video');
+            if (v && v.requestVideoFrameCallback) {
+              v.requestVideoFrameCallback(rvfc);
+            }
+          };
+          // 启动
+          const v = document.getElementById('splash-video');
+          if (v && v.requestVideoFrameCallback) {
+            v.requestVideoFrameCallback(rvfc);
+          }
+        } else {
+          // Fallback: setInterval
+          state._canvasRAF = setInterval(drawFrame, 33);
+        }
+      } else {
+        // 已有 RAF, 重新触发一次以切换视频源
+        if (typeof state._canvasRAF === 'function') state._canvasRAF();
+      }
+    }
 
   // 隐藏文字容器（视频段）
   const textContainer = document.getElementById('splash-text-container');
@@ -286,12 +340,20 @@ window.hideSplash = function() {
   state.isSkipped = true;
 
   // 暂停/清空视频
-  const video = document.getElementById('splash-video');
-  if (video) {
-    try { video.pause(); } catch (e) {}
-    video.removeAttribute('src');
-    try { video.load(); } catch (e) {}
-  }
+    const video = document.getElementById('splash-video');
+    if (video) {
+      try { video.pause(); } catch (e) {}
+      video.removeAttribute('src');
+      try { video.load(); } catch (e) {}
+    }
+
+    // 清除 canvas RAF 循环
+    if (state._canvasRAF) {
+      if (typeof state._canvasRAF !== 'function') {
+        try { clearInterval(state._canvasRAF); } catch (e) {}
+      }
+      state._canvasRAF = null;
+    }
 
   // 视频容器淡出
   const videoContainer = document.getElementById('splash-video-container');
