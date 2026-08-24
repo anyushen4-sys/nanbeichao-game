@@ -641,12 +641,12 @@ const CARDS_DATA=[
 
 const LEADERS_DATA=[
 {id:1,name:'宋武帝刘裕',name_en:'Liu Yu, Emperor Wu of Song',faction:'song',ability:{type:'row_boost',row:'infantry',value:2},desc:'本局步兵战力+2',desc_en:'Infantry +2 this game',era:'南朝·宋',era_en:'S. Song'},
-{id:2,name:'齐高帝萧道成',name_en:'Xiao Daocheng, Emperor Gao of Qi',faction:'qi',ability:{type:'extra_draw',value:1},desc:'每局多抽1张牌',desc_en:'+1 draw per round',era:'南朝·齐',era_en:'S. Qi'},
-{id:3,name:'梁武帝萧衍',name_en:'Xiao Yan, Emperor Wu of Liang',faction:'liang',ability:{type:'extra_provisions',value:1},desc:'每局粮草+1',desc_en:'+1 provision per round',era:'南朝·梁',era_en:'S. Liang'},
+{id:2,name:'齐高帝萧道成',name_en:'Xiao Daocheng, Emperor Gao of Qi',faction:'qi',ability:{type:'extra_draw',value:0},desc:'削弱: 无效果',desc_en:'Nerfed: no effect',era:'南朝·齐',era_en:'S. Qi'},
+{id:3,name:'梁武帝萧衍',name_en:'Xiao Yan, Emperor Wu of Liang',faction:'liang',ability:{type:'extra_provisions',value:2},desc:'每局永久+2粮草（强化）',desc_en:'Permanent +2 provisions/round',era:'南朝·梁',era_en:'S. Liang'},
 {id:4,name:'陈武帝陈霸先',name_en:'Chen Baxian, Emperor Wu of Chen',faction:'chen',ability:{type:'row_boost',row:'navy',value:2},desc:'本局水军战力+2',desc_en:'Navy +2 this round',era:'南朝·陈',era_en:'S. Chen'},
 {id:5,name:'北魏太武帝拓跋焘',name_en:'Tuoba Tao, Emperor Taiwu of N Wei',faction:'beiwei',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',desc_en:'Cavalry +2 this round',era:'北朝·北魏',era_en:'N. Wei'},
-{id:6,name:'东魏孝静帝元善见',name_en:'Yuan Shanjian, Emperor Xiaojing of E Wei',faction:'dongwei',ability:{type:'opponent_discard',value:1},desc:'每局对手弃1张牌',desc_en:'Opponent discards 1 per round',era:'北朝·东魏',era_en:'E. Wei'},
-{id:7,name:'西魏文帝元宝炬',name_en:'Yuan Baoju, Emperor Wen of W Wei',faction:'xiwei',ability:{type:'all_boost',value:1},desc:'本局全军战力+1',desc_en:'All units +1 this round',era:'北朝·西魏',era_en:'W. Wei'},
+{id:6,name:'东魏孝静帝元善见',name_en:'Yuan Shanjian, Emperor Xiaojing of E Wei',faction:'dongwei',ability:{type:'opponent_discard',value:0},desc:'削弱: 无效果',desc_en:'Nerfed: no effect',era:'北朝·东魏',era_en:'E. Wei'},
+{id:7,name:'西魏文帝元宝炬',name_en:'Yuan Baoju, Emperor Wen of W Wei',faction:'xiwei',ability:{type:'all_boost',value:2},desc:'本局全军战力+2（强化）',desc_en:'All units +2 this round',era:'北朝·西魏',era_en:'W. Wei'},
 {id:8,name:'北齐文宣帝高洋',name_en:'Gao Yang, Emperor Wenxuan of N Qi',faction:'beiqi',ability:{type:'double_edge',value:3},desc:'最强行+3，最弱行-1（双刃暴君）',desc_en:'Strongest row +3, weakest -1',era:'北朝·北齐',era_en:'N. Qi'},
 {id:9,name:'北周武帝宇文邕',name_en:'Yuwen Yong, Emperor Wu of N Zhou',faction:'beizhou',ability:{type:'hand_boost',value:2},desc:'手牌随机2张+2（整军经武）',desc_en:'Random 2 hand cards +2',era:'北朝·北周',era_en:'N. Zhou'}
 ];
@@ -654,7 +654,7 @@ window.LEADERS_DATA=LEADERS_DATA;
 
 let uid=0;
 function makeCard(c){return{...c,uid:++uid}}
-function getCardCost(s){return Math.ceil(s/3)}
+function getCardCost(s){return Math.ceil(s/2)}
 
 // ===== 02: state-migration-expand — 引入 players[] 数组 =====
 // players[0] = 玩家, players[1] = AI (多人模式: P1/P2)
@@ -667,7 +667,7 @@ players:[
 
 // 顶层属性（无需桥接 — 不属于单个玩家）
 phase:'menu',_menuScreen:'main',round:0,scores:[0,0],
-provisions:[30,30],
+provisions:[15,15],
 currentTurn:'player',
 selectedCard:null,logs:[],turnCount:0,
 globalBuffs:{playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null},
@@ -1155,7 +1155,19 @@ function startRound(){
   G.players[1].passed=false;
   G.selectedCard=null;
   G.turnCount=0;
-  // 粮草不再重置——开局30跨局共享（仅 confirmLeader/resetGame 初始化）
+  // 每回合补给: 双方各 +3 粮草 (跨局不重置)
+  G.provisions[0] += 3;
+  G.provisions[1] += 3;
+  // Farm 时机修复: 之前 afterPlayerTurn/aiTurn 中 aiFarm/playerFarm 加错侧,
+  // 统一在 startRound 兑现一次后,下方 globalBuffs 重置清零
+  if (G.globalBuffs.playerFarm > 0) {
+    G.provisions[0] += G.globalBuffs.playerFarm;
+    addLog(t('ui.log.you_gain_provisions', {count: G.globalBuffs.playerFarm}));
+  }
+  if (G.globalBuffs.aiFarm > 0) {
+    G.provisions[1] += G.globalBuffs.aiFarm;
+    addLog(t('ui.log.ai_gain_provisions', {count: G.globalBuffs.aiFarm}));
+  }
   G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
@@ -1230,10 +1242,7 @@ function afterPlayerTurn(){
     return;
   }
   G.currentTurn='ai';
-  if(G.globalBuffs.aiFarm>0){
-    G.provisions[1]+=G.globalBuffs.aiFarm;
-    addLog(t('ui.log.ai_gain_provisions', {count: G.globalBuffs.aiFarm}));
-  }
+  // farm 已统一在 startRound 兑现;此处不再加粮,避免错侧累加
   render();
   setTimeout(aiTurn,600);
 }
@@ -1295,10 +1304,7 @@ function aiTurn(){
     try{
       if(G.players[0].passed){endRound();return}
       G.currentTurn='player';
-      if(G.globalBuffs.playerFarm>0){
-        G.provisions[0]+=G.globalBuffs.playerFarm;
-        addLog(t('ui.log.you_gain_provisions', {count: G.globalBuffs.playerFarm}));
-      }
+      // farm 已统一在 startRound 兑现;此处不再加粮,避免错侧累加
     }catch(e){}
     // AI 出牌后检查 combo delta
     setTimeout(()=>{ try{ checkComboDelta(); }catch(e){console.error('[checkComboDelta]',e);} },100);
@@ -2057,7 +2063,7 @@ function renderGame(el,lastUid,lastBy){
       <div class="leader">${ln(G.players[0].leader)}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
-        <div class="pips">${renderPips(G.provisions[0],30,'player')}</div>
+        <div class="pips">${renderPips(G.provisions[0],15,'player')}</div>
         <span class="count">${G.provisions[0]}</span>
       </div>
     </div>
@@ -2071,7 +2077,7 @@ function renderGame(el,lastUid,lastBy){
       <div class="leader">${ln(G.players[1].leader)}</div>
       <div class="provisions-bar">
         <span class="label">粮草</span>
-        <div class="pips">${renderPips(G.provisions[1],30,'ai')}</div>
+        <div class="pips">${renderPips(G.provisions[1],15,'ai')}</div>
         <span class="count">${G.provisions[1]}</span>
       </div>
       <div class="opponent-hand-pile">
@@ -2533,7 +2539,7 @@ function renderGameResult(el){
               '<div class="leader">' + (p0.leader ? ln(p0.leader) : '') + '</div>' +
               '<div class="provisions-bar">' +
                 '<span class="label">' + t('ui.game.provisions') + '</span>' +
-                '<div class="pips">' + renderPips(G.provisions[0], 30, 'player') + '</div>' +
+                '<div class="pips">' + renderPips(G.provisions[0], 15, 'player') + '</div>' +
                 '<span class="count">' + G.provisions[0] + '</span>' +
               '</div>' +
             '</div>' +
@@ -2546,7 +2552,7 @@ function renderGameResult(el){
               '<div class="leader">' + (p1.leader ? ln(p1.leader) : '') + '</div>' +
               '<div class="provisions-bar">' +
                 '<span class="label">粮草</span>' +
-                '<div class="pips">' + renderPips(G.provisions[1], 30, 'ai') + '</div>' +
+                '<div class="pips">' + renderPips(G.provisions[1], 15, 'ai') + '</div>' +
                 '<span class="count">' + G.provisions[1] + '</span>' +
               '</div>' +
             '</div>' +
@@ -3714,7 +3720,7 @@ function timeoutReconnect() {
                   '<div class="leader">'+ln(p0.leader)+'</div>'+
                   '<div class="provisions-bar">'+
                     '<span class="label">粮草</span>'+
-                    '<div class="pips">'+renderPips(G.provisions[0],30,'player')+'</div>'+
+                    '<div class="pips">'+renderPips(G.provisions[0],15,'player')+'</div>'+
                     '<span class="count">'+G.provisions[0]+'</span>'+
                   '</div>'+
                   '<div style="font-size:0.85em;color:#B8B8D1;font-weight:500">🃏 '+(act===0?p0.hand.length+' 张手牌':'')+'</div>'+
@@ -3729,7 +3735,7 @@ function timeoutReconnect() {
                   '<div class="leader">'+ln(p1.leader)+'</div>'+
                   '<div class="provisions-bar">'+
                     '<span class="label">粮草</span>'+
-                    '<div class="pips">'+renderPips(G.provisions[1],30,'ai')+'</div>'+
+                    '<div class="pips">'+renderPips(G.provisions[1],15,'ai')+'</div>'+
                     '<span class="count">'+G.provisions[1]+'</span>'+
                   '</div>'+
                   '<div style="font-size:0.85em;color:#B8C9D1;font-weight:500">🃏 '+(act===1?p1.hand.length+' 张手牌':'')+'</div>'+
