@@ -1642,7 +1642,7 @@ function showNotification(text,dur=2500){
 }
 
 function render(){
-  console.log('[render] called, G.phase=', G.phase);
+  // console.log('[render] called') removed for balance-500 perf
   const app=document.getElementById('app');
   const lastUid=G._lastPlayedUid;
   const lastBy=G._lastPlayedBy;

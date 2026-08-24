@@ -115,7 +115,7 @@ try {
     `
     function t(key, params) { return stub_t(key, params); }
     function addLog(msg) { stub_addLog(msg); }
-    function render() { stub_render(); }
+    var render = function() { stub_render(); };
     function showNotification(text, dur) { stub_showNotification(text, dur); }
     function showToast(text, dur) { stub_showToast(text, dur); }
     function renderPips() { return stub_renderPips(); }
@@ -395,7 +395,7 @@ function simulateGame(gameIdx) {
 // ===== RUN 500 ROUNDS (across multiple games) =====
 console.log('\n=== 500 Round AI vs AI Balance Test ===\n');
 
-const TOTAL_ROUNDS = 100;
+const TOTAL_ROUNDS = 500;
 const allStats = [];
 let totalRoundsRun = 0;
 
