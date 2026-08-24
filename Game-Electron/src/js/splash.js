@@ -15,23 +15,17 @@
 
 window._splashState = {
   currentVideo: 0,
-  currentText: 0,
   isPlaying: false,
   isSkipped: false,
-  // 文件名必须与 src/assets/intro/*.mp4 一致（intro_04/05/06 无后缀）
-  videos: ['intro_01_mystery', 'intro_02_battle', 'intro_03_generals', 'intro_04', 'intro_05', 'intro_06'],
-  // 每段视频的备用时长（秒）— Agnes AI 生成的视频没有 moov box,
-  // 浏览器无法读 duration, ended 事件不触发。用 setTimeout 强制推进。
-  videoDurations: [7, 7, 7, 7, 7, 7],
+  // 单文件：6 段已合并为 intro_combined.mp4（35.75 秒）
+  videos: ['intro_combined'],
+  // 单视频备用时长（秒）
+  videoDurations: [40],
   texts: [
-    { title: '南北朝·天下对弈', body: '南朝宋齐梁陈，北朝魏齐周隋——三百年的风云际会，英雄辈出的乱世篇章。' },
-    { title: '群雄逐鹿', body: '从刘裕北伐到宇文泰改制，从北魏统一到侯景之乱——每一段历史都是一场无声的博弈。' },
-    { title: '运筹帷幄', body: '四行布阵，三局两胜。粮草、战力、谋略——步步为营，方能决胜千里。' },
-    { title: '将相风云', body: '陈庆之以七千白袍破敌百万，韦孝宽以一城之力挽狂澜——乱世英雄，各领风骚。' },
-    { title: '天下归一', body: '历尽沧桑，终见曙光。隋唐一统，开启新的篇章——而你的传奇，才刚刚开始。' }
+    { title: '南北朝·天下对弈', body: '南朝宋齐梁陈，北朝魏齐周隋——三百年的风云际会，英雄辈出的乱世篇章。' }
   ],
-  videoToText: [null, null, null, 0, 1, 2], // 视频索引 -> 文本索引
-  textToShow: [3, 4] // 文本 0,1,2 在视频前显示，3,4 跟随视频 4,5
+  videoToText: [0],
+  textToShow: []
 };
 
 window._splashAudio = {
@@ -161,13 +155,13 @@ window.showSplash = function() {
     if (btn) btn.style.display = 'block';
   }, 3000);
 
-  // 60s 总超时安全网（6 段 × 8s + 12s buffer）
+  // 50s 总超时安全网（35.75s 视频 + 14s buffer）
   state._safetyTimeout = setTimeout(() => {
     if (window._splashState.isPlaying) {
-      console.warn('[Splash] 60s safety timeout, hiding');
+      console.warn('[Splash] 50s safety timeout, hiding');
       window.hideSplash();
     }
-  }, 60000);
+  }, 50000);
 
   // 开始播放第一段
   window._playNextVideo();
@@ -180,8 +174,7 @@ window._playNextVideo = function() {
   const videoContainer = document.getElementById('splash-video-container');
   const progress = document.getElementById('splash-progress');
 
-  if (!video || state.currentVideo >= state.videos.length) {
-    // 全部播完
+  if (!video) {
     window.hideSplash();
     return;
   }
@@ -260,8 +253,9 @@ window._playNextVideo = function() {
 window._onVideoEnded = function() {
   const state = window._splashState;
   if (!state.isPlaying) return;
-  state.currentVideo++;
-  window._playNextVideo();
+  // 单视频：直接隐藏 splash
+  console.log('[Splash] video ended, hiding splash');
+  window.hideSplash();
 };
 
 // ===== 视频 timeupdate 回调 =====
