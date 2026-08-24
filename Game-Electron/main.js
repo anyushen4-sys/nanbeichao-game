@@ -13,14 +13,12 @@ app.setAppUserModelId('com.nanbeichao.game');
 // but on Windows 11 + Chromium 110+ some versions need this explicit switch).
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
-// WORKAROUND for Electron 28 + Chromium 110 GPU compositor bug:
-// <video> elements load fine (play() resolves, currentTime advances,
-// videoWidth/Height set, readyState=4) but no frames are drawn to screen.
-// Same compositor fails to blit some main-menu images.
-// Disabling GPU hardware acceleration forces software compositing which
-// works correctly. Splash is short (30s) so software decode cost is acceptable.
-app.disableHardwareAcceleration();
-console.log('[Main] GPU hardware acceleration disabled (software compositor)');
+// GPU hardware acceleration ENABLED (default).
+// Earlier experiments disabled it as a "video compositor workaround" but software
+// compositing actually breaks video rendering on Electron 28+/Chromium 110+ on
+// Windows 11 — see Chromium bug where video frames don't blit under software path.
+// Hardware accel + on-screen GPU compositor is the correct config.
+console.log('[Main] GPU hardware acceleration ENABLED (hardware compositor)');
 
 // ── PID Lock File ──
 // Fallback for npx scenario: each `npx electron .` spawns independent cmd.exe tree
