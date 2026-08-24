@@ -20,6 +20,9 @@ window._splashState = {
   isSkipped: false,
   // 文件名必须与 src/assets/intro/*.mp4 一致（intro_04/05/06 无后缀）
   videos: ['intro_01_mystery', 'intro_02_battle', 'intro_03_generals', 'intro_04', 'intro_05', 'intro_06'],
+  // 每段视频的备用时长（秒）— Agnes AI 生成的视频没有 moov box,
+  // 浏览器无法读 duration, ended 事件不触发。用 setTimeout 强制推进。
+  videoDurations: [7, 7, 7, 7, 7, 7],
   texts: [
     { title: '南北朝·天下对弈', body: '南朝宋齐梁陈，北朝魏齐周隋——三百年的风云际会，英雄辈出的乱世篇章。' },
     { title: '群雄逐鹿', body: '从刘裕北伐到宇文泰改制，从北魏统一到侯景之乱——每一段历史都是一场无声的博弈。' },
@@ -158,13 +161,13 @@ window.showSplash = function() {
     if (btn) btn.style.display = 'block';
   }, 3000);
 
-  // 30s 总超时安全网（防止视频卡住）
+  // 50s 总超时安全网（防止视频卡住, 6 段 × 7s = 42s + 8s buffer）
   state._safetyTimeout = setTimeout(() => {
     if (window._splashState.isPlaying) {
-      console.warn('[Splash] 30s safety timeout, hiding');
+      console.warn('[Splash] 50s safety timeout, hiding');
       window.hideSplash();
     }
-  }, 30000);
+  }, 50000);
 
   // 开始播放第一段
   window._playNextVideo();
@@ -213,6 +216,22 @@ window._playNextVideo = function() {
   if (progress) {
     progress.style.width = `${(state.currentVideo / state.videos.length) * 100}%`;
   }
+
+  // 后备超时：Agnes AI 生成的 mp4 没有 moov box, 浏览器无法读 duration,
+  // ended 事件不会触发。用 setTimeout 强制推进。
+  if (state._videoAdvanceTimeout) {
+    clearTimeout(state._videoAdvanceTimeout);
+    state._videoAdvanceTimeout = null;
+  }
+  let timeoutMs = state.videoDurations[state.currentVideo] * 1000;
+  // 如果视频能读 duration, 用真实时长（更精确）
+  if (video.duration && isFinite(video.duration) && video.duration > 0) {
+    timeoutMs = Math.min(timeoutMs, (video.duration + 0.3) * 1000);
+  }
+  state._videoAdvanceTimeout = setTimeout(() => {
+    console.log(`[Splash] advance timeout (${timeoutMs}ms) for video ${state.currentVideo + 1}`);
+    window._onVideoEnded();
+  }, timeoutMs);
 };
 
 // ===== 视频结束回调 =====
