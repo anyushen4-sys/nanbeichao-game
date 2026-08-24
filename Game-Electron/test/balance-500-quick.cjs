@@ -123,6 +123,16 @@ try {
     function initMultiplayer() { stub_initMultiplayer(); }
     function getFactionName(f) { return (FACTIONS[f] && FACTIONS[f].name) || f; }
     ${fullCode}
+    // Override Math.random with seeded RNG for reproducible test results
+    let _rngState = 12345;
+    function _seededRand() {
+      _rngState |= 0; _rngState = (_rngState + 0x6D2B79F5) | 0;
+      let t = Math.imul(_rngState ^ (_rngState >>> 15), 1 | _rngState);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    Math.random = _seededRand;
+    if (typeof random === 'function') { /* game uses 'random' not Math.random directly */ }
     return {
       G,
       confirmLeader: typeof confirmLeader === 'function' ? confirmLeader : null,
