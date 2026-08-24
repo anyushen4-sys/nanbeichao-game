@@ -207,15 +207,37 @@ window._playNextVideo = function() {
   }
 
   // 播放（autoplay 可能被浏览器拦，会 fallback 到第一次用户交互）
-  const playPromise = video.play();
-  if (playPromise && typeof playPromise.catch === 'function') {
-    playPromise.catch(e => console.warn('[Splash] video play failed:', e && e.message));
-  }
+  // Aggressive play: try immediately, also retry on loadeddata (mp4-without-moov
+  // 可能需要先 download 完才能 readyState >= 2)
+  let _playedOnce = false;
+  const tryPlay = () => {
+    if (_playedOnce) return;
+    const p = video.play();
+    if (p && typeof p.then === 'function') {
+      p.then(() => { _playedOnce = true; }).catch(e => {
+        // autoplay blocked, log and retry on next user interaction
+        console.warn('[Splash] video.play() rejected:', e && e.message);
+      });
+    } else {
+      _playedOnce = true;
+    }
+  };
+  video.removeEventListener('loadeddata', tryPlay);
+  video.addEventListener('loadeddata', tryPlay, { once: true });
+  tryPlay();
 
   // 进度条：段开始位置
   if (progress) {
     progress.style.width = `${(state.currentVideo / state.videos.length) * 100}%`;
   }
+
+  // DIAGNOSTIC: log video element state every 1s
+  const _diag = setInterval(() => {
+    const r = video.getBoundingClientRect();
+    console.log(`[Splash diag v${state.currentVideo + 1}] src=${video.src.split('/').pop()} readyState=${video.readyState} networkState=${video.networkState} duration=${video.duration} vw=${video.videoWidth}x${video.videoHeight} rect=${Math.round(r.width)}x${Math.round(r.height)} paused=${video.paused} currentTime=${video.currentTime.toFixed(1)} err=${video.error ? video.error.code : 'none'}`);
+  }, 1000);
+  if (state._diagInterval) clearInterval(state._diagInterval);
+  state._diagInterval = _diag;
 
   // 后备超时：Agnes AI 生成的 mp4 没有 moov box, 浏览器无法读 duration,
   // ended 事件不会触发。用 setTimeout 强制推进。

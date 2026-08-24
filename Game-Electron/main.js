@@ -9,6 +9,19 @@ const fs = require('fs');
 // renderer is the actual game UI. Must be set BEFORE app.whenReady().
 app.setAppUserModelId('com.nanbeichao.game');
 
+// Allow autoplay without user gesture (Electron default is "no-user-gesture-required"
+// but on Windows 11 + Chromium 110+ some versions need this explicit switch).
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
+// WORKAROUND for Electron 28 + Chromium 110 GPU compositor bug:
+// <video> elements load fine (play() resolves, currentTime advances,
+// videoWidth/Height set, readyState=4) but no frames are drawn to screen.
+// Same compositor fails to blit some main-menu images.
+// Disabling GPU hardware acceleration forces software compositing which
+// works correctly. Splash is short (30s) so software decode cost is acceptable.
+app.disableHardwareAcceleration();
+console.log('[Main] GPU hardware acceleration disabled (software compositor)');
+
 // ── PID Lock File ──
 // Fallback for npx scenario: each `npx electron .` spawns independent cmd.exe tree
 // so requestSingleInstanceLock may not coordinate across processes.
