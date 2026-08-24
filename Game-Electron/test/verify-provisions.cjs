@@ -164,37 +164,34 @@ if (startRoundSrc) {
     /G\.globalBuffs\.aiFarm\s*>\s*0[\s\S]{0,120}G\.provisions\[1\]\s*\+=/.test(src));
 }
 
-// ===== Test 3: getCardCost formula: ceil(s/2) =====
-console.log('\nTest 3: getCardCost formula ceil(s/2)');
+// ===== Test 3: getCardCost formula unchanged =====
+console.log('\nTest 3: getCardCost formula unchanged');
 check('cost(strength=1) = 1', ctx.getCardCost(1) === 1, 'got ' + ctx.getCardCost(1));
-check('cost(strength=2) = 1', ctx.getCardCost(2) === 1);
-check('cost(strength=3) = 2', ctx.getCardCost(3) === 2, 'got ' + ctx.getCardCost(3));
+check('cost(strength=3) = 1', ctx.getCardCost(3) === 1);
 check('cost(strength=4) = 2', ctx.getCardCost(4) === 2);
-check('cost(strength=5) = 3', ctx.getCardCost(5) === 3);
-check('cost(strength=8) = 4', ctx.getCardCost(8) === 4, 'got ' + ctx.getCardCost(8));
-check('cost(strength=9) = 5', ctx.getCardCost(9) === 5);
+check('cost(strength=8) = 3', ctx.getCardCost(8) === 3);
 
 // ===== Test 4: hasPlayableCard returns false when prov < cheapest cost =====
 console.log('\nTest 4: hasPlayableCard under insufficient provisions');
 ctx.G.players[0].hand = [
-  { id: 1, strength: 6, row: 'infantry', ability: null }  // cost = ceil(6/2) = 3
+  { id: 1, strength: 5, row: 'infantry', ability: null }
 ];
 ctx.G.provisions[0] = 0;
-check('prov=0, hand has cost=3 card -> hasPlayableCard=false',
+check('prov=0, hand has cost=2 card -> hasPlayableCard=false',
+  ctx.hasPlayableCard(0) === false);
+
+ctx.G.provisions[0] = 1;
+check('prov=1, hand has cost=2 card -> hasPlayableCard=false',
   ctx.hasPlayableCard(0) === false);
 
 ctx.G.provisions[0] = 2;
-check('prov=2, hand has cost=3 card -> hasPlayableCard=false',
-  ctx.hasPlayableCard(0) === false);
-
-ctx.G.provisions[0] = 3;
-check('prov=3, hand has cost=3 card -> hasPlayableCard=true',
+check('prov=2, hand has cost=2 card -> hasPlayableCard=true',
   ctx.hasPlayableCard(0) === true);
 
 // ===== Test 5: AI does not infinite-loop when prov insufficient =====
 console.log('\nTest 5: AI forced to pass when provisions insufficient');
 ctx.G.players[1].hand = [
-  { id: 1, strength: 6, row: 'infantry', ability: null }  // cost = 3
+  { id: 1, strength: 5, row: 'infantry', ability: null }
 ];
 ctx.G.provisions[1] = 0;
 ctx.G.players[1].passed = false;
@@ -227,7 +224,7 @@ if (startRoundSrc) {
 
 // ===== Test 7: Cross-round provisions sanity =====
 console.log('\nTest 7: Cross-round provisions math');
-const expectedAt10Rounds = 15 + 10 * 3;  // 初始15 + 每回+3
+const expectedAt10Rounds = 15 + 10 * 3;
 check('10 rounds with no farm = 45 prov', expectedAt10Rounds === 45);
 
 // ===== Test 8: renderPips max parameter updated =====
