@@ -155,22 +155,33 @@ window.showSplash = function() {
   state.isSkipped = false;
   splash.style.display = 'block';
 
-  // 3s 后显示跳过按钮
-  setTimeout(() => {
-    const btn = document.getElementById('splash-skip-btn');
-    if (btn) btn.style.display = 'block';
-  }, 3000);
+  // 立刻显示跳过按钮
+  const btn = document.getElementById('splash-skip-btn');
+  if (btn) btn.style.display = 'block';
 
-  // 50s 总超时安全网（防止视频卡住, 6 段 × 7s = 42s + 8s buffer）
+  // WORKAROUND: Electron video compositing bug — <video> elements load fine
+  // (readyState=4, currentTime advances) but no frames are drawn to screen on
+  // Windows + Chromium 110. We've tried mp4→webm, Electron 32, and
+  // disableHardwareAcceleration — none fix it. Skip the video sequence and
+  // show a quick text-only splash (~2.5s) so the user gets a brief cinematic
+  // intro and lands in the menu quickly. The video files remain in the build
+  // for future use once the rendering pipeline is fixed.
+  console.log('[Splash] video compositing bug — skipping video sequence, showing text-only splash for 2.5s');
+  // Display splash title text immediately
+  const splashText = document.getElementById('splash-text');
+  if (splashText) {
+    splashText.textContent = '南北朝 · 天下对弈';
+    splashText.style.display = 'block';
+    splashText.style.opacity = '1';
+  }
+
+  // Auto-hide after 2.5s
   state._safetyTimeout = setTimeout(() => {
     if (window._splashState.isPlaying) {
-      console.warn('[Splash] 50s safety timeout, hiding');
+      console.log('[Splash] auto-hide after 2.5s (text-only)');
       window.hideSplash();
     }
-  }, 50000);
-
-  // 开始播放第一段
-  window._playNextVideo();
+  }, 2500);
 };
 
 // ===== 推进到下一段视频 =====
@@ -186,8 +197,8 @@ window._playNextVideo = function() {
     return;
   }
 
-  const videoSrc = `assets/intro/${state.videos[state.currentVideo]}.mp4`;
-  console.log(`[Splash] playing ${state.currentVideo + 1}/${state.videos.length}: ${videoSrc}`);
+  const videoSrc = `assets/intro/${state.videos[state.currentVideo]}.webm`;
+  console.log(`[Splash] playing ${state.currentVideo + 1}/${state.videos.length}: ${videoSrc} (webm)`);
   video.src = videoSrc;
   video.load();
 
