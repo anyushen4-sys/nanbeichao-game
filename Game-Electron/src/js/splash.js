@@ -17,7 +17,7 @@ window._splashState = {
   currentSegment: 0,
   // 9 个君主 (按真实南北朝顺序), 仅 6 个有真实视频
   leaders: [
-    { id: 'L1', name: '刘裕',   title: '南朝宋武帝 · 金戈铁马',  video: null },                       // fallback
+    { id: 'L1', name: '刘裕',   title: '南朝宋武帝 · 金戈铁马',  video: 'leader_L1_agnes.mp4' },      // Agnes 真实视频
     { id: 'L2', name: '萧道成', title: '南朝齐高帝 · 权臣篡位',  video: 'leader_L2.mp4' },           // 真实视频
     { id: 'L3', name: '陈霸先', title: '南朝陈武帝 · 乱世平南',  video: null },                       // fallback
     { id: 'L4', name: '宇文泰', title: '北朝西魏权臣 · 关陇集团', video: 'leader_L4.mp4' },           // 真实视频
