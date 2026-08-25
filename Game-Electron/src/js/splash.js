@@ -417,16 +417,18 @@ window.hideSplash = function() {
   state.isSkipped = true;
 
   splash.style.opacity = '0';
-  setTimeout(() => {
-    splash.style.display = 'none';
-    splash.style.opacity = '1';
-    if (typeof G !== 'undefined') {
-      G.phase = 'menu';
-      G._menuScreen = 'main';
-      if (typeof render === 'function') render();
-    }
-  }, 600);
-};
+    setTimeout(() => {
+      splash.style.display = 'none';
+      splash.style.opacity = '1';
+      // 触发 splash 结束事件, 让 index.html 延迟预加载领袖图
+      try { document.dispatchEvent(new Event('splash:ended')); } catch (e) {}
+      if (typeof G !== 'undefined') {
+        G.phase = 'menu';
+        G._menuScreen = 'main';
+        if (typeof render === 'function') render();
+      }
+    }, 600);
+  };
 
 window._splashSkip = function() {
   window.hideSplash();

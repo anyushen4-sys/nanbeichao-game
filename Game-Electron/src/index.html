@@ -5,16 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>南北朝·天下对弈</title>
 <link rel="stylesheet" href="css/game.css"/>
-<!-- 领袖图预加载: 避免选择页加载时下半屏空白 -->
-<link rel="preload" as="image" href="assets/leaders/leader_L1.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L2.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L3.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L4.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L5.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L6.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L7.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L8.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L9.png" fetchpriority="auto"/>
+<!-- 领袖图按需加载: 仅在离开 splash 后才预加载, 避免 Chromium preload 警告 -->
+<script>
+(function(){
+  function preloadLeaders(){
+    if (window.__leadersPreloaded) return;
+    window.__leadersPreloaded = true;
+    ['L1','L2','L3','L4','L5','L6','L7','L8','L9'].forEach(function(id){
+      var l = document.createElement('link');
+      l.rel = 'preload';
+      l.as = 'image';
+      l.href = 'assets/leaders/leader_' + id + '.png';
+      document.head.appendChild(l);
+    });
+  }
+  // 监听 splash 结束 / 主菜单显示
+  document.addEventListener('splash:ended', preloadLeaders);
+  document.addEventListener('DOMContentLoaded', function(){
+    // 主菜单 ready 后 8 秒触发 (splash 大约 50-78 秒)
+    setTimeout(preloadLeaders, 80000);
+  });
+})();
+</script>
 
 
 <!-- ===== Multiplayer Dev Mock (URL ?mockmp=1) ===== -->
