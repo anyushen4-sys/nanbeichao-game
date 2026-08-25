@@ -205,9 +205,15 @@ window._playLeaderSegment = function(leaderIdx) {
   if (historyContainer) historyContainer.style.display = 'none';
 
   // 显示君主容器 + 设置君主名
-  if (leaderContainer) leaderContainer.style.display = 'block';
-  if (leaderName) leaderName.textContent = leader.name;
-  if (leaderTitle) leaderTitle.textContent = leader.title;
+    if (leaderContainer) leaderContainer.style.display = 'block';
+    if (leaderName) leaderName.textContent = leader.name;
+    if (leaderTitle) leaderTitle.textContent = leader.title;
+    // 设置君主图 (避免 Chromium preload 警告, 且 fallback 君主卡牌也能看到图)
+    const leaderImg = document.getElementById('splash-leader-img');
+    if (leaderImg) {
+      leaderImg.src = `assets/leaders/leader_${leader.id}.png`;
+      leaderImg.alt = leader.name;
+    }
 
   // 3D 翻转 - 重置
   if (leaderCard) {
