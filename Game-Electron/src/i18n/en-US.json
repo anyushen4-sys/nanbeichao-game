@@ -263,6 +263,7 @@
       "played_card": "{player} played {card}",
       "ai_gain_provisions": "AI gained {count} provisions (Farming)",
       "you_gain_provisions": "You gained {count} provisions (Farming)",
+      "both_gain_provisions": "Both gained {count} provisions (Round bonus)",
       "ai_play_failed": "AI play failed: {error}",
       "ai_error": "AI error: {error}",
       "mulligan_start": "Enter Mulligan Phase",
@@ -326,6 +327,18 @@
       "combo_type_synergy": "{type} Type Synergy: All {type} cards +1",
       "combo_row_stacking": "{row} Row Stacking: All {row} cards +1",
       "combo_scholar_circle": "Scholar Circle: Poets and ministers +1"
+    },
+    "splash": {
+      "title_1": "Ink Jiangnan · Northern and Southern Dynasties",
+      "title_2": "General Draws Sword · War Begins",
+      "title_3": "Banner Commands · Strategy Wins",
+      "title_4": "Cavalry Charges · Horses Thunder",
+      "title_5": "Two Armies Clash · Final Battle",
+      "text_1": "In 420 AD, Liu Yu established Liu Song. For four centuries, north and south would clash.",
+      "text_2": "Northern Wei general Cui Hao stands at the front, draws his sword — six towns of cavalry await.",
+      "text_3": "Liang general Wei Rui waves his banner — green-clad soldiers await orders.",
+      "text_4": "Iron cavalry thunder out — General Chen Qingzhi's 7,000 white robes defeat Wei's 300,000.",
+      "text_5": "Song and Wei armies face each other across the plain — generals as chess pieces."
     }
   },
   "combo": {

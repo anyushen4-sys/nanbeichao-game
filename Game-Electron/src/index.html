@@ -442,9 +442,11 @@ window.t = window.t || function(key, vars){
     <div id="splash-text" class="splash-text" style="display:none;"></div>
   </div>
 
-  <!-- 视频播放器容器 -->
+  <!-- 视频播放器容器: <video> 仅用于解码 (offscreen 但 visible),
+         Canvas 实际显示帧 (绕过 Chromium 视频合成 bug). -->
   <div id="splash-video-container" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:#000;">
-    <video id="splash-video" class="splash-video" muted playsinline preload="auto"></video>
+    <video id="splash-video" class="splash-video" muted playsinline preload="auto" style="position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;"></video>
+    <canvas id="splash-canvas" class="splash-canvas" style="display:block;width:100%;height:100%;max-width:100vw;max-height:100vh;object-fit:contain;background:#000;"></canvas>
   </div>
 
   <!-- 跳过按钮 (右上角) -->
@@ -456,7 +458,11 @@ window.t = window.t || function(key, vars){
   </div>
 </div>
 
-<script src="js/card_data_uris.js"></script>
+<script>
+// Inline stub for js/card_data_uris.js (file was removed but renderMulligan + other renderers still reference CARD_DATA_URIS).
+// Define as empty object so expressions like `CARD_DATA_URIS[c.id]||...` resolve to fallback.
+window.CARD_DATA_URIS = window.CARD_DATA_URIS || {};
+</script>
 <script src="js/combos.js"></script>
 <script type="module" src="js/i18n.js"></script>
 <script type="module" src="js/locale.js"></script>
@@ -667,7 +673,7 @@ players:[
 
 // 顶层属性（无需桥接 — 不属于单个玩家）
 phase:'menu',_menuScreen:'main',round:0,scores:[0,0],
-provisions:[30,30],
+provisions:[15,15],
 currentTurn:'player',
 selectedCard:null,logs:[],turnCount:0,
 globalBuffs:{playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null},
@@ -753,9 +759,42 @@ function drawCards(playerIdx,count){
   for(let i=0;i<count&&realHand.length<10&&deck.length>0;i++) realHand.push(deck.shift());
 }
 
+// V9-fix: 全局 toast 管理器 - 防堆叠防卡顿
+// 每种类型最多同时显示 1 个, 新 toast 自动替换旧 toast
+const _toastManager = {
+  // 跟踪当前活跃的 toast (按 type 分组)
+  active: {},  // { combo: [el], info: [el], settlement: [el] }
+  // 节流: 相同类型的 toast 间隔最小 100ms 才创建新的
+  lastCreated: {},  // { combo: ts, info: ts }
+  MIN_INTERVAL: 100,
+};
+
+function _toastShouldCreate(type) {
+  const now = Date.now();
+  const last = _toastManager.lastCreated[type] || 0;
+  if (now - last < _toastManager.MIN_INTERVAL) return false;
+  _toastManager.lastCreated[type] = now;
+  return true;
+}
+
+function _toastRemoveOld(type) {
+  const arr = _toastManager.active[type];
+  if (arr && arr.length) {
+    arr.forEach(el => { try { el.remove(); } catch(e){} });
+  }
+  _toastManager.active[type] = [];
+}
+
+function _toastRegister(type, el) {
+  if (!_toastManager.active[type]) _toastManager.active[type] = [];
+  _toastManager.active[type].push(el);
+}
+
 // V4: Combo 触发 toast 通知
 const _comboToastQueue=[];
 function showComboToast(title,subtitle,desc,dur=2800){
+  if (!_toastShouldCreate('combo')) return;  // 节流
+  _toastRemoveOld('combo');  // 移除旧的 combo toast (防堆叠)
   const el=document.createElement('div');
   el.className='combo-toast';
   el.innerHTML=`<div class="combo-toast-title">${title}</div><div class="combo-toast-subtitle">${subtitle}</div><div class="combo-toast-desc">${desc}</div>`;
@@ -770,7 +809,15 @@ function showComboToast(title,subtitle,desc,dur=2800){
     minWidth:'280px',maxWidth:'420px'
   });
   document.body.appendChild(el);
-  setTimeout(()=>el.remove(),dur+200);
+  _toastRegister('combo', el);
+  setTimeout(()=>{
+    try{ el.remove(); }catch(e){}
+    const arr = _toastManager.active.combo;
+    if (arr) {
+      const idx = arr.indexOf(el);
+      if (idx >= 0) arr.splice(idx, 1);
+    }
+  },dur+200);
 }
 // V4: 触发 combo 触发动画 (一次性) - 给最近触发 combo 的 card-mini 加 class
 const _comboActiveCards=new Set();
@@ -1155,7 +1202,12 @@ function startRound(){
   G.players[1].passed=false;
   G.selectedCard=null;
   G.turnCount=0;
-  // 粮草不再重置——开局30跨局共享（仅 confirmLeader/resetGame 初始化）
+  // 每局自动 +3 粮草 (scheme B: 15开局, +3/局)
+  if(G.round>=2){
+    G.provisions[0]+=3;
+    G.provisions[1]+=3;
+    addLog(t('ui.log.both_gain_provisions',{count:3}));
+  }
   G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
@@ -1506,6 +1558,8 @@ function addLog(msg){G.logs.push(msg);if(G.logs.length>50)G.logs.shift()}
 
 // 轻量 toast 提示（短时浮动通知，非阻塞）
 function showToast(text,dur=2000){
+  if (!_toastShouldCreate('info')) return;  // 节流防堆叠
+  _toastRemoveOld('info');  // 移除旧 info toast
   const el=document.createElement('div');
   el.className='toast-notification';
   el.textContent=text;
@@ -1518,7 +1572,15 @@ function showToast(text,dur=2000){
     animation:'toastAnim '+(dur/1000)+'s ease-in-out forwards'
   });
   document.body.appendChild(el);
-  setTimeout(()=>el.remove(),dur+500);
+  _toastRegister('info', el);
+  setTimeout(()=>{
+    try{ el.remove(); }catch(e){}
+    const arr = _toastManager.active.info;
+    if (arr) {
+      const idx = arr.indexOf(el);
+      if (idx >= 0) arr.splice(idx, 1);
+    }
+  },dur+500);
 }
 // 插入 toast 动画 keyframes（如果还没注入）
 if(!document.getElementById('toast-keyframes')){
@@ -3950,25 +4012,278 @@ function showConfirmModal(title, msg, onYes){
 }
 
 // ===== Splash Screen Controller =====
+
+// Canvas starfield animation (背景星空)
+window._splashCanvasRAF = null;
+window._splashStarsCtx = null;
+function _splashInitStars() {
+  const canvas = document.getElementById('splash-stars');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  window._splashStarsCtx = ctx;
+  const stars = [];
+  for (let i = 0; i < 120; i++) {
+    stars.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 1.4 + 0.3,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      a: Math.random() * 0.6 + 0.3,
+      pulse: Math.random() * Math.PI * 2,
+    });
+  }
+  window._splashStars = stars;
+  const tick = () => {
+    const c = window._splashStarsCtx;
+    if (!c) return;
+    c.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    for (const s of window._splashStars) {
+      s.x += s.vx; s.y += s.vy; s.pulse += 0.05;
+      if (s.x < 0) s.x = window.innerWidth;
+      if (s.x > window.innerWidth) s.x = 0;
+      if (s.y < 0) s.y = window.innerHeight;
+      if (s.y > window.innerHeight) s.y = 0;
+      const a = s.a * (0.6 + Math.sin(s.pulse) * 0.4);
+      c.beginPath();
+      c.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      c.fillStyle = `rgba(218, 200, 150, ${a})`;
+      c.fill();
+    }
+    window._splashCanvasRAF = requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+// Splash sequence state
+window._splashState = {
+  active: false,
+  step: 0,
+  segments: [],
+  videoEl: null,
+  textEl: null,
+  videoContainer: null,
+  progressBar: null,
+  rafTimer: null,
+  hideTimer: null,
+};
+
+// 5 videos concatenated into 1 continuous clip (intro_combined.mp4, ~25s).
+// No more interleaved text segments - this is a single cinematic flow:
+//   1. 墨韵江南·南北朝 (10s)  - 背景介绍，墨韵山水 + 四代战旗
+//   2. 南朝宋武帝刘裕 (8s)    - 黑甲武将 + 步兵阵 + 战旗
+//   3. 北魏太武帝拓跋焘 (8s)   - 铁甲骑兵挥槊怒吼 + 骑兵阵列
+//   4. 南朝陈武帝陈霸先 (8s)   - 黑盔黑甲持旗指挥
+//   5. 两军对垒宏大场面 (10s)  - 红甲骑兵冲锋 + 血色夕阳
+// Total: ~44s. Single click-to-skip. Fade transitions between videos handled by ffmpeg concat.
+// v6 (2026-08-29) - 6 videos concatenated into 1 continuous cinematic clip (~33s):
+//   1. 墨韵江南·南北朝 (6s)   minimax intro_01_bg_mmx        背景介绍，水墨山水+战旗+城楼
+//   2. 刘裕 卡牌 L1 (6s)    agnes_liuyu                   黑甲武将+束髻+城楼
+//   3. 拓跋焘 卡牌 L5 (6s)  agnes_tuobatao                北方少数民族甲胄+怒吼
+//   4. 陈霸先 卡牌 L4 (6s)  agnes_chenbaxian              黑盔+红缨+长矛+军营
+//   5. 三将同框 (6s)          minimax intro_02_generals_mmx 三角构图三人
+//   6. 两军对垒收尾 (6s)      minimax intro_03_battleclimax 血色夕阳+红骑vs黑步
+// v7 (2026-08-29) - 6 videos concatenated into 1 continuous cinematic clip (~40s):
+//   1. minimax Design 背景介绍 (15s)  intro_01_bg_minimax_design   水墨山水 + 书法笔写朝代名（宋齐梁陈/东魏西魏）
+//   2. 刘裕 卡牌 L1 (6s)        agnes_liuyu                    黑甲武将+束髻+城楼
+//   3. 拓跋焘 卡牌 L5 (6s)      agnes_tuobatao                 北方少数民族甲胄+怒吼
+//   4. 陈霸先 卡牌 L4 (6s)      agnes_chenbaxian               黑盔+红缨+长矛+军营
+//   5. 三将同框 (6s)              agnes_v7_generals              持刀+持旗+骑马持矛，夕阳军阵
+//   6. 两军对垒收尾 (6s)          agnes_v7_battleclimax          龙旗+血色千军万马
+// v8 (2026-08-29) - 6 videos concatenated into 1 continuous cinematic clip (~34s):
+//   ALL generated by Agnes V2.5-flash (720P, higher quality than v6/v7):
+//   1. 背景介绍 (8s)            v25_01_bg            水墨山水+朝代名+毛笔+战旗
+//   2. 刘裕 卡牌 L1 (5s)     v25_02_liuyu         黑甲武将+束髻+双手剑+城楼
+//   3. 拓跋焘 卡牌 L5 (5s)   v25_03_tuobatao      铁甲怒吼+骑兵方阵+血阳
+//   4. 陈霸先 卡牌 L4 (5s)   v25_04_chenbaxian    黑盔+红缨+战旗+军营
+//   5. 三将同框 (5s)           v25_05_generals      持刀+持旗+骑马持槊，夕阳军阵
+//   6. 两军对垒收尾 (5s)       v25_06_battleclimax  红骑vs黑步+长城+血阳+孤将
+window._splashSequence = [
+  { type: 'video', src: 'assets/intro/intro_combined.mp4', duration: 34 },
+];
+
 window.showSplash = function() {
   const splash = document.getElementById('splash-screen');
   if (!splash) return;
+  // Defer leader PNG preload until splash is gone (perf fix)
   splash.style.display = 'block';
-  // Show skip button after 3 seconds
+  window._splashState.active = true;
+  window._splashState.step = 0;
+  window._splashState.videoEl = document.getElementById('splash-video');
+  window._splashState.textEl = document.getElementById('splash-text');
+  window._splashState.videoContainer = document.getElementById('splash-video-container');
+  window._splashState.progressBar = document.getElementById('splash-progress');
+  _splashInitStars();
+  // Show skip button after 3s
   setTimeout(() => {
     const btn = document.getElementById('splash-skip-btn');
     if (btn) btn.style.display = 'block';
   }, 3000);
-  // Auto-hide after 30 seconds or when video ends
-  setTimeout(() => {
+  // Total safety cap (6 videos × 6s + 5 text × 3s ≈ 51s, pad to 75s)
+  window._splashState.hideTimer = setTimeout(() => {
+    if (window._splashState.active) window.hideSplash();
+  }, 75000);
+  window._splashRunStep();
+};
+
+window._splashRunStep = function() {
+  if (!window._splashState.active) return;
+  const idx = window._splashState.step;
+  const seg = window._splashSequence[idx];
+  const total = window._splashSequence.length;
+  if (!seg) {
     window.hideSplash();
-  }, 30000);
+    return;
+  }
+  // Update progress bar
+  if (window._splashState.progressBar) {
+    window._splashState.progressBar.style.width = ((idx + 0.5) / total * 100) + '%';
+  }
+  if (seg.type === 'video') {
+    // Show video, hide text
+    if (window._splashState.textEl) window._splashState.textEl.style.display = 'none';
+    if (window._splashState.videoContainer) window._splashState.videoContainer.style.display = 'flex';
+    const v = window._splashState.videoEl;
+    if (v) {
+      v.src = seg.src;
+      v.currentTime = 0;
+      v.muted = true;
+      v.playsInline = true;
+      // DIAG: Log every step so we can debug black screen
+      console.log('[splash] loading', seg.src, 'state:', v.readyState, 'error:', v.error);
+      v.onerror = () => {
+        console.error('[splash] VIDEO LOAD FAILED:', seg.src, 'code:', v.error ? v.error.code : 'n/a', 'msg:', v.error ? v.error.message : 'n/a');
+      };
+      v.onloadedmetadata = () => {
+        console.log('[splash] metadata loaded:', seg.src, v.videoWidth + 'x' + v.videoHeight, v.duration + 's');
+      };
+      v.onplaying = () => {
+        console.log('[splash] playing:', seg.src, 'readyState=', v.readyState);
+        // Start canvas render loop (workaround for Chromium video compositor bug)
+        const canvas = document.getElementById('splash-canvas');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          const drawFrame = () => {
+            if (v.readyState >= 2 && v.videoWidth > 0 && v.videoHeight > 0) {
+              if (canvas.width !== v.videoWidth) canvas.width = v.videoWidth;
+              if (canvas.height !== v.videoHeight) canvas.height = v.videoHeight;
+              try { ctx.drawImage(v, 0, 0, canvas.width, canvas.height); } catch (e) { /* CORS */ }
+              if (window._splashState && window._splashState._framesDrawn === undefined) window._splashState._framesDrawn = 0;
+              if (window._splashState) window._splashState._framesDrawn++;
+            }
+          };
+          // Always run setInterval fallback (more reliable than requestVideoFrameCallback on Electron)
+          let drawCount = 0;
+          const intervalId = setInterval(() => {
+            drawCount++;
+            if (v.paused || v.ended || !window._splashState || !window._splashState.active) {
+              clearInterval(intervalId);
+              console.log('[splash] canvas loop ended after', drawCount, 'ticks');
+              return;
+            }
+            drawFrame();
+            if (drawCount === 30) console.log('[splash] canvas drew', drawCount, 'frames, readyState=', v.readyState);
+          }, 33);
+          // Also kick off with requestVideoFrameCallback for frame-accurate sync
+          if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+            const rvfc = () => {
+              drawFrame();
+              if (!v.paused && !v.ended) v.requestVideoFrameCallback(rvfc);
+            };
+            v.requestVideoFrameCallback(rvfc);
+          }
+          // Draw first frame immediately
+          drawFrame();
+          console.log('[splash] canvas draw loop started');
+        }
+      };
+      v.onwaiting = () => console.log('[splash] WAITING:', seg.src);
+      v.play().catch((err) => {
+        console.warn('[splash] video autoplay blocked, using 6s fallback:', err);
+      });
+      const onEnded = () => {
+        console.log('[splash] ended:', seg.src);
+        v.removeEventListener('ended', onEnded);
+        // Fade out canvas for smoother transition
+        const canvas = document.getElementById('splash-canvas');
+        if (canvas) {
+          canvas.style.transition = 'opacity 0.5s ease-out';
+          canvas.style.opacity = '0';
+        }
+        setTimeout(() => {
+          if (window._splashState.active && window._splashState.step === idx) {
+            window._splashState.step++;
+            window._splashRunStep();
+          }
+        }, 500);
+      };
+      v.addEventListener('ended', onEnded);
+      // Safety fallback: 12s per video (8s too short for intro_01 8s clip + buffer)
+      setTimeout(() => {
+        if (window._splashState.active && window._splashState.step === idx) {
+          console.log('[splash] SAFETY timeout fired for', seg.src);
+          v.removeEventListener('ended', onEnded);
+          window._splashState.step++;
+          window._splashRunStep();
+        }
+      }, 12000);
+    } else {
+      window._splashState.step++;
+      window._splashRunStep();
+    }
+  } else if (seg.type === 'text') {
+    // Show text, hide video
+    if (window._splashState.videoContainer) window._splashState.videoContainer.style.display = 'none';
+    const v = window._splashState.videoEl;
+    if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+    if (window._splashState.textEl) {
+      const title = window.t ? window.t(seg.key) : seg.key;
+      const body = window.t ? window.t(seg.bodyKey) : seg.bodyKey;
+      window._splashState.textEl.innerHTML =
+        `<div class="splash-title">${title}</div><div class="splash-body">${body}</div>`;
+      window._splashState.textEl.style.display = 'block';
+    }
+    // 6s per text segment (was 4s — too short for players to read 80-char historical passage)
+    // Also add fade in effect for smoother transition
+    setTimeout(() => {
+      if (window._splashState.active && window._splashState.step === idx) {
+        // Fade in next video segment
+        const canvas = document.getElementById('splash-canvas');
+        if (canvas) {
+          canvas.style.transition = 'opacity 0.5s ease-in';
+          canvas.style.opacity = '1';
+        }
+        window._splashState.step++;
+        window._splashRunStep();
+      }
+    }, 6000);
+  }
 };
 
 window.hideSplash = function() {
+  window._splashState.active = false;
+  if (window._splashState.hideTimer) {
+    clearTimeout(window._splashState.hideTimer);
+    window._splashState.hideTimer = null;
+  }
+  if (window._splashCanvasRAF) {
+    cancelAnimationFrame(window._splashCanvasRAF);
+    window._splashCanvasRAF = null;
+  }
+  const v = window._splashState.videoEl || document.getElementById('splash-video');
+  if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
   const splash = document.getElementById('splash-screen');
-  if (!splash) return;
-  splash.style.display = 'none';
+  if (splash) splash.style.display = 'none';
+  // After splash ends, preload leader PNGs now (f2204e2 perf fix)
+  if (typeof window._preloadLeaderPNGs === 'function') {
+    try { window._preloadLeaderPNGs(); } catch(e) { console.warn('[splash] leader preload failed', e); }
+  }
 };
 
 window._splashSkip = function() {
@@ -3985,6 +4300,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+});
+
+// Auto-start splash on first load
+document.addEventListener('DOMContentLoaded', () => {
+  // Skip splash if ?nosplash query param
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('nosplash')) return;
+  // Defer 1 frame so DOM paint settles
+  setTimeout(() => {
+    if (typeof window.showSplash === 'function') window.showSplash();
+  }, 50);
 });
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -4011,6 +4337,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 <style>
 .card-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px;font-size:11px;line-height:1.2}
+/* Splash text + skip + progress */
+.splash-text{text-align:center;color:#E8D8B0;max-width:80vw;padding:0 24px;animation:splash-text-fade-in 1.2s ease-out}
+.splash-title{font-size:42px;font-weight:bold;color:#D4A84B;letter-spacing:6px;margin-bottom:24px;text-shadow:0 0 18px rgba(212,168,75,0.4)}
+.splash-body{font-size:18px;line-height:1.8;color:#C4A882;letter-spacing:1.5px;text-shadow:0 0 8px rgba(0,0,0,0.6)}
+@keyframes splash-text-fade-in{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+.splash-skip-btn{position:absolute;top:24px;right:32px;z-index:10000;background:rgba(20,15,8,0.6);border:1px solid #8B7355;color:#D4A84B;padding:8px 18px;font-size:13px;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:background 0.2s}
+.splash-skip-btn:hover{background:rgba(60,40,20,0.8)}
+.splash-progress-wrap{position:absolute;bottom:0;left:0;width:100%;height:3px;background:rgba(255,255,255,0.08)}
+.splash-progress-bar{height:100%;width:0;background:linear-gradient(90deg,#8B7355,#D4A84B);transition:width 0.6s ease-out;box-shadow:0 0 8px rgba(212,168,75,0.5)}
+.splash-video{max-width:100%;max-height:100%;object-fit:contain}
 /* Combo guide panel */
 .combo-guide-panel{background:rgba(30,20,10,0.6);border:1px solid #8B7355;border-radius:8px;padding:12px 16px;margin-top:16px}
 .combo-guide-title{color:#D4A84B;font-size:14px;font-weight:bold;margin-bottom:8px;text-align:center}
