@@ -134,3 +134,95 @@ describe('Edge cases', () => {
     assert.strictEqual(best.id, 2); // higher strength wins
   });
 });
+
+// ── Q1=B: AI strategic-pass floor — must play ≥1 card before passing ──
+// Mirrors index.html aiShouldPass bottom-line rule: if AI board has 0 cards
+// and AI still has playable hand, AI must NOT pass (must play at least 1).
+function aiShouldPassWithFloor(state) {
+  const { aiBoard, aiHand, aiProvisions, turnCount, aiPower, playerPower } = state;
+  if (turnCount < 3) return false;
+  const hasPlayable = aiHand.some(c => (c.cost != null ? c.cost : 1) <= aiProvisions);
+  if (!hasPlayable) return true; // no playable -> must pass
+  // Q1=B floor: no cards on AI board yet → cannot strategic pass
+  const boardCount = ['infantry', 'cavalry', 'navy', 'strategy']
+    .reduce((s, r) => s + ((aiBoard[r] || []).length), 0);
+  if (boardCount === 0) return false;
+  // original strategic pass conditions (simplified replica of index.html)
+  if (aiPower > playerPower + 5) return true;
+  if (aiPower < playerPower - 5 && aiProvisions <= 4) return true;
+  const hasCombo = aiHand.some(c => ['minister', 'poet', 'industry', 'monk', 'general'].includes(c.type));
+  const hasHighCost = aiHand.some(c => (c.cost != null ? c.cost : 1) > 3);
+  if (!hasCombo && !hasHighCost) return true;
+  return false;
+}
+
+describe('Q1=B: strategic-pass floor (must play ≥1 card before pass)', () => {
+  const emptyBoard = { infantry: [], cavalry: [], navy: [], strategy: [] };
+  const oneCardBoard = { infantry: [{ id: 1 }], cavalry: [], navy: [], strategy: [] };
+  const lowNoComboHand = [
+    { id: 1, strength: 2, cost: 1, type: 'soldier' },
+    { id: 2, strength: 2, cost: 1, type: 'soldier' },
+    { id: 3, strength: 3, cost: 2, type: 'soldier' },
+  ];
+
+  it('turn>=3, empty board, low-no-combo hand → CANNOT pass (must play 1)', () => {
+    // Without the floor, this hand would trigger rule #3 and pass immediately.
+    const decision = aiShouldPassWithFloor({
+      aiBoard: emptyBoard,
+      aiHand: lowNoComboHand,
+      aiProvisions: 10,
+      turnCount: 5,
+      aiPower: 0,
+      playerPower: 0,
+    });
+    assert.strictEqual(decision, false, 'AI must play at least 1 card before passing');
+  });
+
+  it('turn>=3, 1 card on board, low-no-combo hand → CAN pass (strategic)', () => {
+    const decision = aiShouldPassWithFloor({
+      aiBoard: oneCardBoard,
+      aiHand: lowNoComboHand,
+      aiProvisions: 10,
+      turnCount: 5,
+      aiPower: 5,
+      playerPower: 3,
+    });
+    assert.strictEqual(decision, true, 'After playing ≥1 card, strategic pass is allowed');
+  });
+
+  it('turn<3 → cannot pass regardless of board', () => {
+    const decision = aiShouldPassWithFloor({
+      aiBoard: emptyBoard,
+      aiHand: lowNoComboHand,
+      aiProvisions: 10,
+      turnCount: 1,
+      aiPower: 0,
+      playerPower: 0,
+    });
+    assert.strictEqual(decision, false);
+  });
+
+  it('no playable cards → must pass even with empty board', () => {
+    const decision = aiShouldPassWithFloor({
+      aiBoard: emptyBoard,
+      aiHand: [{ id: 9, strength: 5, cost: 99, type: 'general' }],
+      aiProvisions: 2,
+      turnCount: 5,
+      aiPower: 0,
+      playerPower: 0,
+    });
+    assert.strictEqual(decision, true);
+  });
+
+  it('empty hand → must pass', () => {
+    const decision = aiShouldPassWithFloor({
+      aiBoard: emptyBoard,
+      aiHand: [],
+      aiProvisions: 10,
+      turnCount: 5,
+      aiPower: 0,
+      playerPower: 0,
+    });
+    assert.strictEqual(decision, true);
+  });
+});

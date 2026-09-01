@@ -792,7 +792,7 @@ function _toastRegister(type, el) {
 
 // V4: Combo 触发 toast 通知
 const _comboToastQueue=[];
-function showComboToast(title,subtitle,desc,dur=2800){
+function showComboToast(title,subtitle,desc,dur=5000){
   if (!_toastShouldCreate('combo')) return;  // 节流
   _toastRemoveOld('combo');  // 移除旧的 combo toast (防堆叠)
   const el=document.createElement('div');
@@ -805,7 +805,7 @@ function showComboToast(title,subtitle,desc,dur=2800){
     border:'2px solid #DAA520',boxShadow:'0 4px 20px rgba(218,165,32,0.6)',
     zIndex:'1100',fontSize:'16px',fontWeight:'bold',textAlign:'center',
     pointerEvents:'none',
-    animation:'combo-toast-slide 2.8s ease-out forwards',
+    animation:'combo-toast-slide 5s ease-out forwards',
     minWidth:'280px',maxWidth:'420px'
   });
   document.body.appendChild(el);
@@ -1372,6 +1372,11 @@ function aiShouldPass(){
   const prov=G.provisions[1];
   // 无牌可出必 Pass
   if(!hasPlayableCard(1))return true;
+  // Q1=B 底线: 本回合 AI 至少出过 1 张牌才允许战略 pass.
+  // 通过 board 上卡牌数判定 (hand 减少=board 增加), 防止 turn 0 就 pass.
+  const aiBoardCount=['infantry','cavalry','navy','strategy']
+    .reduce((s,r)=>s+((G.players[1].board[r]||[]).length),0);
+  if(aiBoardCount===0)return false;
   // 1) 局势判断:AI 已领先玩家 5+ 战力,考虑 Pass 守住优势
   if(aiP > plP + 5)return true;
   // 2) 局势判断:AI 落后 5+ 战力,且剩余粮草只够出低费牌 → 战略性 Pass 让 AI 把赢面留给下一局
@@ -4103,9 +4108,12 @@ window._splashState = {
 //   3. 拓跋焘 卡牌 L5 (5s)   v25_03_tuobatao      铁甲怒吼+骑兵方阵+血阳
 //   4. 陈霸先 卡牌 L4 (5s)   v25_04_chenbaxian    黑盔+红缨+战旗+军营
 //   5. 三将同框 (5s)           v25_05_generals      持刀+持旗+骑马持槊，夕阳军阵
-//   6. 两军对垒收尾 (5s)       v25_06_battleclimax  红骑vs黑步+长城+血阳+孤将
+// V10 PM final (94.04s = 1.57min):
+//   1: 完整视频 (intro_v10_FINAL.mp4, 94s, 含背景介绍+3领袖+两军对垒+配乐)
+// 总时长 ~94s ≈ 1分34秒. 满足 1.5 分钟最低要求.
 window._splashSequence = [
-  { type: 'video', src: 'assets/intro/intro_combined.mp4', duration: 34 },
+  // V16 splash: donghua山水+文字(24s) + 3个donghua领袖(24s) + donghua战场对垒(21s) = ~69s, xfade 0.5s
+  { type: 'video', src: 'assets/intro/intro_v16_FINAL.mp4', duration: 69 },
 ];
 
 window.showSplash = function() {
@@ -4125,10 +4133,10 @@ window.showSplash = function() {
     const btn = document.getElementById('splash-skip-btn');
     if (btn) btn.style.display = 'block';
   }, 3000);
-  // Total safety cap (6 videos × 6s + 5 text × 3s ≈ 51s, pad to 75s)
-  window._splashState.hideTimer = setTimeout(() => {
-    if (window._splashState.active) window.hideSplash();
-  }, 75000);
+  // Total safety cap (v9: 7 segments × ~35s ≈ 245s, pad to 200s; user 要求 1.5 分钟+)
+    window._splashState.hideTimer = setTimeout(() => {
+      if (window._splashState.active) window.hideSplash();
+    }, 200000);
   window._splashRunStep();
 };
 
@@ -4224,15 +4232,15 @@ window._splashRunStep = function() {
         }, 500);
       };
       v.addEventListener('ended', onEnded);
-      // Safety fallback: 12s per video (8s too short for intro_01 8s clip + buffer)
-      setTimeout(() => {
-        if (window._splashState.active && window._splashState.step === idx) {
-          console.log('[splash] SAFETY timeout fired for', seg.src);
-          v.removeEventListener('ended', onEnded);
-          window._splashState.step++;
-          window._splashRunStep();
-        }
-      }, 12000);
+      // V9: use seg.duration for video safety fallback (35s per video segment)
+            setTimeout(() => {
+              if (window._splashState.active && window._splashState.step === idx) {
+                console.log('[splash] SAFETY timeout fired for', seg.src);
+                v.removeEventListener('ended', onEnded);
+                window._splashState.step++;
+                window._splashRunStep();
+              }
+            }, (seg.duration || 35) * 1000);
     } else {
       window._splashState.step++;
       window._splashRunStep();
@@ -4243,26 +4251,27 @@ window._splashRunStep = function() {
     const v = window._splashState.videoEl;
     if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
     if (window._splashState.textEl) {
-      const title = window.t ? window.t(seg.key) : seg.key;
-      const body = window.t ? window.t(seg.bodyKey) : seg.bodyKey;
-      window._splashState.textEl.innerHTML =
-        `<div class="splash-title">${title}</div><div class="splash-body">${body}</div>`;
-      window._splashState.textEl.style.display = 'block';
-    }
-    // 6s per text segment (was 4s — too short for players to read 80-char historical passage)
-    // Also add fade in effect for smoother transition
-    setTimeout(() => {
-      if (window._splashState.active && window._splashState.step === idx) {
-        // Fade in next video segment
-        const canvas = document.getElementById('splash-canvas');
-        if (canvas) {
-          canvas.style.transition = 'opacity 0.5s ease-in';
-          canvas.style.opacity = '1';
+          const title = window.t ? window.t(seg.key) : seg.key;
+          const body = window.t ? window.t(seg.bodyKey) : seg.bodyKey;
+          window._splashState.textEl.innerHTML =
+            `<div class="splash-title">${title}</div><div class="splash-body">${body}</div>`;
+          window._splashState.textEl.style.display = 'block';
+          console.log('[splash] TEXT segment', idx, seg.key, 'duration', seg.duration, 's, title=', title.slice(0, 30), 'body_chars=', body.length);
         }
-        window._splashState.step++;
-        window._splashRunStep();
-      }
-    }, 6000);
+        // V9: use seg.duration for text (background intro = 15s, historical notes = 3s)
+        setTimeout(() => {
+          if (window._splashState.active && window._splashState.step === idx) {
+            // Fade in next video segment
+            const canvas = document.getElementById('splash-canvas');
+            if (canvas) {
+              canvas.style.transition = 'opacity 0.5s ease-in';
+              canvas.style.opacity = '1';
+            }
+            console.log('[splash] TEXT segment', idx, 'timer fired, advance to step', idx + 1);
+            window._splashState.step++;
+            window._splashRunStep();
+          }
+        }, (seg.duration || 6) * 1000);
   }
 };
 
@@ -4302,16 +4311,61 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Auto-start splash on first load
-document.addEventListener('DOMContentLoaded', () => {
-  // Skip splash if ?nosplash query param
-  const params = new URLSearchParams(window.location.search);
-  if (params.has('nosplash')) return;
-  // Defer 1 frame so DOM paint settles
-  setTimeout(() => {
-    if (typeof window.showSplash === 'function') window.showSplash();
-  }, 50);
-});
+// Auto-start splash on first load — moved to _wireI18nSplash() below so
+// splash waits for ESM i18n modules to load (otherwise window.t is
+// undefined and splash segment 0 falls back to the key string, leaving
+// a black screen).
+
+// ── i18n + splash wiring ──────────────────────────────────────────────────
+// IMPORTANT (V9-bugfix 2026-08-30): The original layout had splash starting
+// 50ms after DOMContentLoaded, but i18n is loaded as ESM modules (deferred),
+// so window.t was undefined when splash segment 0 rendered → black screen
+// with fallback string "ui.splash.intro_title" instead of the real title.
+// Fix: wait for window.initLocale() before starting splash.
+(function _wireI18nSplash() {
+  const startSplash = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('nosplash')) return;
+    if (typeof window.showSplash !== 'function') {
+      // showSplash not yet defined (race with main script); retry shortly
+      return setTimeout(startSplash, 30);
+    }
+    // Defer 1 frame so DOM paint settles
+    setTimeout(() => window.showSplash(), 50);
+  };
+
+  const onReady = () => {
+    // Hide any splash that started before i18n was ready, then re-run with
+    // proper translations. (Defensive — if showSplash ran first, refresh.)
+    if (window._splashState && window._splashState.active) {
+      try { window.hideSplash(); } catch (e) { /* not started yet */ }
+    }
+    startSplash();
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.initLocale === 'function') {
+      window.initLocale().then(onReady, () => {
+        console.warn('[splash] i18n init failed, starting splash anyway');
+        startSplash();
+      });
+    } else {
+      // Fallback: poll briefly for initLocale (ESM module loading)
+      let waited = 0;
+      const iv = setInterval(() => {
+        waited += 30;
+        if (typeof window.initLocale === 'function') {
+          clearInterval(iv);
+          window.initLocale().then(onReady, startSplash);
+        } else if (waited > 2000) {
+          clearInterval(iv);
+          console.warn('[splash] initLocale not found after 2s, starting without i18n');
+          startSplash();
+        }
+      }, 30);
+    }
+  });
+})();
 
 document.addEventListener('DOMContentLoaded',()=>{
   // Initialize i18n first, then render
@@ -4340,7 +4394,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 /* Splash text + skip + progress */
 .splash-text{text-align:center;color:#E8D8B0;max-width:80vw;padding:0 24px;animation:splash-text-fade-in 1.2s ease-out}
 .splash-title{font-size:42px;font-weight:bold;color:#D4A84B;letter-spacing:6px;margin-bottom:24px;text-shadow:0 0 18px rgba(212,168,75,0.4)}
-.splash-body{font-size:18px;line-height:1.8;color:#C4A882;letter-spacing:1.5px;text-shadow:0 0 8px rgba(0,0,0,0.6)}
+.splash-body{font-size:18px;line-height:1.8;color:#C4A882;letter-spacing:1.5px;text-shadow:0 0 8px rgba(0,0,0,0.6);white-space:pre-wrap;max-width:900px;margin:0 auto}
 @keyframes splash-text-fade-in{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
 .splash-skip-btn{position:absolute;top:24px;right:32px;z-index:10000;background:rgba(20,15,8,0.6);border:1px solid #8B7355;color:#D4A84B;padding:8px 18px;font-size:13px;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:background 0.2s}
 .splash-skip-btn:hover{background:rgba(60,40,20,0.8)}
