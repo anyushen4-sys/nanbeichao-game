@@ -6,15 +6,15 @@
 <title>南北朝·天下对弈</title>
 <link rel="stylesheet" href="css/game.css"/>
 <!-- 领袖图预加载: 避免选择页加载时下半屏空白 -->
-<link rel="preload" as="image" href="assets/leaders/leader_L1.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L2.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L3.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L4.png" fetchpriority="high"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L5.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L6.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L7.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L8.png" fetchpriority="auto"/>
-<link rel="preload" as="image" href="assets/leaders/leader_L9.png" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L1.jpg" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L2.jpg" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L3.jpg" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L4.jpg" fetchpriority="high"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L5.jpg" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L6.jpg" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L7.jpg" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L8.jpg" fetchpriority="auto"/>
+<link rel="preload" as="image" href="assets/leaders/leader_L9.jpg" fetchpriority="auto"/>
 
 
 <!-- ===== Multiplayer Dev Mock (URL ?mockmp=1) ===== -->
@@ -1938,8 +1938,8 @@ function renderLeaderSelect(el){
     const f=FACTIONS[l.faction];
     const factionColor=f.color;
     const sel=G._selectedLeader===l.id?'selected':'';
-    const imgSrc=`assets/leaders/leader_L${l.id}.png`;
-    const imgFallback=`assets/leaders/leader_L${l.id}.png`;
+    const imgSrc=`assets/leaders/leader_L${l.id}.jpg`;
+    const imgFallback=`assets/leaders/leader_L${l.id}.jpg`;
     // 强制 eager 加载 (避免 lazy 导致下半屏图片空白), 第一排 4 张 high priority
     const isFirstRow = l.id <= 4;
     cards+=`<div class="leader-card ${sel}" style="--fc:${factionColor};--fc22:${factionColor}22;--fc11:${factionColor}11" onclick="selectLeader(${l.id})">
@@ -2386,7 +2386,7 @@ function renderGameResult(el){
       <div class="zouji-versus">
         <div class="zouji-side zouji-side-left">
           <div class="zouji-frame ${playerWin?'winner-frame':isDraw?'':'loser-frame'}">
-            <img class="zouji-portrait" src="assets/leaders/leader_${pLeader.id}.png" alt="${ln(pLeader)}">
+            <img class="zouji-portrait" src="assets/leaders/leader_${pLeader.id}.jpg" alt="${ln(pLeader)}">
           </div>
           <div class="zouji-name">${ln(pLeader)}</div>
           <div class="zouji-faction faction-${pLeader.faction}">${getFactionName(pLeader.faction)}</div>
@@ -2401,7 +2401,7 @@ function renderGameResult(el){
 
         <div class="zouji-side zouji-side-right">
           <div class="zouji-frame ${!playerWin&&!isDraw?'winner-frame':isDraw?'':'loser-frame'}">
-            <img class="zouji-portrait" src="assets/leaders/leader_${aLeader.id}.png" alt="${ln(aLeader)}">
+            <img class="zouji-portrait" src="assets/leaders/leader_${aLeader.id}.jpg" alt="${ln(aLeader)}">
           </div>
           <div class="zouji-name">${ln(aLeader)}</div>
           <div class="zouji-faction faction-${aLeader.faction}">${getFactionName(aLeader.faction)}</div>
@@ -2497,7 +2497,7 @@ function renderGameResult(el){
                         var sel = G._selectedLeader === l.id;
                         return '<div class="leader-card'+(sel?' selected':'')+'" style="--fc:'+fc+';--fc22:'+fc+'22;--fc11:'+fc+'11;cursor:pointer" onclick="G._selectedLeader=' + l.id + ';render()">' +
                           '<div class="leader-portrait">' +
-                            '<img src="assets/leaders/leader_L' + l.id + '.png" alt="' + ln(l) + '" onerror="leaderImgFallback(this,\'assets/leaders/leader_L' + l.id + '.png\',\''+fc+'\',\''+ln(l)[0]+'\')" loading="eager" decoding="async"/>' +
+                            '<img src="assets/leaders/leader_L' + l.id + '.jpg" alt="' + ln(l) + '" onerror="leaderImgFallback(this,\'assets/leaders/leader_L' + l.id + '.jpg\',\''+fc+'\',\''+ln(l)[0]+'\')" loading="eager" decoding="async"/>' +
                             '<div class="placeholder-block">' + (ln(l)[0] || '?') + '</div>' +
                           '</div>' +
                           '<div class="leader-info">' +
@@ -3669,7 +3669,7 @@ function timeoutReconnect() {
                               var sel=G._selectedLeader===l.id;
                               return'<div class="leader-card'+(sel?' selected':'')+'" style="--fc:'+fc+';--fc22:'+fc+'22;--fc11:'+fc+'11;cursor:pointer" onclick="G._selectedLeader='+l.id+';render()">'+
                                 '<div class="leader-portrait">'+
-                                  '<img src="assets/leaders/leader_L'+l.id+'.png" alt="'+ln(l)+'" onerror="leaderImgFallback(this,\'assets/leaders/leader_L'+l.id+'.png\',\''+fc+'\',\''+ln(l)[0]+'\')" loading="eager" decoding="async"/>'+
+                                  '<img src="assets/leaders/leader_L'+l.id+'.jpg" alt="'+ln(l)+'" onerror="leaderImgFallback(this,\'assets/leaders/leader_L'+l.id+'.jpg\',\''+fc+'\',\''+ln(l)[0]+'\')" loading="eager" decoding="async"/>'+
                                   '<div class="placeholder-block">'+(ln(l)[0]||'?')+'</div>'+
                                 '</div>'+
                                 '<div class="leader-info">'+
