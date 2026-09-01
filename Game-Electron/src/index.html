@@ -1382,11 +1382,12 @@ function aiShouldPass(){
   if(aiP > plP + 5)return true;
   // 2) 局势判断:AI 落后 5+ 战力,且剩余粮草只够出低费牌 → 战略性 Pass 让 AI 把赢面留给下一局
   if(aiP < plP - 5 && prov <= 4)return true;
-  // 3) 手牌全是低费/无 combo 牌(无 minister/poet/industry/monk/general 类型),Pass
-  const hand=getHand(1);
-  const hasComboCard=hand.some(c=>c&&['minister','poet','industry','monk','general'].includes(c.type));
-  const hasHighCostCard=hand.some(c=>c&&getCardCost(c.strength)>3);
-  if(!hasComboCard && !hasHighCostCard)return true;
+  // 3) 决策: AI 还有可出的牌且手牌 ≥ 3 张 → 继续出牌(不要轻言 Pass)
+    // 修复: cards.json 中卡牌没有 type 字段,旧逻辑 `c.type` 永远 undefined
+    // → hasComboCard 永远 false + hasHighCostCard 永远 false → AI 每回合都 pass
+    // 新逻辑: 只要 AI 还能出牌且手牌不少于3张, 就优先打牌.
+    const handCount=getHand(1).filter(c=>c).length;
+    if(hasPlayableCard(1) && handCount >= 3) return false;
   // 双方都已 Pass 会进入结算,这里不必处理
   return false;
 }
