@@ -145,7 +145,16 @@
       "victory_message": "Strategy wins the day.",
       "draw_message": "A worthy match indeed.",
       "defeat_message": "Defeat is a stepping stone to victory.",
-      "play_again": "Play Again"
+      "play_again": "Play Again",
+      "zouji": {
+        "seal_left": "Victory",
+        "seal_right": "Temple",
+        "vs_label": "VS",
+        "rounds_label": "{rounds} rounds",
+        "victory_message": "Strategize within the tent, triumph from afar.",
+        "defeat_message": "Victory and defeat are the common course of war — try again.",
+        "draw_message": "A general meets his match; a game finds its equal."
+      }
     },
     "multiplayer": {
       "lobby": "Multiplayer Lobby",
@@ -329,6 +338,8 @@
       "combo_scholar_circle": "Scholar Circle: Poets and ministers +1"
     },
     "splash": {
+      "intro_title": "Northern and Southern Dynasties · World Chess",
+      "intro_body": "In 420 AD, Emperor Gong of Eastern Jin yielded the throne to Liu Yu, who founded the Liu Song dynasty. For the next 169 years, China would be divided between north and south.\n\n\nFour dynasties — Song, Qi, Liang, Chen — would rise and fall in the south. In the north, Northern Wei split into Eastern and Western Wei, which later became Northern Qi and Northern Zhou.\n\n\nIn this game, you become a supreme commander of one faction. Deploy your generals and soldiers in a best-of-three card duel for the empire.",
       "title_1": "Ink Jiangnan · Northern and Southern Dynasties",
       "title_2": "General Draws Sword · War Begins",
       "title_3": "Banner Commands · Strategy Wins",

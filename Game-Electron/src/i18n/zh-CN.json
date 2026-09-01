@@ -145,7 +145,16 @@
       "victory_message": "运筹帷幄之中，决胜千里之外。",
       "draw_message": "将遇良才，棋逢对手。",
       "defeat_message": "胜败乃兵家常事，再接再厉。",
-      "play_again": "再 战 一 局"
+      "play_again": "再 战 一 局",
+      "zouji": {
+        "seal_left": "奏捷",
+        "seal_right": "告庙",
+        "vs_label": "VS",
+        "rounds_label": "共 {rounds} 局",
+        "victory_message": "运筹帼幄之中，决胜千里之外。",
+        "defeat_message": "胜败乃兵家常事，再接再厉。",
+        "draw_message": "将遇良才，棋逢对手。"
+      }
     },
     "multiplayer": {
       "lobby": "多人对战大厅",
@@ -329,6 +338,8 @@
       "combo_scholar_circle": "文人圈：诗人+文臣 +1"
     },
     "splash": {
+      "intro_title": "南北朝 · 天下对弈",
+      "intro_body": "公元四二零年，东晋恭帝禅位，刘裕代晋建宋。江南士族与北地胡汉交融对峙，中华大地进入长达一百六十九年的南北朝时代。\n\n\n宋、齐、梁、陈四朝更迭于江南；北魏则分裂为东魏、西魏，后演变为北齐、北周。沙场如棋局，烽烟连三月——运筹帷幄之中，决胜千里之外。\n\n\n本游戏以南北朝历史为背景，玩家化身一方主帅，调度手中将帅与士兵，在三局两胜的卡牌对弈中，争夺天下。",
       "title_1": "墨韵江南 · 南北朝",
       "title_2": "将军拔剑 · 烽烟起",
       "title_3": "挥旗指挥 · 运筹帷幄",

@@ -2372,21 +2372,51 @@ function renderGameResult(el){
     // TODO: ACH_ALL_LEADERS, ACH_NO_PASS, ACH_*_MASTER, ACH_SPEEDRUN, ACH_COMBO_KING
     // Need to track these in game state (leader unlocks, pass count, faction wins, round count, strategy cards used)
   })();
-  el.innerHTML=`
-  <div class="game-result">
-    <div class="menu-seal" style="margin:0 auto 30px">${t(playerWin?'ui.game_result.victory':isDraw?'ui.game_result.draw':'ui.game_result.defeat')}</div>
-    <h1 class="${playerWin?'victory':isDraw?'draw':'defeat'}">${t(playerWin?'ui.game_result.victory_title':isDraw?'ui.game_result.draw_title':'ui.game_result.defeat_title')}</h1>
-    <div class="final-score">${G.scores[0]} : ${G.scores[1]}</div>
-    <div class="detail">
-      ${ln(G.players[0].leader)}（${getFactionName(G.players[0].leader.faction)}）VS ${ln(G.players[1].leader)}（${getFactionName(G.players[1].leader.faction)}）
-    </div>
-    <div class="decorative-line" style="width:200px;margin:20px auto"></div>
-        <p style="color:#8B7355;margin:20px 0 30px;letter-spacing:2px;line-height:1.8">
-          ${t(playerWin?'ui.game_result.victory_message':isDraw?'ui.game_result.draw_message':'ui.game_result.defeat_message')}
-        </p>
-        <button class="btn btn-primary" onclick="resetGame()">${t('ui.game_result.play_again')}</button>
-          </div>`;
-        }
+  const pLeader = G.players[0].leader || { id: 'L1', name: '', faction: 'song' };
+    const aLeader = G.players[1].leader || { id: 'L1', name: '', faction: 'song' };
+    el.innerHTML=`
+    <div class="game-result game-result-zouji" data-winner="${playerWin?'0':isDraw?'-1':'1'}">
+      <div class="zouji-banner">
+        <div class="zouji-seal">${t('ui.game_result.zouji.seal_left')}</div>
+        <h1 class="zouji-title ${playerWin?'victory':isDraw?'draw':'defeat'}">${t(playerWin?'ui.game_result.victory_title':isDraw?'ui.game_result.draw_title':'ui.game_result.defeat_title')}</h1>
+        <div class="zouji-seal">${t('ui.game_result.zouji.seal_right')}</div>
+      </div>
+
+      <div class="zouji-versus">
+        <div class="zouji-side zouji-side-left">
+          <div class="zouji-frame ${playerWin?'winner-frame':isDraw?'':'loser-frame'}">
+            <img class="zouji-portrait" src="assets/leaders/leader_${pLeader.id}.png" alt="${ln(pLeader)}">
+          </div>
+          <div class="zouji-name">${ln(pLeader)}</div>
+          <div class="zouji-faction faction-${pLeader.faction}">${getFactionName(pLeader.faction)}</div>
+          <div class="zouji-score ${playerWin?'winner-score':'loser-score'}">${G.scores[0]}</div>
+        </div>
+
+        <div class="zouji-vs">
+          <div class="zouji-vs-vs">${t('ui.game_result.zouji.vs_label')}</div>
+          <div class="zouji-vs-divider"></div>
+          <div class="zouji-vs-rounds">${t('ui.game_result.zouji.rounds_label',{rounds:G.round})}</div>
+        </div>
+
+        <div class="zouji-side zouji-side-right">
+          <div class="zouji-frame ${!playerWin&&!isDraw?'winner-frame':isDraw?'':'loser-frame'}">
+            <img class="zouji-portrait" src="assets/leaders/leader_${aLeader.id}.png" alt="${ln(aLeader)}">
+          </div>
+          <div class="zouji-name">${ln(aLeader)}</div>
+          <div class="zouji-faction faction-${aLeader.faction}">${getFactionName(aLeader.faction)}</div>
+          <div class="zouji-score ${!playerWin&&!isDraw?'winner-score':'loser-score'}">${G.scores[1]}</div>
+        </div>
+      </div>
+
+      <div class="zouji-report">
+        <p class="zouji-message">${t(playerWin?'ui.game_result.zouji.victory_message':isDraw?'ui.game_result.zouji.draw_message':'ui.game_result.zouji.defeat_message')}</p>
+      </div>
+
+      <div class="zouji-actions">
+        <button class="btn btn-primary btn-zouji" onclick="resetGame()">${t('ui.game_result.play_again')}</button>
+      </div>
+    </div>`;
+  }
 
         // ===== 06: mode-router — 多人模式 / 热座模式渲染空壳 =====
         function renderMultiplayerLobby(el){
