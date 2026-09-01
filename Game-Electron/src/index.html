@@ -1224,6 +1224,7 @@ function startRound(){
     drawCards(1,drawCount+(G._comboDrawBonus[1]||0));
   }
   G._comboDrawBonus=[0,0];
+  G._comboExtrasApplied = 0;  // reset per-round guard
   applyRoundStartAbilities();
   G.currentTurn='player';
   addLog(`═══ `+t("ui.log.round_start",{round:G.round})+` ═══`);
@@ -1500,6 +1501,9 @@ function endRound(){
 
 function applyComboExtras(playerIdx,signals){
   if(!signals||!signals.length)return;
+  // Guard: only apply once per round (signals may be re-computed multiple times per round)
+  if(G._comboExtrasApplied===G.round) return;
+  G._comboExtrasApplied = G.round;
   signals.forEach(sig=>{
     const oppIdx=1-playerIdx;
     switch(sig){
