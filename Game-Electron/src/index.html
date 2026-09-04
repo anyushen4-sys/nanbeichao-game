@@ -1227,6 +1227,7 @@ function startRound(){
   G._comboExtrasApplied = 0;  // reset per-round guard
   applyRoundStartAbilities();
   G.currentTurn='player';
+  G.phase='playing';
   addLog(`═══ `+t("ui.log.round_start",{round:G.round})+` ═══`);
   if(drawCount>0) addLog(t('ui.log.both_draw',{count:drawCount}));
   render();
