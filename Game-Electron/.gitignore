@@ -1,0 +1,84 @@
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.bak
+
+# Electron / build
+dist/
+out/
+build/
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+electron.log
+
+# Game runtime logs
+game-console.log
+splash*.log
+test_v*.log
+output.txt
+nul
+
+# Worktrees / kanban scratch
+.worktrees/
+.scratch/
+_review/
+_b500_wrapper.js
+CHANGELOG-*.md
+
+# Temp scripts / orphan assets (development artifacts)
+src/assets/cards/_*.py
+src/assets/cards/_*.json
+card_*.bak
+src/assets/cards/card_106.png.bak.*
+src/assets/cards/card_120.png
+src/assets/cards/card_121.png
+src/assets/cards/card_122.png
+src/assets/cards/card_123.png
+src/assets/cards/card_124.png
+src/assets/cards/card_125.png
+src/assets/cards/card_126.png
+src/assets/cards/card_127.png
+src/assets/cards/card_128.png
+src/assets/cards/card_129.png
+src/assets/cards/card_130.png
+src/assets/cards/card_131.png
+src/assets/cards/card_132.png
+src/assets/cards/card_133.png
+src/assets/cards/card_134.png
+src/assets/cards/card_135.png
+src/assets/cards/card_136.png
+src/assets/cards/card_137.png
+src/assets/cards/card_138.png
+src/assets/cards/card_139.png
+src/assets/cards/card_140.png
+src/assets/cards/card_141.png
+src/assets/cards/card_081.png
+src/assets/cards/counter/
+src/assets/intro/_imgtest.png
+src/assets/intro/_imgtest.py
+src/assets/intro/intro_v22_FINAL_with_bgm.mp4.bak
+card_106_gen_001.jpg
+
+# Index backup / debug snapshots
+src/index.html.*.bak
+*.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test outputs
+test/balance-*.cjs
+test_v*.log
