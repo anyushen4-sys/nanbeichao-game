@@ -145,8 +145,9 @@ window.t = window.t || function(key, vars){
     'ui.tutorial.combo_title':'⚔ 组合技说明',
     'ui.tutorial.combo_same_faction':'同阵营加成',
     'ui.tutorial.combo_same_faction_desc':'同势力≥2张武将牌触发',
-    'ui.tutorial.combo_counter':'异阵营反制',
-    'ui.tutorial.combo_counter_desc':'对手≥3张武将牌时，counter_faction 牌+2',
+    'ui.tutorial.combo_counter':'反制',
+    'ui.tutorial.combo_counter_desc':'反制牌削弱对手场上目标（不强化自己），由卡牌技能标签决定范围：\n• 反阵营【阵营】数值 — 对手该阵营全队减点，默认 2，对手≥3张时生效\n• 反行【行名】数值 — 对手该行全减点\n• 全场反制 数值 — 对手全场所有牌减点\n金色 -N 即对手牌被反制削弱，反制与阵营加成互不影响，可叠加',
+    'ui.tutorial.combo_counter_examples':'代表牌：陈庆之/韦孝宽/兰陵王/王镇恶',
     'ui.tutorial.combo_juzhongqu':'领袖羁绊',
     'ui.tutorial.combo_juzhongqu_desc':'同势力同行数≥count，全体+bonus',
     'ui.tutorial.combo_hint':'卡牌出现金色 +N 表示已触发',
@@ -654,7 +655,7 @@ const LEADERS_DATA=[
 {id:6,name:'东魏孝静帝元善见',name_en:'Yuan Shanjian, Emperor Xiaojing of E Wei',faction:'dongwei',ability:{type:'opponent_discard',value:1},desc:'每局对手弃1张牌',desc_en:'Opponent discards 1 per round',era:'北朝·东魏',era_en:'E. Wei'},
 {id:7,name:'西魏文帝元宝炬',name_en:'Yuan Baoju, Emperor Wen of W Wei',faction:'xiwei',ability:{type:'all_boost',value:1},desc:'本局全军战力+1',desc_en:'All units +1 this round',era:'北朝·西魏',era_en:'W. Wei'},
 {id:8,name:'北齐文宣帝高洋',name_en:'Gao Yang, Emperor Wenxuan of N Qi',faction:'beiqi',ability:{type:'double_edge',value:3},desc:'最强行+3，最弱行-1（双刃暴君）',desc_en:'Strongest row +3, weakest -1',era:'北朝·北齐',era_en:'N. Qi'},
-{id:9,name:'北周武帝宇文邕',name_en:'Yuwen Yong, Emperor Wu of N Zhou',faction:'beizhou',ability:{type:'hand_boost',value:2},desc:'手牌随机2张+2（整军经武）',desc_en:'Random 2 hand cards +2',era:'北朝·北周',era_en:'N. Zhou'}
+{id:9,name:'北周武帝宇文邕',name_en:'Yuwen Yong, Emperor Wu of N Zhou',faction:'beizhou',ability:{type:'hand_boost',value:2},desc:'手牌随机2张+2战力（整军经武）',desc_en:'Random 2 hand cards +2 strength',era:'北朝·北周',era_en:'N. Zhou'}
 ];
 window.LEADERS_DATA=LEADERS_DATA;
 
@@ -1129,11 +1130,22 @@ function triggerAbility(card,playerIdx){
       drawCards(playerIdx,n);
       addLog(t('ui.log.card_ability_c25433', {card: cn(card)}));
       break;
+    default:
+      console.warn('[triggerAbility] unknown ability type:', abilityType, 'card:', cn(card));
   }
 }
 
 function triggerAbilityWithFlash(card,playerIdx,row){
   triggerAbility(card,playerIdx);
+  // V22-fix: triggerAbility can change G.players[*].passed (e.g. skirmish
+  // forces opponent to skip). aiTurn's setTimeout already checked passed
+  // immediately after playCard, but triggerAbility runs ~650ms later (see
+  // playCard L1194), so the endRound() call there would miss the change.
+  // Re-check end-of-round condition here, after ability has applied.
+  if(G.phase==='playing' && G.players[0].passed && G.players[1].passed){
+    endRound();
+    return;
+  }
   render();
   const board=getBoard(playerIdx);
   const cards=board[row];
@@ -1155,9 +1167,12 @@ function triggerAbilityWithFlash(card,playerIdx,row){
 
 function playCard(playerIdx,handIdx,row){
   const hand=getHand(playerIdx);
-  if(!hand[handIdx])return;  // 防御：手牌索引可能已失效
+  if(!hand[handIdx])return;  // 防御：手牌索引可能失效
   const card=hand.splice(handIdx,1)[0];
   if(!card)return;  // 防御：splice 结果不应为 undefined（双保险）
+
+  // hand_boost leader skill: 在 hand 阶段 strength 不变 (cost 不涨), board 阶段合并 bonus
+  // 注意: card.strength 此时还是 base (未合并 bonus), 所以 cost 用 base 算
 
   const berserkKey=playerIdx===0?'playerBerserkCard':'aiBerserkCard';
   const berserkUid=G.globalBuffs[berserkKey];
@@ -1176,7 +1191,14 @@ function playCard(playerIdx,handIdx,row){
 
   const board=getBoard(playerIdx);
   board[row].push(card);
-  G.provisions[playerIdx]-=getCardCost(card.strength);
+  // hand_boost: cost 用原始 base (card.strength 此时还是 base), 然后再合并 bonus 到 board 上的 strength
+  const costForPlay=getCardCost(card.strength);
+  G.provisions[playerIdx]-=costForPlay;
+  if(card._handBoostBonus){
+    card.strength=card.strength+card._handBoostBonus;
+    delete card._handBoostBonus;
+    delete card._handBoostedThisTurn;
+  }
   G._lastPlayedUid=card.uid;
   G._lastPlayedBy=playerIdx;
   const name=playerIdx===0?'你':'AI';
@@ -1213,6 +1235,13 @@ function startRound(){
   G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
   G.graveyard=[];
   G.logs=[];
+  // 清除上回合手牌 buff 视觉标记 + bonus
+  for(const p of G.players){
+    if(p.hand) for(const c of p.hand) if(c){
+      delete c._handBoostedThisTurn;
+      delete c._handBoostBonus;
+    }
+  }
   // 新回合: 重置 combo toast 通知标记 (允许重新触发)
   if(window.ComboEngine && ComboEngine.resetNotifiedCombos) ComboEngine.resetNotifiedCombos();
   // 第1局不自动抽牌（换牌阶段已经处理）
@@ -1486,6 +1515,7 @@ function endRound(){
             case'combo_row_stacking:navy':addLog(t('ui.log.combo_row_stacking',{row:'水军'}));break;
             case'combo_row_stacking:strategy':addLog(t('ui.log.combo_row_stacking',{row:'谋略'}));break;
             case'combo_scholar_circle':addLog(t('ui.log.combo_scholar_circle'));break;
+            default:console.warn('[endRound combo signal] unknown signal:', sig);
           }
         });
         // Apply extra effects after round结算
@@ -1545,6 +1575,13 @@ function applyComboExtras(playerIdx,signals){
         });
         break;
       }
+      case'combo_scholar_circle':
+        // TODO: cards.json 缺 type 字段, 此信号实际不触发 (combos.js L78).
+        // 留兜底避免未来 cards.json 加 type 字段后 silently no-op.
+        console.warn('[applyComboExtras] combo_scholar_circle signal received — type field missing in cards.json, +1 boost not applied');
+        break;
+      default:
+        console.warn('[applyComboExtras] unknown combo signal:', sig);
     }
   });
 }
@@ -1680,6 +1717,7 @@ function playCardEffect(card,rowEl,opts={}){
     case'ambush_card':{playAmbushGrass(end.x,end.y);break;}
     case'coordinate':{playCoordinateLines(start.x,start.y,end.x,end.y,color);break;}
     case'armor':{playArmorPlates(end.x,end.y);break;}
+    default:console.warn('[playAbilityParticles] unknown ability type:', abType);
   }
 }
 
@@ -2106,9 +2144,19 @@ function useLeaderAbility(playerIdx){
       const hand=getHand(playerIdx);
       const shuffled=[...hand].sort(()=>random()-0.5);
       const cnt=Math.min(ability.value,shuffled.length);
-      for(let i=0;i<cnt;i++) shuffled[i].strength+=2;
-      addLog(t('ui.log.leader_ability_hand_buff', {leader: ln(leader), count: cnt}));
+      const buffedCards=[];
+      for(let i=0;i<cnt;i++){
+        // 不修改 strength (会涨 cost 限制出牌),改用 _handBoostBonus 字段
+        // 出牌时 renderHandCard 显示 base+bonus, playCard 把 bonus 真正合并到 board 上的 strength
+        shuffled[i]._handBoostBonus=(shuffled[i]._handBoostBonus||0)+2;
+        shuffled[i]._handBoostedThisTurn=true;  // 视觉提示:本回合被 buff
+        buffedCards.push(shuffled[i]);
+      }
+      addLog(t('ui.log.leader_ability_hand_buff', {leader: ln(leader), count: cnt,
+        cardList: buffedCards.map(c=>cn(c)).join('、')}));
       break;}
+    default:
+      console.warn('[useLeaderAbility] unknown ability type:', ability && ability.type, 'leader:', ln(leader));
   }
   G.leaderAbilityUsed[playerIdx]=true;
   render();
@@ -2254,7 +2302,8 @@ function renderHandCard(card,idx){
   const cost=getCardCost(card.strength);
   const playable=G.currentTurn==='player'&&!G.players[0].passed&&cost<=G.provisions[0];
   const selected=G.selectedCard===idx;
-  const cls=selected?'selected':(!playable?'unplayable':'');
+  const buffed=card._handBoostedThisTurn===true;
+  const cls=selected?'selected':(!playable?'unplayable':'')+(buffed?' hand-boosted':'');
   const rowName=t("ui.row."+card.row);
   const desc=cd(card)+(card.protectArmor?` 🛡${card.protectArmor}`:'');
   return`<div class="card ${cls}" onclick="onCardClick(${idx})" title="${cn(card)} - ${cd(card)}"
@@ -2267,7 +2316,7 @@ function renderHandCard(card,idx){
       <span class="card-role-tag">${window.ctl?window.ctl(card):''}</span>
     </div>
     <div class="card-ability">${desc}</div>
-    <div class="card-stats-bar"><span class="card-atk">⚔ ${card.strength}</span></div>
+    <div class="card-stats-bar"><span class="card-atk">⚔ ${card.strength+(card._handBoostBonus?(+card._handBoostBonus):0)}</span></div>
   </div>`;
 }
 
@@ -2387,7 +2436,8 @@ function renderGameResult(el){
       <div class="zouji-versus">
         <div class="zouji-side zouji-side-left">
           <div class="zouji-frame ${playerWin?'winner-frame':isDraw?'':'loser-frame'}">
-            <img class="zouji-portrait" src="assets/leaders/leader_${pLeader.id}.jpg" alt="${ln(pLeader)}">
+            <img class="zouji-portrait" src="assets/leaders/leader_L${pLeader.id}.jpg" alt="${ln(pLeader)}" onerror="leaderImgFallback(this,'assets/leaders/leader_L${pLeader.id}.jpg',(FACTIONS['${pLeader.faction}']&&FACTIONS['${pLeader.faction}'].color)||'#d4a040','${(ln(pLeader)[0]||'?')}')"/>
+            <div class="placeholder-block" style="display:none;background:${(FACTIONS[pLeader.faction]&&FACTIONS[pLeader.faction].color)||'#d4a040'}">${(ln(pLeader)[0]||'?')}</div>
           </div>
           <div class="zouji-name">${ln(pLeader)}</div>
           <div class="zouji-faction faction-${pLeader.faction}">${getFactionName(pLeader.faction)}</div>
@@ -2402,7 +2452,8 @@ function renderGameResult(el){
 
         <div class="zouji-side zouji-side-right">
           <div class="zouji-frame ${!playerWin&&!isDraw?'winner-frame':isDraw?'':'loser-frame'}">
-            <img class="zouji-portrait" src="assets/leaders/leader_${aLeader.id}.jpg" alt="${ln(aLeader)}">
+            <img class="zouji-portrait" src="assets/leaders/leader_L${aLeader.id}.jpg" alt="${ln(aLeader)}" onerror="leaderImgFallback(this,'assets/leaders/leader_L${aLeader.id}.jpg',(FACTIONS['${aLeader.faction}']&&FACTIONS['${aLeader.faction}'].color)||'#d4a040','${(ln(aLeader)[0]||'?')}')"/>
+            <div class="placeholder-block" style="display:none;background:${(FACTIONS[aLeader.faction]&&FACTIONS[aLeader.faction].color)||'#d4a040'}">${(ln(aLeader)[0]||'?')}</div>
           </div>
           <div class="zouji-name">${ln(aLeader)}</div>
           <div class="zouji-faction faction-${aLeader.faction}">${getFactionName(aLeader.faction)}</div>
@@ -3583,6 +3634,13 @@ function timeoutReconnect() {
                   playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
                 G.graveyard=[];
                 G.logs=[];
+                // 清除上回合手牌 buff 视觉标记 + bonus
+                for(const p of G.players){
+                  if(p.hand) for(const c of p.hand) if(c){
+                    delete c._handBoostedThisTurn;
+                    delete c._handBoostBonus;
+                  }
+                }
                 G.leaderAbilityUsed=[false,false];
                 G.activePlayer=0;
                 G.currentTurn='player';
@@ -4148,8 +4206,8 @@ window._splashState = {
 //   1: 完整视频 (intro_v10_FINAL.mp4, 94s, 含背景介绍+3领袖+两军对垒+配乐)
 // 总时长 ~94s ≈ 1分34秒. 满足 1.5 分钟最低要求.
 window._splashSequence = [
-  // V16 splash: donghua山水+文字(24s) + 3个donghua领袖(24s) + donghua战场对垒(21s) = ~69s, xfade 0.5s
-  { type: 'video', src: 'assets/intro/intro_v16_FINAL.mp4', duration: 69 },
+  // V22 splash: intro_v22_FINAL_with_bgm.mp4, 72s H.264+AAC, 1344x768
+  { type: 'video', src: 'assets/intro/intro_v22_FINAL_with_bgm.mp4', duration: 72 },
 ];
 
 window.showSplash = function() {
@@ -4206,6 +4264,15 @@ window._splashRunStep = function() {
       };
       v.onloadedmetadata = () => {
         console.log('[splash] metadata loaded:', seg.src, v.videoWidth + 'x' + v.videoHeight, v.duration + 's');
+        // V22-perf: initialize canvas size ONCE here (mutating canvas.width
+        // at runtime clears the framebuffer + rebuilds GPU texture, which
+        // is a known stutter source. Once we know the video dimensions,
+        // we lock them in and never re-assign.)
+        const splashCanvas = document.getElementById('splash-canvas');
+        if (splashCanvas && v.videoWidth > 0 && v.videoHeight > 0) {
+          splashCanvas.width = v.videoWidth;
+          splashCanvas.height = v.videoHeight;
+        }
       };
       v.onplaying = () => {
         console.log('[splash] playing:', seg.src, 'readyState=', v.readyState);
@@ -4215,8 +4282,9 @@ window._splashRunStep = function() {
           const ctx = canvas.getContext('2d');
           const drawFrame = () => {
             if (v.readyState >= 2 && v.videoWidth > 0 && v.videoHeight > 0) {
-              if (canvas.width !== v.videoWidth) canvas.width = v.videoWidth;
-              if (canvas.height !== v.videoHeight) canvas.height = v.videoHeight;
+              // V22-perf: canvas.width/height is set ONCE in onloadedmetadata.
+              // Do NOT re-assign here — every assignment clears the framebuffer
+              // and rebuilds the GPU texture, causing visible stutter.
               try { ctx.drawImage(v, 0, 0, canvas.width, canvas.height); } catch (e) { /* CORS */ }
               if (window._splashState && window._splashState._framesDrawn === undefined) window._splashState._framesDrawn = 0;
               if (window._splashState) window._splashState._framesDrawn++;
@@ -4248,7 +4316,13 @@ window._splashRunStep = function() {
         }
       };
       v.onwaiting = () => console.log('[splash] WAITING:', seg.src);
-      v.play().catch((err) => {
+      // V22-audio: autoplay hack — start muted (Chromium allows muted autoplay
+      // without user gesture), then unmute after play() resolves. This keeps
+      // autoplay working while still playing the in-file audio track (BGM).
+      v.play().then(() => {
+        v.muted = false;
+        console.log('[splash] audio unmuted for', seg.src);
+      }).catch((err) => {
         console.warn('[splash] video autoplay blocked, using 6s fallback:', err);
       });
       const onEnded = () => {
@@ -4459,6 +4533,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 0%{box-shadow:0 0 0 rgba(218,165,32,0)}
 30%{box-shadow:0 0 16px rgba(218,165,32,0.9),inset 0 0 8px rgba(218,165,32,0.4)}
 100%{box-shadow:0 0 8px rgba(218,165,32,0.4)}
+}
+/* Leader hand_boost visual: +2 战力 buff 高亮 + 闪绿动画 */
+.card.hand-boosted{
+  box-shadow:0 0 12px rgba(120,255,120,0.8),inset 0 0 6px rgba(120,255,120,0.3);
+  border:2px solid rgba(120,255,120,0.9);
+  animation:hand-boost-pulse 1.2s ease-out 3;
+}
+@keyframes hand-boost-pulse{
+0%{box-shadow:0 0 0 rgba(120,255,120,0);transform:scale(1)}
+30%{box-shadow:0 0 20px rgba(120,255,120,1),inset 0 0 10px rgba(120,255,120,0.6);transform:scale(1.05)}
+100%{box-shadow:0 0 12px rgba(120,255,120,0.8),inset 0 0 6px rgba(120,255,120,0.3);transform:scale(1)}
 }
 </style>
 </body>

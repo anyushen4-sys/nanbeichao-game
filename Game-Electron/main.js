@@ -140,6 +140,11 @@ function setupSteamIPC() {
   ipcMain.handle('steam:setStat', (event, statName, value) => {
     if (!steamClient) return { success: false, reason: 'steam_not_running' };
     try {
+      // steamworks.js dev mode (Steam client not running): steamClient.stats is
+      // a stub object whose methods are undefined. Guard so console stays clean.
+      if (typeof steamClient.stats.setStatInt !== 'function') {
+        return { success: false, reason: 'setStatInt_unavailable_dev_mode' };
+      }
       steamClient.stats.setStatInt(statName, value);
       return { success: true };
     } catch (e) {
@@ -345,17 +350,47 @@ function createWindow() {
     mainWindow.show();
   });
 
-  // DevTools console logging for image load failures
-  mainWindow.webContents.on('console-message', (e, level, msg) => {
-    console.log(`[page ${level}]`, msg);
-  });
-  mainWindow.webContents.on('did-fail-load', (e, code, desc) => {
-    console.log('[did-fail-load]', code, desc);
-  });
-  // Open DevTools for diagnostics
+  // DevTools for diagnostics (off by default; set DEVTOOLS=1 to enable)
   if (process.env.DEVTOOLS === '1') {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
+
+  // ── Console log redirection ──
+  // Renderer console.log/info/warn/error → main-process file
+  // (Electron renderer logs only show in DevTools by default;
+  //  writing them to a file lets the assistant read them remotely.)
+  // Electron 28+ console-message signature: (event, details) where
+  //   details = { message, level, sourceId, lineNumber, ... }
+  // We support both signatures to be safe.
+  const LOG_FILE = path.join(app.getPath('userData'), 'game-console.log');
+  const LEVEL_NAMES = ['debug', 'log', 'warn', 'error'];
+  function _appendLog(level, msg, src) {
+    const ts = new Date().toISOString();
+    try { fs.appendFileSync(LOG_FILE, `[${ts}] [${level}] ${msg}${src ? ' ' + src : ''}\n`); } catch {}
+  }
+  mainWindow.webContents.on('console-message', (...args) => {
+    // Try Electron 28+ signature first
+    let level = 'log', msg = '', line = '', source = '';
+    if (args.length >= 2 && typeof args[1] === 'object' && args[1] !== null) {
+      // New signature: (event, details)
+      const d = args[1];
+      level = LEVEL_NAMES[d.level] || 'log';
+      msg = d.message || '';
+      line = d.lineNumber || '';
+      source = d.sourceId || '';
+    } else {
+      // Old signature: (event, level, message, line, sourceId)
+      level = LEVEL_NAMES[args[1]] || 'log';
+      msg = args[2] || '';
+      line = args[3] || '';
+      source = args[4] || '';
+    }
+    const srcStr = source ? `(at ${source}${line ? ':' + line : ''})` : '';
+    _appendLog(level, msg, srcStr);
+  });
+  // Truncate log on startup so each session is fresh
+  try { fs.writeFileSync(LOG_FILE, ''); } catch {}
+  console.log('[Main] Console log file:', LOG_FILE);
   // 去掉默认菜单栏（游戏自带 UI）
   Menu.setApplicationMenu(null);
 

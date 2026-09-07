@@ -33,7 +33,7 @@
       "id": 4,
       "name": "陈武帝陈霸先",
       "faction": "chen",
-      "ability": "{type:'rowygency',row:'navy',value:2}",
+      "ability": "{type:'row_boost',row:'navy',value:2}",
       "desc": "本局水军战力+2",
       "era": "南朝·陈",
       "juzhongqu": { "row": "infantry", "count": 3, "bonus_type": "flat", "bonus_value": 2 }
@@ -42,7 +42,7 @@
       "id": 5,
       "name": "北魏太武帝拓跋焘",
       "faction": "beiwei",
-      "ability": "{type:'rowygency',row:'cavalry',value:2}",
+      "ability": "{type:'row_boost',row:'cavalry',value:2}",
       "desc": "本局骑兵战力+2",
       "era": "北朝·北魏",
       "juzhongqu": { "row": "cavalry", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
@@ -78,8 +78,8 @@
       "id": 9,
       "name": "北周武帝宇文邕",
       "faction": "beizhou",
-      "ability": "{type:'handija',value:2}",
-      "desc": "手牌随机2张+2（整军经武）",
+      "ability": "{type:'hand_boost',value:2}",
+      "desc": "手牌随机2张+2战力（整军经武）",
       "era": "北朝·北周"
     }
   ]

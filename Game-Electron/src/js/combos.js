@@ -250,12 +250,17 @@ window.ComboEngine = (function() {
     return { strength, armor, signals };
   }
 
-  // 第 2 层: 异阵营反制 — 对手场上 f ≥ 3 时, 我方 counter_faction 牌 +X (X 默认 2)
-  // 保持不变 (counter_faction 是独立机制, 不受 ADR-0007 / ADR-0008 影响)
+  // 第 2 层: 反制 (Counter) V42 — 对方场上满足条件时, 我方反制牌触发 nerf 对方
+  // 3 种反制类型 (注: 「阵型」概念在玩法中不存在, formation 类已废弃):
+  //   1. counter_faction:XXX:Y   → 对方 XXX 阵营武将 -Y
+  //   2. counter_row:XXX:Y        → 对方 XXX 行所有牌 -Y
+  //   3. counter_combo:all:Y      → 对方全场所有牌 -Y
+  // 返回 { myNerfs: { oppCardId: -Y } } — 我方反制对对方的减益
   function computeAntiFaction(board, opponentBoard, hand) {
     const oppCards = boardFlatList(opponentBoard);
     const oppCounts = factionCount(oppCards);
-    const bonus = {};
+    const oppN = Array.from(oppCounts.values()).reduce((a, b) => a + b, 0);
+    const myNerfs = {};
     const candidates = [];
     boardFlatList(board).forEach(c => candidates.push(c));
     (hand || []).forEach(c => { if (c && typeof c === 'object') candidates.push(c); });
@@ -263,21 +268,68 @@ window.ComboEngine = (function() {
       const ab = c.ability || '';
       const parts = ab.split(':');
       const type = parts[0];
-      // 支持两种格式:
-      // 1. 'counter_faction:value' — 针对对手所有 combo 阵营
-      // 2. 'counter_faction:target_faction:value' — 针对特定阵营
-      let target = parts[1];
-      let value = parts[2] ? parseInt(parts[2], 10) : (parts[1] ? parseInt(parts[1], 10) : 2);
-      if (value > 9) { // 如果第二个部分是数值而不是 faction
-        target = null;
-        value = parseInt(parts[1], 10);
+      // V45-fix: 防止 _counterNerfs 残留导致非反制牌被错误减点
+      // (实际修复在 startRound: G._counterNerfs={})
+      // 这里加防御性 guard: 只处理 type 以 'counter_' 开头的牌
+      if (type && type.indexOf('counter_') !== 0) return;
+
+      // 1. counter_faction:faction:value
+      if (type === 'counter_faction') {
+        let target = null, value = 2;
+        if (parts[2] !== undefined) { target = parts[1]; value = parseInt(parts[2], 10) || 2; }
+        else if (parts[1] !== undefined) {
+          if (parseInt(parts[1], 10) > 9) value = parseInt(parts[1], 10);
+          else value = parseInt(parts[1], 10) || 2;
+        }
+        if (oppN < 3) return;
+        if (target) {
+          oppCards.forEach(oc => { if (oc.faction === target) myNerfs[oc.id] = (myNerfs[oc.id] || 0) - value; });
+        } else {
+          oppCards.forEach(oc => { myNerfs[oc.id] = (myNerfs[oc.id] || 0) - value; });
+        }
+        return;
       }
-      if (type !== 'counter_faction') return;
-      // 检查对手是否有 ≥3 named cards
-      const oppN = Array.from(oppCounts.values()).reduce((a, b) => a + b, 0);
-      if (oppN >= 3) bonus[c.id] = (bonus[c.id] || 0) + (value || 2);
+      // 2. counter_row:row:value
+      if (type === 'counter_row') {
+        const row = parts[1];
+        const value = parseInt(parts[2], 10) || 1;
+        if (!row) return;
+        oppCards.forEach(oc => { if (oc.row === row) myNerfs[oc.id] = (myNerfs[oc.id] || 0) - value; });
+        return;
+      }
+      // 3. counter_combo:all:value 或 counter_combo:row:value 或 counter_combo:specific:value
+      // (注: 「阵型」机制不存在, V22 起已无 formation 类)
+      if (type === 'counter_combo') {
+        const target = parts[1];
+        const value = parseInt(parts[2], 10) || 3;
+        if (target === 'all') {
+          oppCards.forEach(oc => { myNerfs[oc.id] = (myNerfs[oc.id] || 0) - value; });
+        } else if (target === 'specific') {
+          // 苦肉计: 只对对方最高战力的 1 张 -value
+          if (oppCards.length > 0) {
+            const sorted = oppCards.slice().sort((a, b) => (b.strength || 0) - (a.strength || 0));
+            const top = sorted[0];
+            if (top) myNerfs[top.id] = (myNerfs[top.id] || 0) - value;
+          }
+        } else if (target) {
+          // 对方某 row -value
+          oppCards.forEach(oc => { if (oc.row === target) myNerfs[oc.id] = (myNerfs[oc.id] || 0) - value; });
+        }
+        return;
+      }
+      // 兼容: counter_cavalry / counter_all (旧别名)
+      if (type === 'counter_cavalry') {
+        const value = parseInt(parts[1], 10) || 1;
+        oppCards.forEach(oc => { if (oc.row === 'cavalry') myNerfs[oc.id] = (myNerfs[oc.id] || 0) - value; });
+        return;
+      }
+      if (type === 'counter_all') {
+        const value = parseInt(parts[1], 10) || 3;
+        oppCards.forEach(oc => { myNerfs[oc.id] = (myNerfs[oc.id] || 0) - value; });
+        return;
+      }
     });
-    return bonus;
+    return { myNerfs };
   }
 
   // 第 3 层: 领袖聚众曲 — 同 f 同 row ≥ count → 该 f 所有牌 +bonus_value
@@ -310,9 +362,9 @@ window.ComboEngine = (function() {
     scholar_circle: null, // { count, bonus, uids:[], signal }
     juzhongqu: null,      // { count, bonus, uids:[], signal }
   };
-  // 记录已通知过的 combo key (避免重复 toast)
-  let _notifiedCombos = new Set();
-  function _notifiedKey(layer, key) { return layer + ':' + (key || ''); }
+  // V38-fix: combo key 永久去重 — combo 持续激活时绝不再弹, 只有 removed 后重新激活才弹
+    let _notifiedCombos = new Set();
+    function _notifiedKey(layer, key) { return layer + ':' + (key || ''); }
 
   // 快照当前 combos 状态 (深拷贝, 不带引用)
   function _snapshotActive() {
@@ -419,69 +471,73 @@ window.ComboEngine = (function() {
     const added = [];
     const removed = [];
 
-    // same_faction
-    const prevSF = prev.same_faction || {};
-    Object.keys(newBonuses.same_faction || {}).forEach(k => {
-      const nk = _notifiedKey('same_faction', k);
-      if (!prevSF[k] && !_notifiedCombos.has(nk)) {
-        const data = newBonuses.same_faction[k] || {};
-        added.push({ layer: 'same_faction', key: k, count: data.count, bonus: data.bonus, uids: data.uids });
-        _notifiedCombos.add(nk);
-      }
-    });
-    Object.keys(prevSF).forEach(k => {
-      if (!(newBonuses.same_faction || {})[k]) {
-        removed.push({ layer: 'same_faction', key: k });
-        _notifiedCombos.delete(_notifiedKey('same_faction', k));
-      }
-    });
+    // V38-fix: 触发那一刻弹, 后续持续激活不再弹, 只有 removed 后重新激活才弹
+        // same_faction
+        const prevSF = prev.same_faction || {};
+        Object.keys(newBonuses.same_faction || {}).forEach(k => {
+          const nk = _notifiedKey('same_faction', k);
+          if (!prevSF[k] && !_notifiedCombos.has(nk)) {
+            const data = newBonuses.same_faction[k] || {};
+            added.push({ layer: 'same_faction', key: k, count: data.count, bonus: data.bonus, uids: data.uids });
+            _notifiedCombos.add(nk);
+          }
+        });
+        Object.keys(prevSF).forEach(k => {
+          if (!(newBonuses.same_faction || {})[k]) {
+            removed.push({ layer: 'same_faction', key: k });
+            _notifiedCombos.delete(_notifiedKey('same_faction', k));
+          }
+        });
 
-    // row_stacking
-    const prevRow = prev.row_stacking || {};
-    const newRow = newBonuses.row_stacking || {};
-    Object.keys(newRow).forEach(k => {
-      const nk = _notifiedKey('row_stacking', k);
-      if (!prevRow[k] && !_notifiedCombos.has(nk)) {
-        const data = newBonuses.row_stacking[k] || {};
-        added.push({ layer: 'row_stacking', key: k, faction: k.split('::')[0], row: k.split('::')[1], count: data.count, bonus: data.bonus, uids: data.uids });
-        _notifiedCombos.add(nk);
+        // row_stacking
+        const prevRow = prev.row_stacking || {};
+        const newRow = newBonuses.row_stacking || {};
+        Object.keys(newRow).forEach(k => {
+          const nk = _notifiedKey('row_stacking', k);
+          if (!prevRow[k] && !_notifiedCombos.has(nk)) {
+            const data = newBonuses.row_stacking[k] || {};
+            added.push({ layer: 'row_stacking', key: k, faction: k.split('::')[0], row: k.split('::')[1], count: data.count, bonus: data.bonus, uids: data.uids });
+            _notifiedCombos.add(nk);
+          }
+        });
+        Object.keys(prevRow).forEach(k => {
+          if (!newRow[k]) {
+            removed.push({ layer: 'row_stacking', key: k });
+            _notifiedCombos.delete(_notifiedKey('row_stacking', k));
+          }
+        });
+
+        // scholar_circle: uids.length > 0 indicates active
+        const prevSC = prev.scholar_circle;
+        const newSC = newBonuses.scholar_circle && newBonuses.scholar_circle.uids && newBonuses.scholar_circle.uids.length > 0 ? newBonuses.scholar_circle : null;
+        if (!prevSC && newSC && !_notifiedCombos.has(_notifiedKey('scholar_circle'))) {
+          added.push({ layer: 'scholar_circle', count: newSC.count, bonus: newSC.bonus, uids: newSC.uids });
+          _notifiedCombos.add(_notifiedKey('scholar_circle'));
+        }
+        if (prevSC && !newSC) {
+          removed.push({ layer: 'scholar_circle' });
+          _notifiedCombos.delete(_notifiedKey('scholar_circle'));
+        }
+
+        // juzhongqu (non-empty object = active)
+        const prevJZ = prev.juzhongqu;
+        const newJZ = newBonuses.juzhongqu && Object.keys(newBonuses.juzhongqu).length > 0 ? newBonuses.juzhongqu : null;
+        if (!prevJZ && newJZ && !_notifiedCombos.has(_notifiedKey('juzhongqu'))) {
+          added.push({ layer: 'juzhongqu', count: newJZ.count, bonus: newJZ.bonus, uids: newJZ.uids });
+          _notifiedCombos.add(_notifiedKey('juzhongqu'));
+        }
+        if (prevJZ && !newJZ) {
+          removed.push({ layer: 'juzhongqu' });
+          _notifiedCombos.delete(_notifiedKey('juzhongqu'));
+        }
+
+        return { added, removed };
       }
-    });
-    Object.keys(prevRow).forEach(k => {
-      if (!newRow[k]) {
-        removed.push({ layer: 'row_stacking', key: k });
-        _notifiedCombos.delete(_notifiedKey('row_stacking', k));
-      }
-    });
-
-    // scholar_circle: uids.length > 0 indicates active
-    const prevSC = prev.scholar_circle;
-    const newSC = newBonuses.scholar_circle && newBonuses.scholar_circle.uids && newBonuses.scholar_circle.uids.length > 0 ? newBonuses.scholar_circle : null;
-    if (!prevSC && newSC && !_notifiedCombos.has(_notifiedKey('scholar_circle'))) {
-      added.push({ layer: 'scholar_circle', count: newSC.count, bonus: newSC.bonus, uids: newSC.uids });
-      _notifiedCombos.add(_notifiedKey('scholar_circle'));
-    }
-    if (prevSC && !newSC) {
-      removed.push({ layer: 'scholar_circle' });
-      _notifiedCombos.delete(_notifiedKey('scholar_circle'));
-    }
-
-    // juzhongqu (non-empty object = active)
-    const prevJZ = prev.juzhongqu;
-    const newJZ = newBonuses.juzhongqu && Object.keys(newBonuses.juzhongqu).length > 0 ? newBonuses.juzhongqu : null;
-    if (!prevJZ && newJZ && !_notifiedCombos.has(_notifiedKey('juzhongqu'))) {
-      added.push({ layer: 'juzhongqu', count: newJZ.count, bonus: newJZ.bonus, uids: newJZ.uids });
-      _notifiedCombos.add(_notifiedKey('juzhongqu'));
-    }
-    if (prevJZ && !newJZ) {
-      removed.push({ layer: 'juzhongqu' });
-      _notifiedCombos.delete(_notifiedKey('juzhongqu'));
-    }
-
-    return { added, removed };
-  }
 
   // 合并所有层 → 最终 per-card bonus
+  // V42: layer2 (computeAntiFaction) 现在返回 { myNerfs: { oppCardId: -X } }
+  //   拆分: myNerfs 通过全局 window.G._counterNerfs[playerIdx] 传给 getRowPower,
+  //   由 getRowPower 在算对方 board power 时减去。
   function computeAllBonuses({ board, opponentBoard, hand, leader, cardIdToUid }) {
     const layer1 = computeFactionBonus(board);  // { strength, armor, signals }
     const layer2 = computeAntiFaction(board, opponentBoard, hand);
@@ -495,7 +551,16 @@ window.ComboEngine = (function() {
       Object.keys(o).forEach(k => merged[k] = (merged[k] || 0) + o[k]);
     }
     merge(layer1.strength);
-    merge(layer2);
+    // V42: layer2.myNerfs 不在这里合并 — 它作用在对方 board 上, 通过 _counterNerfs 通道
+    if (layer2 && layer2.myNerfs) {
+      window.G = window.G || {};
+      window.G._counterNerfs = window.G._counterNerfs || {};
+      // 当前 computeAllBonuses 接受 board 是 meBoard, 所以 layer2.myNerfs 是我对对方的 nerf
+      // 记录到 _counterNerfs[myIdx], getRowPower 计算对方 board 时查找并应用
+      // myIdx 通过 cardIdToUid 反查 (取任意 candidate 的 owner), 简化用 leader.faction
+      const myIdx = (leader && leader.faction && ['song','qi','liang','chen'].includes(leader.faction)) ? 0 : 1;
+      window.G._counterNerfs[myIdx] = layer2.myNerfs;
+    }
     merge(layer3);
     merge(layer4.strength);
     merge(layer5.strength);
@@ -545,7 +610,8 @@ window.ComboEngine = (function() {
     isNamedCard,
     // V4: 暴露动态同步
     getActiveCombos: () => _activeCombos,
-    diffActiveCombos,
+        getPrevActiveCombos: () => _prevActiveCombos,
+        diffActiveCombos,
     // 清除已通知标记 (新一局/新回合调用)
     resetNotifiedCombos: () => {
       _notifiedCombos.clear();
