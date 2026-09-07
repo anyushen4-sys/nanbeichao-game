@@ -29,10 +29,6 @@ nul
 _review/
 _b500_wrapper.js
 
-# BGM audio (commit README.md, but not mp3 files to avoid repo bloat)
-# Per src/assets/bgm/README.md: generated files, locally replaced
-src/assets/bgm/*.mp3
-!src/assets/bgm/README.md
 CHANGELOG-*.md
 
 # Temp scripts / orphan assets (development artifacts)
