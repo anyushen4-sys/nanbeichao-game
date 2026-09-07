@@ -30,6 +30,10 @@
       "title": "设置",
       "language": "语言",
       "back": "← 返回",
+      "bgm_label": "背景音乐",
+      "bgm_mute": "🔇 静音",
+      "bgm_unmute": "🔊 取消静音",
+      "bgm_hint": "mp3 文件应放在 src/assets/bgm/ 下,缺失时静默跳过",
       "localeLabel": {
         "zh-CN": "简体中文",
         "en-US": "English (US)",

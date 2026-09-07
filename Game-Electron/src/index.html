@@ -683,6 +683,143 @@ mulliganSelected:new Set(),
 leaderAbilityUsed:[false,false]
 };
 
+// ===== BGM Controller =====
+// 按 G.phase 切换背景音乐: menu/leader_select/playing/round_result/game_result(victory/defeat)
+// 缺失的 .mp3 静默跳过 — 不刷 error,游戏照常运行
+window.BGMController={
+  // phase → mp3 path (相对 index.html)
+  _map:{
+    'menu':          'assets/bgm/leader_select.mp3',  // 主菜单/选将共用舒缓
+    'leader_select': 'assets/bgm/leader_select.mp3',
+    'mulligan':      'assets/bgm/leader_select.mp3',  // 换牌阶段延续选将的氛围
+    'tutorial':      'assets/bgm/leader_select.mp3',
+    'settings':      'assets/bgm/leader_select.mp3',
+    'playing':       'assets/bgm/playing.mp3',
+    'round_result':  'assets/bgm/playing.mp3',        // 结算页保留对战紧张感 (临时, 等 game_result 决定 victory/defeat)
+    'game_result':   null                              // 由 playForResult(winnerIdx) 决定
+  },
+  _audio:null,        // 当前 HTMLAudioElement
+  _currentKey:null,   // 当前播放的 key (phase or 'victory'/'defeat')
+  _volume:0.5,        // 0..1
+  _muted:false,
+  _unlocked:false,    // 首次 user gesture 后才允许 unmuted autoplay
+
+  init(){
+    if(this._audio) return;
+    this._audio=new Audio();
+    this._audio.loop=true;     // 选将/对战循环; 胜负一次性也无所谓
+    this._audio.volume=this._muted?0:this._volume;
+    this._audio.addEventListener('error',()=>{
+      // 缺失或加载失败 — 静默,不 console.error(可能是预期缺失)
+      console.log('[BGM] file missing or load error:', this._audio.src);
+    });
+    // 监听首次 user gesture 解锁 audio
+    const unlock=()=>{
+      this._unlocked=true;
+      if(this._audio && this._audio.paused && this._currentKey){
+        this._audio.play().catch(()=>{});
+      }
+      document.removeEventListener('click',unlock);
+      document.removeEventListener('keydown',unlock);
+    };
+    document.addEventListener('click',unlock,{once:true});
+    document.addEventListener('keydown',unlock,{once:true});
+  },
+
+  play(key){
+    if(!this._audio) this.init();
+    // 同 key 已在播 — 不重置 (避免 loop gap)
+    if(this._currentKey===key && !this._audio.paused) return;
+    this._currentKey=key;
+    const src=this._map[key];
+    if(!src){
+      // 静默 — 这个 phase 不需要 BGM (e.g. game_result 由 playForResult 接管)
+      this._audio.pause();
+      return;
+    }
+    this._audio.src=src;
+    this._audio.currentTime=0;
+    this._audio.volume=this._muted?0:this._volume;
+    // muted autoplay trick: 第一次必须 muted 才能 play, 然后尝试 unmute
+    this._audio.muted=true;
+    const p=this._audio.play();
+    if(p && p.then){
+      p.then(()=>{
+        if(this._unlocked){
+          this._audio.muted=this._muted;
+        } else {
+          // 等首次 click/keydown 后再 unmute
+          const tryUnmute=()=>{
+            if(!this._muted) this._audio.muted=false;
+            document.removeEventListener('click',tryUnmute);
+            document.removeEventListener('keydown',tryUnmute);
+          };
+          document.addEventListener('click',tryUnmute,{once:true});
+          document.addEventListener('keydown',tryUnmute,{once:true});
+        }
+      }).catch(err=>{
+        // autoplay 被拒 — 等 gesture
+        console.log('[BGM] autoplay blocked, waiting for user gesture:', err.message);
+      });
+    }
+  },
+
+  // 结算结果 — 决定 victory 或 defeat BGM (一次性)
+  playForResult(winnerIdx){
+    if(!this._audio) this.init();
+    const key=(winnerIdx===0)?'victory':'defeat';
+    const src=(winnerIdx===0)?'assets/bgm/victory.mp3':'assets/bgm/defeat.mp3';
+    this._audio.loop=false;   // 一次性
+    this._audio.src=src;
+    this._audio.currentTime=0;
+    this._audio.volume=this._muted?0:this._volume;
+    this._audio.muted=true;
+    this._currentKey=key;
+    this._audio.play().then(()=>{
+      if(this._unlocked && !this._muted) this._audio.muted=false;
+    }).catch(()=>{});
+  },
+
+  // 玩家调节音量 — 实时生效
+  setVolume(v){
+    this._volume=Math.max(0,Math.min(1,v));
+    if(this._audio && !this._muted) this._audio.volume=this._volume;
+  },
+
+  setMuted(m){
+    this._muted=m;
+    if(this._audio){
+      this._audio.muted=m;
+      this._audio.volume=m?0:this._volume;
+    }
+  },
+
+  toggleMute(){
+    this.setMuted(!this._muted);
+    return this._muted;
+  },
+
+  stop(){
+    if(this._audio){
+      this._audio.pause();
+      this._audio.currentTime=0;
+    }
+    this._currentKey=null;
+  }
+};
+
+// BGM 调度: G.phase 改变 → BGMController.play(phase) (除非是 game_result, 由 endGame() 决定 victory/defeat)
+// 这是统一入口 — 所有直接赋值 G.phase='xxx' 的位置不需要单独处理, render() 末尾自动调度
+let _lastBgmPhase=null;
+window.bgmSchedulePhase=function(){
+  if(!window.BGMController) return;
+  const ph=G.phase;
+  // game_result 不在这里播 — 由 endGame 调 playForResult
+  if(ph==='game_result') return;
+  if(ph===_lastBgmPhase) return;
+  _lastBgmPhase=ph;
+  window.BGMController.play(ph);
+};
 // 旧别名 playerHand/aiHand/... 已删除 — 所有 call sites 已迁移至 G.players[idx].*
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -1589,6 +1726,12 @@ function applyComboExtras(playerIdx,signals){
 function checkGameEnd(){
   if(G.scores[0]>=2||G.scores[1]>=2||G.round >= 3){
     G.phase='game_result';
+    // BGM: 胜负 BGM (一次性, 由 playForResult 决定 victory/defeat)
+    if(window.BGMController){
+      const winnerIdx=G.scores[0]>G.scores[1]?0:(G.scores[0]<G.scores[1]?1:-1);
+      // winnerIdx === -1 表示平局,用 defeat 风格 (遗憾)
+      BGMController.playForResult(winnerIdx===-1?1:winnerIdx);
+    }
     render();
     const winText=t("ui.log.game_over_"+(G.scores[0]>G.scores[1]?"you_win":G.scores[0]===G.scores[1]?"tie":"ai_win"));
     showNotification(winText,3000);
@@ -1765,6 +1908,8 @@ function render(){
       case'multiplayer_playing':renderMultiplayerPlaying(app);break;
       case'hot_seat_playing':renderHotSeatPlaying(app);break;
     }
+  // BGM 调度:每次 render 自动按当前 phase 切歌 (game_result 由 endGame 单独处理)
+  if(window.bgmSchedulePhase) bgmSchedulePhase();
 }
 
 function renderMenu(el){
@@ -1960,6 +2105,15 @@ function renderSettings(el){
     </div>
     <div class="settings-section">
       <div class="settings-label">${curLocale}</div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">${t("ui.settings.bgm_label")}</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="bgm-mute-btn" class="btn btn-sm" onclick="BGMController.toggleMute();document.getElementById('bgm-mute-btn').textContent=BGMController._muted?t('ui.settings.bgm_unmute'):t('ui.settings.bgm_mute')">${BGMController._muted?t('ui.settings.bgm_unmute'):t('ui.settings.bgm_mute')}</button>
+        <input id="bgm-volume" type="range" min="0" max="100" value="${Math.round(BGMController._volume*100)}" style="flex:1" oninput="BGMController.setVolume(this.value/100);document.getElementById('bgm-volume-label').textContent=this.value+'%'"/>
+        <span id="bgm-volume-label" style="min-width:40px">${Math.round(BGMController._volume*100)}%</span>
+      </div>
+      <div class="settings-hint" style="font-size:.85em;opacity:.7;margin-top:4px">${t("ui.settings.bgm_hint")}</div>
     </div>
     <button class="settings-back-btn" onclick="G.phase='menu';render()">${t("ui.dialog.back")}</button>
   </div>`;

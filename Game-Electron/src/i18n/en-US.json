@@ -30,6 +30,10 @@
       "title": "Settings",
       "language": "Language",
       "back": "← Back",
+      "bgm_label": "Background Music",
+      "bgm_mute": "🔇 Mute",
+      "bgm_unmute": "🔊 Unmute",
+      "bgm_hint": "Place mp3 files in src/assets/bgm/; missing files are silently skipped",
       "localeLabel": {
         "zh-CN": "简体中文",
         "en-US": "English (US)",

@@ -28,6 +28,11 @@ nul
 .scratch/
 _review/
 _b500_wrapper.js
+
+# BGM audio (commit README.md, but not mp3 files to avoid repo bloat)
+# Per src/assets/bgm/README.md: generated files, locally replaced
+src/assets/bgm/*.mp3
+!src/assets/bgm/README.md
 CHANGELOG-*.md
 
 # Temp scripts / orphan assets (development artifacts)
@@ -35,6 +40,11 @@ src/assets/cards/_*.py
 src/assets/cards/_*.json
 card_*.bak
 src/assets/cards/card_106.png.bak.*
+
+# BGM audio files (large; not committed to git)
+src/assets/bgm/*.mp3
+src/assets/bgm/*.ogg
+src/assets/bgm/*.wav
 src/assets/cards/card_120.png
 src/assets/cards/card_121.png
 src/assets/cards/card_122.png
