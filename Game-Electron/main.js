@@ -58,6 +58,9 @@ if (_gotLock) {
   app.quit();
 }
 
+
+// Custom userData path (must be set before app.whenReady)
+if(process.env.ELECTRON_USER_DATA_DIR)app.setPath('userData',process.env.ELECTRON_USER_DATA_DIR);
 app.whenReady().then(() => {
   // PID fallback check
   if (_pidOwner && process.pid !== _pidOwner) {
@@ -68,7 +71,6 @@ app.whenReady().then(() => {
       stillAlive = true;
     } catch { /* process not found → stale */ }
     if (stillAlive) {
-      console.log('[Lock] Already running (pid', _pidOwner, '), quitting...');
       app.quit();
       return;
     }
@@ -77,7 +79,6 @@ app.whenReady().then(() => {
 
     }); // close app.whenReady()
 
-    if(process.env.ELECTRON_USER_DATA_DIR)app.setPath('userData',process.env.ELECTRON_USER_DATA_DIR);
 
 // ===== Steamworks 集成 =====
 // steamworks.js: https://github.com/ceifa/steamworks.js
@@ -87,9 +88,7 @@ let steamClient = null;
 try {
   const steamworks = require('steamworks.js');
   steamClient = steamworks.init(STEAM_APP_ID);
-  console.log('[Steam] Connected, player:', steamClient.localplayer.getName());
 } catch (e) {
-  console.log('[Steam] Dev mode (Steam not running):', e.message);
 }
 
 // 窗口引用
@@ -201,7 +200,6 @@ function setupMultiplayerIPC() {
   ipcMain.handle('multiplayer:openInviteDialog', () => {
     // Dev Mock 模式 (无 Steam 直接 OK, 渲染端 mock 负责状态同步)
     if (process.env.DEV_MOCKMP === '1') {
-      console.log('[MockMP-Main] openInviteDialog → mock success');
       return { ok: true };
     }
     if (!steamClient) return { ok: false, reason: 'steam_not_running' };
@@ -315,7 +313,6 @@ function setupMultiplayerIPC() {
     }
   });
 
-  console.log('[Multiplayer] IPC handlers registered');
 }
 
 setupMultiplayerIPC();
@@ -390,7 +387,6 @@ function createWindow() {
   });
   // Truncate log on startup so each session is fresh
   try { fs.writeFileSync(LOG_FILE, ''); } catch {}
-  console.log('[Main] Console log file:', LOG_FILE);
   // 去掉默认菜单栏（游戏自带 UI）
   Menu.setApplicationMenu(null);
 
