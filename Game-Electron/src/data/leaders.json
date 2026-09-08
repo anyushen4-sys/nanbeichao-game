@@ -24,8 +24,8 @@
       "id": 3,
       "name": "梁武帝萧衍",
       "faction": "liang",
-      "ability": "{type:'extra_provisions',value:1}",
-      "desc": "每局粮草+1",
+      "ability": "{type:'extra_provisions',value:4}",
+      "desc": "每局粮草+4",
       "era": "南朝·梁",
       "juzhongqu": { "row": "navy", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
     },

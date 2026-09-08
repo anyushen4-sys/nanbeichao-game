@@ -786,27 +786,34 @@ html, body {
 }
 .card .card-tags {
     display: flex;
+    flex-wrap: nowrap;        /* V9-fix: 强制横排, 防止字号变大后挤竖排 */
     justify-content: center;
+    align-items: center;
     gap: 4px;
     margin-bottom: 4px;
     min-height: 14px;
 }
 .card .card-type-tag {
-    font-size: .6em;
-    color: #8B7355;
-    background: rgba(139,115,85,.15);
-    padding: 1px 6px;
+    font-size: .65em;          /* V9-fix: 0.75em 在 many-cards 96px 容器会换行, 适当缩小保持横排 */
+    color: #D4A84B;
+    background: rgba(139,115,85,.3);
+    border: 1px solid rgba(139,115,85,.45);
+    padding: 1px 5px;          /* 缩 padding 节省横向空间 */
     border-radius: 3px;
+    font-weight: 600;
+    white-space: nowrap;       /* 防止单 tag 文字内部换行 */
 }
 .card .card-role-tag {
-    font-size: .55em;
-    color: #B8A070;
-    background: rgba(139,115,85,.08);
-    border: 1px solid rgba(184,160,112,.25);
-    padding: 0 5px;
+    font-size: .65em;          /* V9-fix: 同上, 0.75→0.65 保持横排 */
+    color: #E8D4A0;
+    background: rgba(184,134,11,.25);
+    border: 1px solid rgba(218,165,32,.55);
+    padding: 1px 5px;          /* 缩 padding */
     border-radius: 3px;
-    letter-spacing: .5px;
-    font-weight: normal;
+    letter-spacing: .25px;     /* 缩 letter-spacing 节省横向 */
+    font-weight: 600;
+    opacity: 1;
+    white-space: nowrap;
 }
 .card .card-ability {
     font-size: .6em;

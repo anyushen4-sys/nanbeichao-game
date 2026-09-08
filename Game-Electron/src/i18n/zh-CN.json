@@ -63,7 +63,8 @@
       "opponent_playing": "对方出牌中...",
       "opponent_turn": "对方的回合",
       "leader_ability": "主将技能",
-      "ability_used": "已使用"
+      "ability_used": "已使用",
+      "no_provisions_hint": "粮草不足 — 可使用主将技能或放弃本局"
     },
     "leader": {
       "select": "选择领袖",

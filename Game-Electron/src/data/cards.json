@@ -214,15 +214,6 @@
       "desc": "佛光普照，全场+1"
     },
     {
-      "id": 13,
-      "name": "陈庆之",
-      "faction": "liang",
-      "strength": 8,
-      "row": "cavalry",
-      "ability": null,
-      "desc": "白袍战神，名垂千古"
-    },
-    {
       "id": 14,
       "name": "羊侃",
       "faction": "liang",
@@ -248,15 +239,6 @@
       "row": "infantry",
       "ability": null,
       "desc": "陈武帝，开国"
-    },
-    {
-      "id": 17,
-      "name": "吴明彻",
-      "faction": "chen",
-      "strength": 7,
-      "row": "infantry",
-      "ability": null,
-      "desc": "南朝名将，北伐"
     },
     {
       "id": 18,
@@ -340,24 +322,6 @@
       "desc": "神武帝，雄主"
     },
     {
-      "id": 27,
-      "name": "高澄",
-      "faction": "dongwei",
-      "strength": 5,
-      "row": "strategy",
-      "ability": "gain_provisions:2",
-      "desc": "富国强兵，+2粮草"
-    },
-    {
-      "id": 28,
-      "name": "慕容绍宗",
-      "faction": "dongwei",
-      "strength": 6,
-      "row": "infantry",
-      "ability": "armor:1",
-      "desc": "坚甲，所有友方+1"
-    },
-    {
       "id": 29,
       "name": "高岳",
       "faction": "dongwei",
@@ -374,15 +338,6 @@
       "row": "navy",
       "ability": "draw:1",
       "desc": "水军将领，抽1牌"
-    },
-    {
-      "id": 31,
-      "name": "宇文泰",
-      "faction": "xiwei",
-      "strength": 8,
-      "row": "infantry",
-      "ability": null,
-      "desc": "大冢宰，八柱国"
     },
     {
       "id": 32,
@@ -430,24 +385,6 @@
       "desc": "文宣帝，疯癫天才"
     },
     {
-      "id": 37,
-      "name": "斛律光",
-      "faction": "beiqi",
-      "strength": 7,
-      "row": "cavalry",
-      "ability": "crit:0",
-      "desc": "暴击，随机消灭对手一张"
-    },
-    {
-      "id": 38,
-      "name": "兰陵王",
-      "faction": "beiqi",
-      "strength": 6,
-      "row": "cavalry",
-      "ability": "berserk:0",
-      "desc": "狂攻！战力翻倍但下回合-2"
-    },
-    {
       "id": 39,
       "name": "段韶",
       "faction": "beiqi",
@@ -473,15 +410,6 @@
       "row": "cavalry",
       "ability": null,
       "desc": "周武帝，雄才大略"
-    },
-    {
-      "id": 42,
-      "name": "韦孝宽",
-      "faction": "beizhou",
-      "strength": 6,
-      "row": "infantry",
-      "ability": "unify:0",
-      "desc": "统一之势，每出一张辅助类+0.5全局"
     },
     {
       "id": 43,

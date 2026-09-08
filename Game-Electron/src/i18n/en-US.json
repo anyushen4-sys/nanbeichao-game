@@ -61,6 +61,7 @@
       "ai_turn": "AI Thinking...",
       "leader_ability": "Leader Ability",
       "ability_used": "Used",
+      "no_provisions_hint": "No provisions — use leader ability or pass",
       "opponent_playing": "Opponent playing...",
       "opponent_turn": "Opponent's turn",
       "opponent_side": "— Opponent side · Power {power} —"
