@@ -1,0 +1,8 @@
+# Root-level ignore for OS / shell artifacts created by mistake.
+# These do not belong to the project.
+
+# Windows `nul` device-collision file accidentally created at repo root
+nul
+
+# Old kanban scratch directory used by past automation (now obsolete)
+game/.scratch/
