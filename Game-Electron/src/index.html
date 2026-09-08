@@ -1774,11 +1774,18 @@ function checkGameEnd(){
     showNotification(winText,3000);
   }else{
     G.phase='playing';
+    // V48: 提前 1s 通知玩家下一局, 让玩家明确知道局数推进
+    showToast(t('ui.log.next_round_start',{round:G.round+1}),2500);
     setTimeout(startRound,1500);
   }
 }
 
 function nextRoundOrGame(){
+  // V48: 防重复触发 — 玩家在 1.5s 窗口内连点多次按钮会触发多次 startRound
+  // 导致 G.round 被多次递增, 提前触发 round>=3 结束条件
+  if(G._nextRoundBusy)return;
+  G._nextRoundBusy=true;
+  setTimeout(()=>{G._nextRoundBusy=false;},1600);
   checkGameEnd();
 }
 

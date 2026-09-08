@@ -342,7 +342,8 @@
       "combo_armor": "{faction} Wu Reform: All faction cards +1 armor",
       "combo_type_synergy": "{type} Type Synergy: All {type} cards +1",
       "combo_row_stacking": "{row} Row Stacking: All {row} cards +1",
-      "combo_scholar_circle": "Scholar Circle: Poets and ministers +1"
+      "combo_scholar_circle": "Scholar Circle: Poets and ministers +1",
+      "next_round_start": "Round {round} incoming…"
     },
     "splash": {
       "intro_title": "Northern and Southern Dynasties · World Chess",

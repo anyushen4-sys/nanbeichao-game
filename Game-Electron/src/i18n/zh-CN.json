@@ -341,7 +341,8 @@
       "combo_armor": "{faction} 武帝改革：同阵营所有牌 +1 护甲",
       "combo_type_synergy": "{type} 类型联动：所有{type}牌 +1",
       "combo_row_stacking": "{row} 同行强化：所有{row}牌 +1",
-      "combo_scholar_circle": "文人圈：诗人+文臣 +1"
+      "combo_scholar_circle": "文人圈：诗人+文臣 +1",
+      "next_round_start": "即将进入第{round}局…"
     },
     "splash": {
       "intro_title": "南北朝 · 天下对弈",
