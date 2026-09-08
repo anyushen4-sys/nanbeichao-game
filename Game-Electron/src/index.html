@@ -209,6 +209,17 @@ window.t = window.t || function(key, vars){
   }
   };
 
+// V50 P2 fix (Bug 3): 全局 debug log gate. 用 dlog() 替换 console.log 后,
+// 只有 URL 包含 ?debug=1 时才输出. 这样 production console 无噪音, 
+// 开发者调试时打开 ?debug=1 即可.
+// ── dlog() helper ──
+window.dlog = function(){ if(window._DEBUG) console.log.apply(console, arguments); };
+window._DEBUG = (function(){
+  try {
+    return new URLSearchParams(location.search).has('debug');
+  } catch(e) { return false; }
+})();
+
     // Card localization helpers — track currentLocale for cn/cd/ln/ld
         window.currentLocale = 'zh-CN';
         if (window.Locale && window.Locale.getLocale) {
@@ -240,14 +251,14 @@ window.t = window.t || function(key, vars){
 
   (function(){
   if(!/mockmp=1/.test(location.search))return;
-  console.log('[MockMP] multi-window mock enabled (BroadcastChannel cross-instance)');
+  dlog('[MockMP] multi-window mock enabled (BroadcastChannel cross-instance)');
   // ===== 用 BroadcastChannel 跨 Electron 实例/tab 通信 =====
   var SELF='host'; // 默认视角 - 第一个窗口
   var clientId='mp-'+Math.random().toString(36).slice(2,8); // 每个实例唯一
-  console.log('[MockMP] clientId='+clientId);
+  dlog('[MockMP] clientId='+clientId);
   var bc=null; // BC 跨实例不通, 用 localStorage 替代 (同 origin 跨 window/iframe 共享)
-  console.log('[MockMP] localStorage-based discovery, origin=' + location.origin);
-  console.log('[MockMP] localStorage length=' + (localStorage.length||0) + ', testWrite=' + (function(){try{localStorage.setItem('mock-mp-test','x');return 'ok';}catch(e){return e.message;}}()));
+  dlog('[MockMP] localStorage-based discovery, origin=' + location.origin);
+  dlog('[MockMP] localStorage length=' + (localStorage.length||0) + ', testWrite=' + (function(){try{localStorage.setItem('mock-mp-test','x');return 'ok';}catch(e){return e.message;}}()));
   var knownClients={}; // 已知其他 client ID
   // localStorage 'storage' 事件 - 当其他 tab/window 写入 key='mock-mp-msg' 时触发
   window.addEventListener('storage',function(ev){
@@ -255,7 +266,7 @@ window.t = window.t || function(key, vars){
     try {
       var d=JSON.parse(ev.newValue);
       if(!d || d.from===clientId)return;
-      console.log('[MockMP-storage] recv from ' + d.from + ':', d.msg);
+      dlog('[MockMP-storage] recv from ' + d.from + ':', d.msg);
       myQueue.push({steamId:d.from,data:d.msg});
     } catch(e){}
   });
@@ -281,7 +292,7 @@ window.t = window.t || function(key, vars){
       if(ev.data && ev.data.type==='hello-reply' && ev.data.to===myId){
         responded=true;
         SELF='guest';
-        console.log('[MockMP] discovered existing client → SELF=guest');
+        dlog('[MockMP] discovered existing client → SELF=guest');
         doneCb();
       }
     };
@@ -290,7 +301,7 @@ window.t = window.t || function(key, vars){
     setTimeout(function(){
       window.removeEventListener('storage',tempHandler);
       if(!responded){
-        console.log('[MockMP] no existing client → SELF=host');
+        dlog('[MockMP] no existing client → SELF=host');
         SELF='host';
       }
       doneCb();
@@ -385,13 +396,13 @@ window.t = window.t || function(key, vars){
       sendToPeer({type:'peer_leader_picked',leaderId:randLeader});
     }
   };
-  console.log('[MockMP] ready. SELF='+SELF);
-  console.log('[MockMP] use __MOCKMP.simulateGuest() to switch view');
-    console.log('[MockMP] AUTO: discover SELF role then act');
+  dlog('[MockMP] ready. SELF='+SELF);
+  dlog('[MockMP] use __MOCKMP.simulateGuest() to switch view');
+    dlog('[MockMP] AUTO: discover SELF role then act');
     window.__MOCKMP_AUTO_HOSTED=false;
     // 等待角色发现
     discoverSelf(function(){
-      console.log('[MockMP] SELF determined: ' + SELF);
+      dlog('[MockMP] SELF determined: ' + SELF);
       if(SELF==='host'){
         // hook 进 render (host 走原流程)
       }
@@ -399,10 +410,10 @@ window.t = window.t || function(key, vars){
     // contextBridge 暴露的对象被冻结, 必须用 Object.defineProperty 替换
     // 但更可靠的做法: monkey-patch _existing_ electronAPI 的方法
     if(typeof electronAPI !== 'undefined'){
-      console.log('[MockMP] monkey-patching electronAPI.multiplayer');
+      dlog('[MockMP] monkey-patching electronAPI.multiplayer');
       var __origOpenInvite = electronAPI.multiplayer.openInviteDialog;
       electronAPI.multiplayer.openInviteDialog = function(){
-        console.log('[MockMP] intercept openInviteDialog');
+        dlog('[MockMP] intercept openInviteDialog');
         var resolveFn;
         var p = new Promise(function(r){resolveFn=r;});
         // 同步调用: 设 connected 状态
@@ -424,10 +435,10 @@ window.t = window.t || function(key, vars){
       if(!window.__MOCKMP_AUTO_HOSTED && window.G && G.phase==='multiplayer_lobby' && G._mpState && G._mpState._status==='idle'){
         window.__MOCKMP_AUTO_HOSTED=true;
         if(SELF==='host'){
-          console.log('[MockMP] AUTO-HOST triggered (SELF=host)');
+          dlog('[MockMP] AUTO-HOST triggered (SELF=host)');
           setTimeout(function(){startMultiplayerHost();},500);
         } else {
-          console.log('[MockMP] AUTO-JOIN triggered (SELF=guest)');
+          dlog('[MockMP] AUTO-JOIN triggered (SELF=guest)');
           setTimeout(function(){joinMultiplayerRoom();},500);
         }
       }
@@ -711,7 +722,7 @@ window.BGMController={
     this._audio.volume=this._muted?0:this._volume;
     this._audio.addEventListener('error',()=>{
       // 缺失或加载失败 — 静默,不 console.error(可能是预期缺失)
-      console.log('[BGM] file missing or load error:', this._audio.src);
+      dlog('[BGM] file missing or load error:', this._audio.src);
     });
     // 监听首次 user gesture 解锁 audio
     const unlock=()=>{
@@ -759,7 +770,7 @@ window.BGMController={
         }
       }).catch(err=>{
         // autoplay 被拒 — 等 gesture
-        console.log('[BGM] autoplay blocked, waiting for user gesture:', err.message);
+        dlog('[BGM] autoplay blocked, waiting for user gesture:', err.message);
       });
     }
   },
@@ -902,7 +913,7 @@ function drawCards(playerIdx,count){
     drawn++;
   }
   // V46-debug: 复盘用 — 记录每次抽牌前后手牌数 + 抽到数量 + deck 余量
-  console.log('[drawCards] p='+playerIdx+' request='+count+' before='+before+' drawn='+drawn+' after='+realHand.length+' deckLeft='+deck.length+(G.round?' round='+G.round:''));
+  dlog('[drawCards] p='+playerIdx+' request='+count+' before='+before+' drawn='+drawn+' after='+realHand.length+' deckLeft='+deck.length+(G.round?' round='+G.round:''));
 }
 
 // V9-fix: 全局 toast 管理器 - 防堆叠防卡顿
@@ -1091,7 +1102,7 @@ function getRowPower(cards,playerIdx){
       checkComboDelta();
     }
   }
-  return cards.reduce((s,c)=>s+(c?Math.max(1,c.strength+armor+Math.floor(unify*0.5)+(_bonuses[c.id]||0)+(_counterNerfs[c.id]||0)):0),0);
+  return cards.reduce((s,c)=>s+(c?Math.max(1,c.strength+armor+Math.floor(unify*0.5)+(_bonuses[c.id]||0))+(_counterNerfs[c.id]||0):0),0);
 }
 function getBoardPower(board,playerIdx){return getRowPower(board.infantry,playerIdx)+getRowPower(board.cavalry,playerIdx)+getRowPower(board.navy,playerIdx)+getRowPower(board.strategy,playerIdx)}
 
@@ -1376,7 +1387,7 @@ function playCard(playerIdx,handIdx,row){
   const board=getBoard(playerIdx);
   board[row].push(card);
   // V46-debug: 复盘用 — 记录出牌后手牌数
-  console.log('[playCard] p='+playerIdx+' played='+cn(card)+' row='+row+' handAfter='+hand.length+(G.round?' round='+G.round:''));
+  dlog('[playCard] p='+playerIdx+' played='+cn(card)+' row='+row+' handAfter='+hand.length+(G.round?' round='+G.round:''));
   // hand_boost: cost 用原始 base (card.strength 此时还是 base), 然后再合并 bonus 到 board 上的 strength
   const costForPlay=getCardCost(card.strength);
   G.provisions[playerIdx]-=costForPlay;
@@ -1451,7 +1462,7 @@ function startRound(){
 }
 
 function playerPlayCard(handIdx,row){
-  if(G._busy){console.log('[ppc] busy');return;}
+  if(G._busy){dlog('[ppc] busy');return;}
   if(G.phase!=='playing'||G.currentTurn!=='player'||G.players[0].passed)return;
   const card=G.players[0].hand[handIdx];
   if(!card)return;
@@ -1465,7 +1476,7 @@ function playerPlayCard(handIdx,row){
 }
 
 function playerPass(){
-  console.log('[playerPass] called, G.phase=', G.phase, 'currentTurn=', G.currentTurn, 'passed=', G.players[0].passed);
+  dlog('[playerPass] called, G.phase=', G.phase, 'currentTurn=', G.currentTurn, 'passed=', G.players[0].passed);
   if(G.phase!=='playing')return;
   if(G.players[0].passed)return;
   if(G.currentTurn!=='player')return;
@@ -1514,7 +1525,7 @@ function hasPlayableCard(p){
 }
 
 function aiTurn(){
-  console.log('[aiTurn] called, G.phase=', G.phase, 'currentTurn=', G.currentTurn, 'AI passed=', G.players[1].passed);
+  dlog('[aiTurn] called, G.phase=', G.phase, 'currentTurn=', G.currentTurn, 'AI passed=', G.players[1].passed);
   try{
   if(G.phase!=='playing')return;
   // V9-fix: AI 粮草不足时, 不立即 auto-pass; 先尝试用主将技能, 然后才 pass
@@ -1954,8 +1965,8 @@ async function steamUnlock(achId){
   if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
   try{
     const r=await electronAPI.steam.unlockAchievement(achId);
-    if(r.success)console.log('[Steam] Achievement unlocked:',achId);
-  }catch(e){console.log('[Steam] ach fail:',e.message)}
+    if(r.success)dlog('[Steam] Achievement unlocked:',achId);
+  }catch(e){dlog('[Steam] ach fail:',e.message)}
 }
 async function steamSetStat(statName,value){
   if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
@@ -1963,7 +1974,7 @@ async function steamSetStat(statName,value){
 }
 async function steamCloudSave(data){
   if(typeof electronAPI==='undefined'||!electronAPI.steam)return;
-  try{await electronAPI.steam.storeCloudSave(data);}catch(e){console.log('[Steam] save fail:',e.message)}
+  try{await electronAPI.steam.storeCloudSave(data);}catch(e){dlog('[Steam] save fail:',e.message)}
 }
 
 function showNotification(text,dur=2500){
@@ -1983,7 +1994,7 @@ function showNotification(text,dur=2500){
 }
 
 function render(){
-  console.log('[render] called, G.phase=', G.phase);
+  dlog('[render] called, G.phase=', G.phase);
   const app=document.getElementById('app');
   const lastUid=G._lastPlayedUid;
   const lastBy=G._lastPlayedBy;
@@ -2590,28 +2601,28 @@ function onCardClick(idx){
 }
 
 function onRowClick(rowType){
-  console.log('[onRowClick] rowType=', rowType, 'selectedCard=', G.selectedCard, 'busy=', G._busy, 'typeof t=', typeof t);
+  dlog('[onRowClick] rowType=', rowType, 'selectedCard=', G.selectedCard, 'busy=', G._busy, 'typeof t=', typeof t);
   // Hot-seat 模式
   if(G._hsPhase==='game'){
-      if(G.selectedCard===null||G.selectedCard===undefined){console.log('[onRowClick] RET: hs no sel');return;}
+      if(G.selectedCard===null||G.selectedCard===undefined){dlog('[onRowClick] RET: hs no sel');return;}
       let act=G.activePlayer;
       let c=G.players[act].hand[G.selectedCard];
-      if(!c){console.log('[onRowClick] RET: hs card null');return;}
-      console.log('[onRowClick] hs card', cn(c), 'row=', c.row, 'vs', rowType);
+      if(!c){dlog('[onRowClick] RET: hs card null');return;}
+      dlog('[onRowClick] hs card', cn(c), 'row=', c.row, 'vs', rowType);
       if(c.row!==rowType){addLog(t('ui.log.card_row_only', {row: getRowName(c.row)}));return}
       hotSeatPlayCard(G.selectedCard,rowType);
       return;
   }
-  if(G.selectedCard===null||G.selectedCard===undefined){console.log('[onRowClick] RET: no sel');return;}
+  if(G.selectedCard===null||G.selectedCard===undefined){dlog('[onRowClick] RET: no sel');return;}
   const card=G.players[0].hand[G.selectedCard];
-  if(!card){console.log('[onRowClick] RET: card null idx=', G.selectedCard, 'hand.length=', G.players[0].hand.length);return;}
-  console.log('[onRowClick] card', cn(card), 'id=', card.id, 'row=', card.row, 'vs rowType=', rowType, 'match=', card.row===rowType);
+  if(!card){dlog('[onRowClick] RET: card null idx=', G.selectedCard, 'hand.length=', G.players[0].hand.length);return;}
+  dlog('[onRowClick] card', cn(card), 'id=', card.id, 'row=', card.row, 'vs rowType=', rowType, 'match=', card.row===rowType);
   // 只能放到对应行
   if(card.row!==rowType){
     addLog(t('ui.log.card_row_only', {row: getRowName(card.row)}));
     return;
   }
-  console.log('[onRowClick] calling playerPlayCard');
+  dlog('[onRowClick] calling playerPlayCard');
   playerPlayCard(G.selectedCard,rowType);
 }
 
@@ -2754,9 +2765,9 @@ function renderGameResult(el){
                     }
 
                     function bindLobbyButtons(){
-                          console.log('[bind] called, hostBtn:', !!document.getElementById('mp-host-btn'));
+                          dlog('[bind] called, hostBtn:', !!document.getElementById('mp-host-btn'));
                           var hb=document.getElementById('mp-host-btn');
-                          if(hb){hb.onclick=startMultiplayerHost;hb.addEventListener('click',function(){console.log('[bind] host-btn click');});}
+                          if(hb){hb.onclick=startMultiplayerHost;hb.addEventListener('click',function(){dlog('[bind] host-btn click');});}
                           var gb=document.getElementById('mp-guest-btn');
                           if(gb)gb.onclick=joinMultiplayerRoom;
                           var cb=document.getElementById('mp-cancel-btn');
@@ -3427,7 +3438,7 @@ function renderGameResult(el){
                                                   if (!api) return;
                                                   var str = typeof data === 'string' ? data : JSON.stringify(data);
                                                   api.sendP2PMessage(steamId64, str).catch(function(e) {
-                                                    console.log('[P2P] send failed:', e.message);
+                                                    dlog('[P2P] send failed:', e.message);
                                                   });
                                                 }
 
@@ -3864,6 +3875,40 @@ function timeoutReconnect() {
               render();
             }
 
+            // V50 P2 fix (Bug B): 抽出 hot-seat 模式 round 间 reset 逻辑.
+            // 原代码 inline 在 hotSeatCheckGameEnd else 分支, 与 startRound 路径不一致.
+            // 提取成函数方便单测 + 减少状态残留风险.
+            function hotSeatResetRound(){
+              G.round++;
+              G.players[0].passed=false; G.players[1].passed=false;
+              G.selectedCard=null; G.turnCount=0;
+              G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+              G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
+              G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
+                playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
+              G.graveyard=[];
+              G.logs=[];
+              // 清除上回合手牌 buff 视觉标记 + bonus
+              for(const p of G.players){
+                if(p.hand) for(const c of p.hand) if(c){
+                  delete c._handBoostedThisTurn;
+                  delete c._handBoostBonus;
+                }
+              }
+              G.leaderAbilityUsed=[false,false];
+              G.activePlayer=0;
+              G.currentTurn='player';
+              const drawCount=G.round<=1?0:4;
+              if(drawCount>0){drawCards(0,drawCount);drawCards(1,drawCount);}
+              applyRoundStartAbilities();
+              addLog(t('ui.log.round_start', {round: G.round}));
+              if(drawCount>0) addLog(t('ui.log.both_draw', {count: drawCount}));
+              G._hsPhase='game';
+              // V50 P2: 清除 _nextRoundBusy 防止 lock 残留 (与 V48 修复路径对齐)
+              G._nextRoundBusy=false;
+              render();
+            }
+
             function hotSeatCheckGameEnd(){
               if(G.scores[0]>=2||G.scores[1]>=2||G.round >= 3){
                 G._hsPhase='game_result';
@@ -3872,32 +3917,7 @@ function timeoutReconnect() {
                   G.scores[0]===G.scores[1]?t('ui.log.game_over_tie'):'玩家2赢得了天下！';
                 showNotification(txt,3000);
               }else{
-                G.round++;
-                G.players[0].passed=false; G.players[1].passed=false;
-                G.selectedCard=null; G.turnCount=0;
-                G.players[0].board={infantry:[],cavalry:[],navy:[],strategy:[]};
-                G.players[1].board={infantry:[],cavalry:[],navy:[],strategy:[]};
-                G.globalBuffs={playerArmor:0,aiArmor:0,playerUnify:0,aiUnify:0,ambushTriggered:false,
-                  playerFarm:0,aiFarm:0,playerBerserkCard:null,aiBerserkCard:null};
-                G.graveyard=[];
-                G.logs=[];
-                // 清除上回合手牌 buff 视觉标记 + bonus
-                for(const p of G.players){
-                  if(p.hand) for(const c of p.hand) if(c){
-                    delete c._handBoostedThisTurn;
-                    delete c._handBoostBonus;
-                  }
-                }
-                G.leaderAbilityUsed=[false,false];
-                G.activePlayer=0;
-                G.currentTurn='player';
-                const drawCount=G.round<=1?0:4;
-                if(drawCount>0){drawCards(0,drawCount);drawCards(1,drawCount);}
-                applyRoundStartAbilities();
-                addLog(t('ui.log.round_start', {round: G.round}));
-                if(drawCount>0) addLog(t('ui.log.both_draw', {count: drawCount}));
-                G._hsPhase='game';
-                render();
+                hotSeatResetRound();
               }
             }
 
@@ -4265,7 +4285,7 @@ function dismissSettlementToast() {
 }
 
 function startMultiplayerHost() {
-  console.log('[host] ENTRY');
+  dlog('[host] ENTRY');
   G._mpState = G._mpState || {};
   G._mpState._host = 'host';
   G._mpState._status = 'connecting';
@@ -4274,14 +4294,14 @@ function startMultiplayerHost() {
   G.phase = 'multiplayer_lobby';
   startMultiplayerPolling();
   render(); // 立即同步 UI (connecting 状态)
-  console.log('[host] status=' + G._mpState._status + ', hasEAPI=' + (typeof electronAPI !== 'undefined'));
+  dlog('[host] status=' + G._mpState._status + ', hasEAPI=' + (typeof electronAPI !== 'undefined'));
   // Try to open invite dialog
   if (typeof electronAPI !== 'undefined' && electronAPI.multiplayer) {
-    console.log('[host] calling openInviteDialog'); electronAPI.multiplayer.openInviteDialog().then(function(r) {
+    dlog('[host] calling openInviteDialog'); electronAPI.multiplayer.openInviteDialog().then(function(r) {
       // r.ok=false 通常是 steam_not_running (dev 模式无 Steam)
       // 在这种模式下, 我们跳过 waiting_invite 阶段, 但保留 connecting 状态让 polling
       // 检测到 peerQueue 中的消息即可触发 connected (mock 会自动 fill peerQueue)
-      console.log('[host] openInviteDialog RESOLVED, r.ok=' + r.ok + ', r=' + JSON.stringify(r));
+      dlog('[host] openInviteDialog RESOLVED, r.ok=' + r.ok + ', r=' + JSON.stringify(r));
       if (r.ok) {
         // Dev mock: main.js IPC 返回 ok=true, 直接跳 connected (单人模式自模拟)
         G._mpState._peerName = 'Mock对手(guest)';
@@ -4290,7 +4310,7 @@ function startMultiplayerHost() {
         render();
       }
     }).catch(function(e) {
-      console.log('[host] CATCH: ' + (e && e.message));
+      dlog('[host] CATCH: ' + (e && e.message));
       // IPC 调用失败, polling 也会继续, 等 mock 模拟
     });
   }
@@ -4505,12 +4525,12 @@ window._splashRunStep = function() {
       v.muted = true;
       v.playsInline = true;
       // DIAG: Log every step so we can debug black screen
-      console.log('[splash] loading', seg.src, 'state:', v.readyState, 'error:', v.error);
+      dlog('[splash] loading', seg.src, 'state:', v.readyState, 'error:', v.error);
       v.onerror = () => {
         console.error('[splash] VIDEO LOAD FAILED:', seg.src, 'code:', v.error ? v.error.code : 'n/a', 'msg:', v.error ? v.error.message : 'n/a');
       };
       v.onloadedmetadata = () => {
-        console.log('[splash] metadata loaded:', seg.src, v.videoWidth + 'x' + v.videoHeight, v.duration + 's');
+        dlog('[splash] metadata loaded:', seg.src, v.videoWidth + 'x' + v.videoHeight, v.duration + 's');
         // V22-perf: initialize canvas size ONCE here (mutating canvas.width
         // at runtime clears the framebuffer + rebuilds GPU texture, which
         // is a known stutter source. Once we know the video dimensions,
@@ -4522,7 +4542,7 @@ window._splashRunStep = function() {
         }
       };
       v.onplaying = () => {
-        console.log('[splash] playing:', seg.src, 'readyState=', v.readyState);
+        dlog('[splash] playing:', seg.src, 'readyState=', v.readyState);
         // Start canvas render loop (workaround for Chromium video compositor bug)
         const canvas = document.getElementById('splash-canvas');
         if (canvas) {
@@ -4543,11 +4563,11 @@ window._splashRunStep = function() {
             drawCount++;
             if (v.paused || v.ended || !window._splashState || !window._splashState.active) {
               clearInterval(intervalId);
-              console.log('[splash] canvas loop ended after', drawCount, 'ticks');
+              dlog('[splash] canvas loop ended after', drawCount, 'ticks');
               return;
             }
             drawFrame();
-            if (drawCount === 30) console.log('[splash] canvas drew', drawCount, 'frames, readyState=', v.readyState);
+            if (drawCount === 30) dlog('[splash] canvas drew', drawCount, 'frames, readyState=', v.readyState);
           }, 33);
           // Also kick off with requestVideoFrameCallback for frame-accurate sync
           if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
@@ -4559,21 +4579,21 @@ window._splashRunStep = function() {
           }
           // Draw first frame immediately
           drawFrame();
-          console.log('[splash] canvas draw loop started');
+          dlog('[splash] canvas draw loop started');
         }
       };
-      v.onwaiting = () => console.log('[splash] WAITING:', seg.src);
+      v.onwaiting = () => dlog('[splash] WAITING:', seg.src);
       // V22-audio: autoplay hack — start muted (Chromium allows muted autoplay
       // without user gesture), then unmute after play() resolves. This keeps
       // autoplay working while still playing the in-file audio track (BGM).
       v.play().then(() => {
         v.muted = false;
-        console.log('[splash] audio unmuted for', seg.src);
+        dlog('[splash] audio unmuted for', seg.src);
       }).catch((err) => {
         console.warn('[splash] video autoplay blocked, using 6s fallback:', err);
       });
       const onEnded = () => {
-        console.log('[splash] ended:', seg.src);
+        dlog('[splash] ended:', seg.src);
         v.removeEventListener('ended', onEnded);
         // Fade out canvas for smoother transition
         const canvas = document.getElementById('splash-canvas');
@@ -4592,7 +4612,7 @@ window._splashRunStep = function() {
       // V9: use seg.duration for video safety fallback (35s per video segment)
             setTimeout(() => {
               if (window._splashState.active && window._splashState.step === idx) {
-                console.log('[splash] SAFETY timeout fired for', seg.src);
+                dlog('[splash] SAFETY timeout fired for', seg.src);
                 v.removeEventListener('ended', onEnded);
                 window._splashState.step++;
                 window._splashRunStep();
@@ -4613,7 +4633,7 @@ window._splashRunStep = function() {
           window._splashState.textEl.innerHTML =
             `<div class="splash-title">${title}</div><div class="splash-body">${body}</div>`;
           window._splashState.textEl.style.display = 'block';
-          console.log('[splash] TEXT segment', idx, seg.key, 'duration', seg.duration, 's, title=', title.slice(0, 30), 'body_chars=', body.length);
+          dlog('[splash] TEXT segment', idx, seg.key, 'duration', seg.duration, 's, title=', title.slice(0, 30), 'body_chars=', body.length);
         }
         // V9: use seg.duration for text (background intro = 15s, historical notes = 3s)
         setTimeout(() => {
@@ -4624,7 +4644,7 @@ window._splashRunStep = function() {
               canvas.style.transition = 'opacity 0.5s ease-in';
               canvas.style.opacity = '1';
             }
-            console.log('[splash] TEXT segment', idx, 'timer fired, advance to step', idx + 1);
+            dlog('[splash] TEXT segment', idx, 'timer fired, advance to step', idx + 1);
             window._splashState.step++;
             window._splashRunStep();
           }
