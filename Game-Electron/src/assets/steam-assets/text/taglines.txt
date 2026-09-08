@@ -1,0 +1,18 @@
+南北朝·天下对弈 — 宣传语 (Taglines)
+
+中文 (Simplified Chinese):
+- "九州裂，谁主沉浮。"
+- "九位领袖，六十三将，三行对峙，一次翻盘。"
+- "运筹帷幄之中，烟尘千里之外。"
+- "南朝四百八十寺，多少楼台烟雨中——这一次，由你来定。"
+- "千里江陵，何人守？万骑潼关，几人还？"
+
+English:
+- "When the empire splits, every general is a king."
+- "Nine dynasties. Sixty-three generals. Three battle lines. One deck."
+- "History's pivot hinges on the cards you play."
+- "From the Yangtze to the Yellow River, the war of ink and steel begins."
+- "Master the field. Master the era."
+
+Steam Capsule Slogans (90 chars max for header_capsule):
+- "南北朝 · 天下对弈 — A strategy card game of China's most turbulent era."

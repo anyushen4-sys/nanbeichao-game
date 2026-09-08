@@ -35,7 +35,7 @@
           ]
         }
       ],
-      "icon": "src/assets/icon.ico"
+      "icon": "src/assets/steam-assets/icons/icon.ico"
     },
     "nsis": {
       "oneClick": false,
