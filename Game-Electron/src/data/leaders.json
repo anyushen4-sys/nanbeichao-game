@@ -6,8 +6,8 @@
       "id": 1,
       "name": "宋武帝刘裕",
       "faction": "song",
-      "ability": "{type:'row_boost',row:'infantry',value:2}",
-      "desc": "本局步兵战力+2",
+      "ability": "{type:'row_boost',row:'infantry',value:3}",
+      "desc": "本局步兵战力+3",
       "era": "南朝·宋",
       "juzhongqu": { "row": "infantry", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
     },
@@ -42,8 +42,8 @@
       "id": 5,
       "name": "北魏太武帝拓跋焘",
       "faction": "beiwei",
-      "ability": "{type:'row_boost',row:'cavalry',value:2}",
-      "desc": "本局骑兵战力+2",
+      "ability": "{type:'row_boost',row:'cavalry',value:1}",
+      "desc": "本局骑兵战力+1",
       "era": "北朝·北魏",
       "juzhongqu": { "row": "cavalry", "count": 2, "bonus_type": "flat", "bonus_value": 2 }
     },
@@ -80,7 +80,8 @@
       "faction": "beizhou",
       "ability": "{type:'hand_boost',value:2}",
       "desc": "手牌随机2张+2战力（整军经武）",
-      "era": "北朝·北周"
+      "era": "北朝·北周",
+      "_v50_note": "缺 juzhongqu (V50 reviewer 发现). 故意无羁绊 — ability 强 (hand_boost +2) 替代羁绊. 若需补, 推荐 infantry/2/+2 (与其他北朝系对齐). 见 V50-reviewer-report.md §Bug A."
     }
   ]
 }

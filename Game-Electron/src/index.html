@@ -23,6 +23,11 @@
 // ── inline t() fallback ──
 // 在模块加载前提供翻译, 模块加载后 window.t 被替换为完整翻译函数
 window.t = window.t || function(key, vars){
+  // V50 P0 fix: 检测递归自调用 (e.g. 'ui.log.game_over_tie': t('ui.log.game_over_tie'))
+  // 如果 key 还没在 _t 里出现就调用了 t(), 立即返回 fallback 字符串
+  if(window._tResolving === key) return key; // 递归防御
+  window._tResolving = key;
+  try {
   var _t = {
     'ui.menu.seal_title':'天下对弈',
     'ui.menu.main_title':'南北朝 · 天下对弈',
@@ -106,7 +111,7 @@ window.t = window.t || function(key, vars){
     'ui.multiplayer.continue':'继续',
     'ui.multiplayer.you_win':'你赢得了天下！',
     'ui.multiplayer.they_win':'对方赢得了天下！',
-    'ui.multiplayer.draw_game':t('ui.log.game_over_tie'),
+    'ui.multiplayer.draw_game':'本局平局',
     'ui.multiplayer.concede':'我认输',
     'ui.multiplayer.reconnect_title':'对方未响应',
     'ui.multiplayer.pass_round':'放弃本局',
@@ -166,7 +171,7 @@ window.t = window.t || function(key, vars){
     'ui.log.power_compare':'你的战力：{player} vs AI战力：{ai}',
     'ui.log.both_draw':'双方各抽{count}张牌',
     'ui.log.game_over_you_win':'你赢得了天下！',
-    'ui.log.game_over_tie':t('ui.log.game_over_tie'),
+    'ui.log.game_over_tie':'本局平局',
     'ui.log.game_over_ai_win':'AI赢得了天下！',
     'ui.log.you_pass':'你放弃了本局',
     'ui.log.pass_wait':'已放弃本局,等待 AI',
@@ -199,6 +204,9 @@ window.t = window.t || function(key, vars){
     }
   }
   return val;
+  } finally {
+    window._tResolving = null; // V50 P0 fix: 清除递归标记
+  }
   };
 
     // Card localization helpers — track currentLocale for cn/cd/ln/ld
@@ -639,11 +647,11 @@ const CARDS_DATA=[
 ];
 
 const LEADERS_DATA=[
-{id:1,name:'宋武帝刘裕',name_en:'Liu Yu, Emperor Wu of Song',faction:'song',ability:{type:'row_boost',row:'infantry',value:2},desc:'本局步兵战力+2',desc_en:'Infantry +2 this game',era:'南朝·宋',era_en:'S. Song'},
+{id:1,name:'宋武帝刘裕',name_en:'Liu Yu, Emperor Wu of Song',faction:'song',ability:{type:'row_boost',row:'infantry',value:3},desc:'本局步兵战力+3',desc_en:'Infantry +3 this game',era:'南朝·宋',era_en:'S. Song'},
 {id:2,name:'齐高帝萧道成',name_en:'Xiao Daocheng, Emperor Gao of Qi',faction:'qi',ability:{type:'extra_draw',value:1},desc:'每局多抽1张牌',desc_en:'+1 draw per round',era:'南朝·齐',era_en:'S. Qi'},
 {id:3,name:'梁武帝萧衍',name_en:'Xiao Yan, Emperor Wu of Liang',faction:'liang',ability:{type:'extra_provisions',value:4},desc:'每局粮草+4',desc_en:'+4 provisions per round',era:'南朝·梁',era_en:'S. Liang'},
 {id:4,name:'陈武帝陈霸先',name_en:'Chen Baxian, Emperor Wu of Chen',faction:'chen',ability:{type:'row_boost',row:'navy',value:2},desc:'本局水军战力+2',desc_en:'Navy +2 this round',era:'南朝·陈',era_en:'S. Chen'},
-{id:5,name:'北魏太武帝拓跋焘',name_en:'Tuoba Tao, Emperor Taiwu of N Wei',faction:'beiwei',ability:{type:'row_boost',row:'cavalry',value:2},desc:'本局骑兵战力+2',desc_en:'Cavalry +2 this round',era:'北朝·北魏',era_en:'N. Wei'},
+{id:5,name:'北魏太武帝拓跋焘',name_en:'Tuoba Tao, Emperor Taiwu of N Wei',faction:'beiwei',ability:{type:'row_boost',row:'cavalry',value:1},desc:'本局骑兵战力+1',desc_en:'Cavalry +1 this round',era:'北朝·北魏',era_en:'N. Wei'},
 {id:6,name:'东魏孝静帝元善见',name_en:'Yuan Shanjian, Emperor Xiaojing of E Wei',faction:'dongwei',ability:{type:'opponent_discard',value:1},desc:'每局对手弃1张牌',desc_en:'Opponent discards 1 per round',era:'北朝·东魏',era_en:'E. Wei'},
 {id:7,name:'西魏文帝元宝炬',name_en:'Yuan Baoju, Emperor Wen of W Wei',faction:'xiwei',ability:{type:'all_boost',value:1},desc:'本局全军战力+1',desc_en:'All units +1 this round',era:'北朝·西魏',era_en:'W. Wei'},
 {id:8,name:'北齐文宣帝高洋',name_en:'Gao Yang, Emperor Wenxuan of N Qi',faction:'beiqi',ability:{type:'double_edge',value:3},desc:'最强行+3，最弱行-1（双刃暴君）',desc_en:'Strongest row +3, weakest -1',era:'北朝·北齐',era_en:'N. Qi'},
@@ -1298,6 +1306,14 @@ function triggerAbility(card,playerIdx){
       drawCards(playerIdx,n);
       addLog(t('ui.log.card_ability_c25433', {card: cn(card)}));
       break;
+    // V50 P1 fix: counter_faction / counter_row / counter_combo 由 getRowPower 的
+    // _counterNerfs 通道 (V46 修复) 处理实际效果. 此处仅记录日志, 防止 console.warn
+    // 噪音污染 production console.
+    case'counter_faction':
+    case'counter_row':
+    case'counter_combo':
+      addLog(t('ui.log.card_ability_counter', {card: cn(card), target: card.ability}));
+      break;
     default:
       console.warn('[triggerAbility] unknown ability type:', abilityType, 'card:', cn(card));
   }
@@ -1603,6 +1619,9 @@ function aiChooseCard(){
   if(!playable.length)return null;
   const aiP=getBoardPower(G.players[1].board,1);
   const plP=getBoardPower(G.players[0].board,0);
+  // V50 P1 fix: 读 leader 羁绊 (根因 7 — AI 不识别 leader 羁绊)
+  const myLeader=G.players[1].leader;
+  const myJuzhongqu=myLeader&&myLeader.juzhongqu;
   let best=null,bestScore=-9999;
   for(const{card,idx}of playable){
     let score=card.strength;
@@ -1610,6 +1629,13 @@ function aiChooseCard(){
     const minR=Object.keys(rp).reduce((a,b)=>rp[a]<rp[b]?a:b);
     let targetRow=card.row;
     if(card.row===minR)score+=4;
+    // V50 P1 fix: 凑 leader 羁绊加分 (juzhongqu: row + count + bonus_value)
+    if(myJuzhongqu && card.row===myJuzhongqu.row){
+      const rowCnt=(G.players[1].board[myJuzhongqu.row]||[]).length;
+      if(rowCnt+1 >= myJuzhongqu.count){
+        score += (myJuzhongqu.bonus_value||2) * 1.5; // 触发羁绊的牌大幅加分
+      }
+    }
     if(card.ability){
       const[t]=card.ability.split(':');
       if(t==='ambush')score+=(G.turnCount===0?5:0);
@@ -1633,6 +1659,13 @@ function aiChooseCard(){
         const oppFaction=G.players[0].leader?G.players[0].leader.faction:'';
         if(['song','qi','liang','chen'].includes(oppFaction))score+=4;
       }
+      // V50 P1 fix: 反制牌识别 (对手 board 上有同阵营牌时,反制牌高分)
+      if(t==='counter_faction' || t==='counter_row' || t==='counter_combo'){
+        const oppBoard=G.players[0].board;
+        const oppCount=['infantry','cavalry','navy','strategy']
+          .reduce((s,r)=>s+(oppBoard[r]||[]).length,0);
+        if(oppCount >= 3) score += 5; // 对手 board 上 ≥3 张牌时反制牌更有效
+      }
       if(t==='boost_row')score+=3;
       if(t==='weaken_row')score+=4;
       if(t==='discard')score+=3;
@@ -1644,6 +1677,14 @@ function aiChooseCard(){
       if(t==='protect')score+=3;
       if(t==='spy')score+=5;
       if(t==='draw_extra')score+=3;
+      // V50 P1 fix: 凑 combo 加分 (根因 5 — AI 不识别 combo 触发)
+      // 简化: 如果 card 与我 board 上已存在的某牌同 faction, +2 (凑 combo)
+      if(card.faction){
+        const sameFactionCount=['infantry','cavalry','navy','strategy']
+          .reduce((s,r)=>s+(G.players[1].board[r]||[])
+            .filter(c=>c&&c.faction===card.faction).length,0);
+        if(sameFactionCount >= 1) score += 2 * sameFactionCount; // 已有同阵营牌,再出一张凑 combo
+      }
     }
     if(aiP<plP)score+=card.strength*0.5;
     score+=random()*2;
@@ -1880,7 +1921,7 @@ function playCardEffect(card,rowEl,opts={}){
   switch(abType){
     case'draw':{const ha=document.querySelector('.hand-area');if(ha){const r=ha.getBoundingClientRect();playDrawTalismans(start.x,start.y,r.left+r.width/2,r.top+30,Math.min(parseInt(ab.split(':')[1]||'1',10)*2,6));}break;}
     case'draw_extra':{const ha=document.querySelector('.hand-area');if(ha){const r=ha.getBoundingClientRect();playDrawBurst(start.x,start.y,r.left+r.width/2,r.top+30,12);}break;}
-    case'boost_row':case'navy_boost':case'combo_boost':{playRowArrows(start.x,start.y,end.x,end.y,color,8);break;}
+    case'boost_row':case'navy_boost':case'combo_boost':case'counter_faction':case'counter_row':case'counter_combo':{playRowArrows(start.x,start.y,end.x,end.y,color,8);break;}
     case'destroy':{playDestroyVortex(end.x,end.y);break;}
     case'shield':case'protect':{playShield(end.x,end.y);break;}
     case'gain_provisions':{const n=parseInt(ab.split(':')[1]||'1',10);for(let i=0;i<n;i++)setTimeout(()=>playProvisionsBag(start.x+10*(i%3-1),start.y+5*(i-Math.floor(n/2))),i*200);break;}
