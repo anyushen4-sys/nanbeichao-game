@@ -1,6 +1,6 @@
 # Daily Triage Report
 
-**Generated:** 2026-10-23T13:56:23Z
+**Generated:** 2026-10-26T15:38:07Z
 
 ## 1. High-Priority Items (act on these)
 
@@ -16,5 +16,5 @@
 
 ## 4. State Updates
 
-- Latest commit: ed1b627 | chore: daily triage report 2026-10-22 | 2026-10-22T14:13:48Z
-- Next triage: 2026-10-24T13:56:23Z
+- Latest commit: f8fd2fc | chore: daily triage report 2026-10-23 | 2026-10-23T13:56:23Z
+- Next triage: 2026-10-27T15:38:07Z
