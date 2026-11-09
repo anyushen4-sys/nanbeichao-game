@@ -1,10 +1,17 @@
 # Daily Triage Report
 
-**Generated:** 2026-11-06T16:29:27Z
+**Generated:** 2026-11-09T19:20:09Z
 
 ## 1. High-Priority Items (act on these)
 
-- None detected — all recent workflows passed.
+### CI/Workflow Failures
+- **Impact:** Broken CI blocks merges and may indicate regressions
+- **Suggested action:** Investigate failing workflows, draft minimal fix in isolated worktree
+- **Effort:** Medium
+
+| Workflow | Date | Link |
+|----------|------|------|
+| pages build and deployment | 2026-11-06T16:29:30Z | [link](https://github.com/anyushen4-sys/nanbeichao-game/actions/runs/42252849659) |
 
 ## 2. Watch Items (monitor, do not act yet)
 
@@ -16,5 +23,5 @@
 
 ## 4. State Updates
 
-- Latest commit: 2c07526 | chore: daily triage report 2026-11-05 | 2026-11-05T16:57:18Z
-- Next triage: 2026-11-07T16:29:27Z
+- Latest commit: 2679a12 | chore: daily triage report 2026-11-06 | 2026-11-06T16:29:27Z
+- Next triage: 2026-11-10T19:20:09Z
